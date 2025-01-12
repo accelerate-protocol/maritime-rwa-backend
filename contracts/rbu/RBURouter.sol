@@ -1,0 +1,170 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+import "../interface/IRBUTokenFactory.sol";
+import "../interface/IRBUManagerFactory.sol";
+import "../interface/IEscrowFactory.sol";
+import "../interface/IPricerFactory.sol";
+import "./RBUManager.sol";
+import "../common/Escrow.sol";
+
+struct RBUInfo {
+    uint256 createdAt;
+    address rbuManager;
+    address rbuEscrow;
+    address rbuToken;
+    address rbuPrice;
+}
+
+struct RBUDeployData {
+    uint64 rbuId;
+    string name;
+    string symbol;
+    address assetToken;
+    uint256 maxSupply;
+    uint256 activeStartTime;
+    uint256 activeEndTime;
+    uint256 minDepositAmount;
+    uint256 managerFee;
+    address depositTreasury;
+    uint256 initialPrice;
+    address deployer;
+    address manager;
+}
+
+contract RBURouter is Ownable {
+
+    event DeployRBUEvent(uint64 rbuId,address rbuToken,address rbuPrice,address rbuManager,address escrow);
+
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant BURN_ROLE = keccak256("BURN_ROLE");
+    bytes32 public constant DEFAULT_ADMIN_ROLE = bytes32(0);
+
+    uint256 public threshold;
+    uint64 public rbuNonce;
+    IRBUTokenFactory public rbuTokenFactory;
+    IRBUManagerFactory public rbuManagerFactory;
+    IEscrowFactory public escrowFactory;
+    IPricerFactory public pricerFactory;
+
+    mapping(uint64 => RBUInfo) internal rbus;
+    mapping (address => bool) public whiteListed;
+    
+
+
+    constructor(
+        address[] memory _whiteLists,
+        uint256 _threshold,
+        address _rbuTokenFactory,
+        address _rbuManagerFactory,
+        address _escrowFactory,
+        address _pricerFactory
+        ) Ownable() {
+        for (uint256 i = 0; i < _whiteLists.length; i++) {
+            whiteListed[_whiteLists[i]] = true;
+        }
+       threshold = _threshold;
+       rbuTokenFactory = IRBUTokenFactory(_rbuTokenFactory);
+       rbuManagerFactory = IRBUManagerFactory(_rbuManagerFactory);
+       escrowFactory = IEscrowFactory(_escrowFactory);
+       pricerFactory = IPricerFactory(_pricerFactory);
+    }
+
+    function getRbuNonce() public view returns (uint64) {
+        return rbuNonce;
+    }
+
+    function deployRBU(
+        bytes memory deployData,
+        bytes[] memory signatures
+    ) public{
+        bytes32 messageHash = keccak256(deployData);
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
+        uint256 validSignatures = 0;
+        for (uint256 i = 0; i < signatures.length; i++) {
+            address signer = recoverSigner(ethSignedMessageHash, signatures[i]);
+            require(whiteListed[signer], "Invalid signer");
+            validSignatures++;
+        }
+        require(validSignatures >= threshold, "Invalid threshold");
+        RBUDeployData memory rbuDeployData = abi.decode(deployData, (RBUDeployData));
+        require(rbuDeployData.rbuId==rbuNonce, "Invalid rbuId");
+        require(rbuDeployData.deployer == msg.sender, "Invalid deployer");
+
+        address escrow = escrowFactory.newEscrow(address(this));
+        address rbuManager = rbuManagerFactory.newRBUManager(
+            rbuDeployData.assetToken,
+            rbuDeployData.maxSupply,
+            rbuDeployData.depositTreasury,
+            escrow,
+            rbuDeployData.manager,
+            address(this)
+        );
+        RBUManager(rbuManager).setActiveTime(rbuDeployData.activeStartTime, rbuDeployData.activeEndTime);
+        RBUManager(rbuManager).setMinDepositAmount(rbuDeployData.minDepositAmount);
+        RBUManager(rbuManager).setManagerFee(rbuDeployData.managerFee);
+
+        address pricer = pricerFactory.newPricer(
+            address(this),
+            rbuDeployData.initialPrice
+        );
+        address rbuToken = rbuTokenFactory.newRBUToken(
+            rbuDeployData.name,
+            rbuDeployData.symbol,
+            rbuManager
+        );
+
+        
+        RBUManager(rbuManager).setRBUToken(rbuToken,pricer);
+    
+        rbus[rbuDeployData.rbuId] = RBUInfo(
+            block.timestamp,
+            address(rbuManager),
+            address(escrow),
+            address(rbuToken),
+            address(pricer)
+        );
+
+        RBUManager(rbuManager).transferOwnership(msg.sender);
+        Escrow(escrow).approveMax(rbuDeployData.assetToken,rbuManager);
+        Escrow(escrow).rely(address(rbuManager));
+        Escrow(escrow).deny(address(this));
+
+        rbuNonce++;
+        emit DeployRBUEvent(rbuDeployData.rbuId,address(rbuToken),address(pricer),address(rbuManager),address(escrow));
+    }
+
+
+
+    function getEthSignedMessageHash(bytes32 messageHash) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash));
+    }
+
+    
+    function recoverSigner(bytes32 ethSignedMessageHash, bytes memory signature)
+        public
+        pure
+        returns (address)
+    {
+        require(signature.length == 65, "Invalid signature length");
+
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
+
+        // 分割 r, s, v
+        assembly {
+            r := mload(add(signature, 0x20))
+            s := mload(add(signature, 0x40))
+            v := byte(0, mload(add(signature, 0x60)))
+        }
+
+        // 校验 v 值
+        require(v == 27 || v == 28, "Invalid v value");
+
+        return ecrecover(ethSignedMessageHash, v, r, s);
+        
+    }
+
+}

@@ -1,0 +1,6 @@
+{
+    "axiomLedger":{
+        "threshold":1,
+        "whiteLists":["0x79a1215469FaB6f9c63c1816b45183AD3624bE34"]
+    }
+}

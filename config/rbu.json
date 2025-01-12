@@ -1,0 +1,16 @@
+{
+    "axiomLedger":{
+        "rbuId":0,
+        "name":"RBUToken",
+        "symbol":"RBU",
+        "assetToken":"0x0",
+        "maxSupply":1,
+        "activeStartTime":"1736324802",
+        "activeEndTime":"1736324802",
+        "minDepositAmount":1,
+        "managerFee":50,
+        "depositTreasury":"0x0",
+        "initialPrice":1,
+        "manager":"0x0"
+    }
+}
