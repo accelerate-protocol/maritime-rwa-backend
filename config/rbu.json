@@ -3,14 +3,13 @@
         "rbuId":0,
         "name":"RBUToken",
         "symbol":"RBU",
-        "assetToken":"0x0",
         "maxSupply":1,
         "activeStartTime":"1736324802",
-        "activeEndTime":"1736324802",
+        "activeEndTime":"1736324810",
         "minDepositAmount":1,
         "managerFee":50,
-        "depositTreasury":"0x0",
+        "depositTreasury":"0xe0b1713a4a941D595cf721B3776553c82f34F7c4",
         "initialPrice":1,
-        "manager":"0x0"
+        "manager":"0xe0b1713a4a941D595cf721B3776553c82f34F7c4"
     }
 }

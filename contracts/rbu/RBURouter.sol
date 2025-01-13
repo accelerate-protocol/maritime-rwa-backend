@@ -52,7 +52,6 @@ contract RBURouter is Ownable {
     mapping (address => bool) public whiteListed;
     
 
-
     constructor(
         address[] memory _whiteLists,
         uint256 _threshold,
@@ -89,7 +88,7 @@ contract RBURouter is Ownable {
         }
         require(validSignatures >= threshold, "Invalid threshold");
         RBUDeployData memory rbuDeployData = abi.decode(deployData, (RBUDeployData));
-        require(rbuDeployData.rbuId==rbuNonce, "Invalid rbuId");
+        require(rbuDeployData.rbuId == rbuNonce, "Invalid rbuId");
         require(rbuDeployData.deployer == msg.sender, "Invalid deployer");
 
         address escrow = escrowFactory.newEscrow(address(this));
@@ -136,11 +135,18 @@ contract RBURouter is Ownable {
     }
 
 
-
-    function getEthSignedMessageHash(bytes32 messageHash) internal pure returns (bytes32) {
+    function getEthSignedMessageHash(bytes32 messageHash) public pure returns (bytes32) {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash));
     }
 
+    function verify(address addr,bytes memory deployData,bytes memory sign) public pure returns (bool) {
+        address signer = recoverSigner(getEthSignedMessageHash(keccak256(deployData)), sign);
+        return signer == addr;
+    }
+
+    function getRBUInfo(uint64 rbuId) public view returns (RBUInfo memory) {
+        return rbus[rbuId];
+    }
     
     function recoverSigner(bytes32 ethSignedMessageHash, bytes memory signature)
         public
@@ -165,6 +171,10 @@ contract RBURouter is Ownable {
 
         return ecrecover(ethSignedMessageHash, v, r, s);
         
+    }
+
+    function isInWhiteListed(address _address) public view returns (bool) {
+        return whiteListed[_address];
     }
 
 }

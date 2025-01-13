@@ -21,10 +21,8 @@ module.exports = {
       accounts: [],
     },
     axiomLedger:{
-      url: "http://127.0.0.1:8881",
-    },
-    ganache:{
       url: "http://127.0.0.1:7545",
+      accounts: [],
     },
 
   },
