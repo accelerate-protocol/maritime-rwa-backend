@@ -1,6 +1,6 @@
 {
-    "axiomLedger":{
+    "ganache":{
         "threshold":1,
-        "whiteLists":["0xe0b1713a4a941D595cf721B3776553c82f34F7c4"]
+        "whiteLists":["0x7B843F5247a790B9d2E5aaE05919b2c5a38ADCC0"]
     }
 }

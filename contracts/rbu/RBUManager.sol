@@ -20,7 +20,7 @@ contract RBUManager is IRBUManager,Ownable,AccessControl{
     uint256 public constant BPS_DENOMINATOR = 10_000;
 
     address public  assetToken;
-    address public rbuToken;
+    address public  rbuToken;
     string  public  tokenURI;
     uint256 public  maxSupply;
     uint256 public  activeStartTime;
@@ -53,6 +53,7 @@ contract RBUManager is IRBUManager,Ownable,AccessControl{
     require(_manager!=address(0),"Manager address cannot be zero address");
     manager = _manager;
     _grantRole(DEPOSIT_WITHDRAE_MANAGER_ROLE,_manager);
+    _setRoleAdmin(WHITELIST_ROLE,DEPOSIT_WITHDRAE_MANAGER_ROLE);
   }
   
   function setActiveTime(uint256 _activeStartTime,uint256 _activeEndTime) public onlyOwner() {
@@ -90,6 +91,7 @@ contract RBUManager is IRBUManager,Ownable,AccessControl{
     require(block.timestamp >= activeStartTime && block.timestamp <= activeEndTime, "Active period has not started yet");
     require(IERC20(assetToken).balanceOf(msg.sender)>=amount,"Insufficient balance");
     require(rbuToken!=address(0),"Token address cannot be zero address");
+    require(amount>minDepositAmount,"Deposit amount must be greater than min deposit amount");
 
     uint256 amountFee=amount*managerFee/BPS_DENOMINATOR;
     uint256 actualAmount=amount - amountFee;

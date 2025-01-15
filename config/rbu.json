@@ -1,15 +1,14 @@
 {
-    "axiomLedger":{
-        "rbuId":0,
-        "name":"RBUToken",
+    "ganache":{
+        "name":"RBU",
         "symbol":"RBU",
-        "maxSupply":1,
-        "activeStartTime":"1736324802",
-        "activeEndTime":"1736324810",
-        "minDepositAmount":1,
+        "maxSupply":"100000000000000000000000",
+        "activeStartTime":"1735660800",
+        "activeEndTime":"1738252800",
+        "minDepositAmount":"100000000000000000000",
         "managerFee":50,
-        "depositTreasury":"0xe0b1713a4a941D595cf721B3776553c82f34F7c4",
-        "initialPrice":1,
-        "manager":"0xe0b1713a4a941D595cf721B3776553c82f34F7c4"
+        "depositTreasury":"0x7B843F5247a790B9d2E5aaE05919b2c5a38ADCC0",
+        "initialPrice":"1000000000000000000",
+        "manager":"0x7B843F5247a790B9d2E5aaE05919b2c5a38ADCC0"
     }
 }

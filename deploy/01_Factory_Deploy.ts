@@ -8,27 +8,36 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   
     const {deployer} = await getNamedAccounts();
 
-    await deploy('EscrowFactory', {
+    const EscrowFactory = await deploy('EscrowFactory', {
       from: deployer,
       args: [deployer],
     });
 
-    await deploy('PricerFactory', {
+    const PricerFactory = await deploy('PricerFactory', {
         from: deployer,
         args: [deployer],
     });
 
-    await deploy('RBUManagerFactory', {
+    const RBUManagerFactory =await deploy('RBUManagerFactory', {
         from: deployer,
         args: [deployer],
     });
 
-    await deploy('RBUTokenFactory', {
+    const RBUTokenFactory = await deploy('RBUTokenFactory', {
         from: deployer,
         args: [deployer],
     });
 
-    
+    const VaultFactory =await deploy('VaultFactory', {
+        from: deployer,
+        args: [deployer],
+    });
+
+    console.log("EscrowFactory:",EscrowFactory.address);
+    console.log("PricerFactory:",PricerFactory.address);
+    console.log("RBUManagerFactory:",RBUManagerFactory.address);
+    console.log("RBUTokenFactory:",RBUTokenFactory.address);
+    console.log("VaultFactory:",VaultFactory.address);
 };
 
 export default func;

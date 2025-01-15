@@ -78,15 +78,8 @@ contract RBURouter is Ownable {
         bytes memory deployData,
         bytes[] memory signatures
     ) public{
-        bytes32 messageHash = keccak256(deployData);
-        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-        uint256 validSignatures = 0;
-        for (uint256 i = 0; i < signatures.length; i++) {
-            address signer = recoverSigner(ethSignedMessageHash, signatures[i]);
-            require(whiteListed[signer], "Invalid signer");
-            validSignatures++;
-        }
-        require(validSignatures >= threshold, "Invalid threshold");
+        _verifySign(deployData,signatures);
+
         RBUDeployData memory rbuDeployData = abi.decode(deployData, (RBUDeployData));
         require(rbuDeployData.rbuId == rbuNonce, "Invalid rbuId");
         require(rbuDeployData.deployer == msg.sender, "Invalid deployer");
@@ -103,6 +96,7 @@ contract RBURouter is Ownable {
         RBUManager(rbuManager).setActiveTime(rbuDeployData.activeStartTime, rbuDeployData.activeEndTime);
         RBUManager(rbuManager).setMinDepositAmount(rbuDeployData.minDepositAmount);
         RBUManager(rbuManager).setManagerFee(rbuDeployData.managerFee);
+        
 
         address pricer = pricerFactory.newPricer(
             address(this),
@@ -132,16 +126,34 @@ contract RBURouter is Ownable {
 
         rbuNonce++;
         emit DeployRBUEvent(rbuDeployData.rbuId,address(rbuToken),address(pricer),address(rbuManager),address(escrow));
-    }
+    } 
 
 
     function getEthSignedMessageHash(bytes32 messageHash) public pure returns (bytes32) {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash));
     }
 
+    function _verifySign(bytes memory deployData,bytes[] memory signatures) internal {
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(keccak256(deployData));
+        uint256 validSignatures = 0;
+        for (uint256 i = 0; i < signatures.length; i++) {
+            address signer = recoverSigner(ethSignedMessageHash, signatures[i]);
+            require(whiteListed[signer], "Invalid signer");
+            validSignatures++;
+        }
+        require(validSignatures >= threshold, "Invalid threshold");
+    }
+
+
+
+
     function verify(address addr,bytes memory deployData,bytes memory sign) public pure returns (bool) {
         address signer = recoverSigner(getEthSignedMessageHash(keccak256(deployData)), sign);
         return signer == addr;
+    }
+
+    function getEncodeData(RBUDeployData memory rbuDeployData) public pure returns (bytes memory){
+        return abi.encode(rbuDeployData);
     }
 
     function getRBUInfo(uint64 rbuId) public view returns (RBUInfo memory) {

@@ -1,78 +1,81 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-// import "@openzeppelin/contracts/access/Ownable.sol";
-// import "../common/Escrow.sol";
-// import "./Vault.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "../common/Escrow.sol";
+import "./Vault.sol";
+import "../interface/IEscrowFactory.sol";
+import "../interface/IVaultFactory.sol";
 
+struct VaultInfo{
+        uint256 createdAt;
+        address vault;
+        address feeEscrow;
+    }
 
-// contract VaultRouter is Ownable {
-//      event DeployVaultEvent(uint64 vaultId,address vault,address feeEscrow);
+    struct VaultDeployData{
+        string  name;
+        string  symbol;
+        address assetToken;
+        address rbuManager;
+        uint256 maxSupply;
+        uint256 subStartTime;
+        uint256 subEndTime;
+        uint256 duration;
+        uint256 fundThreshold;
+        uint256 minDepositAmount;
+        uint256 managerFee;
+        address manager;
+    }
 
+contract VaultRouter is Ownable {
+     event DeployVaultEvent(uint64 vaultId,address vault,address feeEscrow);
 
-//     struct VaultInfo{
-//         uint256 createdAt;
-//         address vault;
-//         address feeEscrow;
-//     }
+    IEscrowFactory public escrowFactory;
+    IVaultFactory public vaultFactory;
+    uint64 public vaultNonce;
+    mapping(uint64 => VaultInfo) internal vaults;
 
-//     struct VaultDeployData{
-//         string  name,  
-//         string  symbol,
-//         address assetToken,
-//         address rbuManager,
+    constructor(
+        address _escrowFactory,
+        address _vaultFactory
+    ) Ownable() {
+       escrowFactory = IEscrowFactory(_escrowFactory);
+       vaultFactory = IVaultFactory(_vaultFactory);
+    }
 
+    function deployVault(
+        VaultDeployData memory vaultDeployData
+    ) public{
+        address escrow = escrowFactory.newEscrow(address(this));
+        uint64 vaultId = vaultNonce;
+        address vault = vaultFactory.newVault(
+            vaultDeployData.name,
+            vaultDeployData.symbol,
+            vaultDeployData.assetToken,
+            vaultDeployData.rbuManager,
+            address(escrow),
+            vaultDeployData.manager
+        );
+        Vault(vault).setMaxsupply(vaultDeployData.maxSupply);
+        Vault(vault).setSubTime(vaultDeployData.subStartTime,vaultDeployData.subEndTime);
+        Vault(vault).setDuration(vaultDeployData.duration);
+        Vault(vault).setFundThreshold(vaultDeployData.fundThreshold);
+        Vault(vault).setMinDepositAmount(vaultDeployData.minDepositAmount);
+        Vault(vault).setManagerFee(vaultDeployData.managerFee);
+    
+        Escrow(escrow).approveMax(vaultDeployData.assetToken,vault);
+        vaults[vaultId] = VaultInfo(block.timestamp,vault,escrow);
+        Escrow(escrow).rely(address(vault));
+        Escrow(escrow).deny(address(this));
+        vaultNonce++;
 
-//     }
+        emit DeployVaultEvent(vaultId,vault,escrow);
+    }
 
-//     uint64 public vaultNonce;
-//     mapping(uint64 => VaultInfo) internal vaults;
+    function getVaultInfo(uint64 vaultId) public view returns (uint256,address,address) {
+        VaultInfo memory vault= vaults[vaultId];
+        return (vault.createdAt,vault.vault,vault.feeEscrow);
+    }
 
-//     constructor() Ownable() {}
-
-//     function deployVault(
-//         string memory _name,  
-//         string memory _symbol,
-//         address _assetToken,
-//         address _rbuManager,
-//         uint256 _maxSupply,
-//         uint256 _subStartTime,
-//         uint256 _subEndTime,
-//         uint256 _duration,
-//         uint256 _fundThreshold,
-//         uint256 _minDepositAmount,
-//         uint256 _managerFee,
-//         address _manager
-//     ) public{
-//         // Escrow escrow = new Escrow(address(this));
-//         // Vault vault = new Vault(
-//         //     _name,
-//         //     _symbol,
-//         //     _assetToken,
-//         //     _rbuManager,
-//         //     address(escrow),
-//         //     _manager
-//         // );
-//         // vault.setMaxsupply(_maxSupply);
-//         // vault.setSubTime(_subStartTime,_subEndTime);
-//         // vault.setDuration(_duration);
-//         // vault.setFundThreshold(_fundThreshold);
-//         // vault.setMinDepositAmount(_minDepositAmount);
-//         // vault.setManagerFee(_managerFee);
-//         // uint64 vaultId = vaultNonce;
-//         // escrow.approveMax(_assetToken,address(vault));
-//         // vaults[vaultId] = VaultInfo(block.timestamp, address(vault),address(escrow));
-//         // escrow.rely(address(vault));
-//         // escrow.deny(address(this));
-//         // vaultNonce++;
-
-//         // emit DeployVaultEvent(vaultId,address(vault),address(escrow));
-
-//     }
-
-//     function getVaultInfo(uint64 vaultId) public view returns (uint256,address,address) {
-//         VaultInfo memory vault= vaults[vaultId];
-//         return (vault.createdAt,vault.vault,vault.feeEscrow);
-//     }
-
-// }
+}

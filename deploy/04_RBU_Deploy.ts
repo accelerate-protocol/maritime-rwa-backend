@@ -49,42 +49,58 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const rbuId = await rbuRouter.getRbuNonce(); // 替换为具体方法名
   console.log("rbuId:",rbuId);
 
-  
-
   const abiCoder = new ethers.AbiCoder();
-  const deployData = abiCoder.encode(
-    [
-      "uint256", // rbuId
-      "string", // name
-      "string", // symbol
-      "address", // assetToken
-      "uint256", // maxSupply
-      "uint256", // activeStartTime
-      "uint256", // activeEndTime
-      "uint256", // minDepositAmount
-      "uint256", // managerFee
-      "address", // depositTreasury
-      "uint256", // initialPrice
-      "address", // deployer
-      "address", // manager
-    ],
-    [
-      rbuId,
-      name,
-      symbol,
-      assetToken.address,
-      maxSupply,
-      activeStartTime,
-      activeEndTime,
-      minDepositAmount,
-      managerFee,
-      depositTreasury,
-      initialPrice,
-      manager,
-      manager,
-    ]
-  );
+  // const deployData = abiCoder.encode(
+  //   [
+  //     "uint256", // rbuId
+  //     "string", // name
+  //     "string", // symbol
+  //     "address", // assetToken
+  //     "uint256", // maxSupply
+  //     "uint256", // activeStartTime
+  //     "uint256", // activeEndTime
+  //     "uint256", // minDepositAmount
+  //     "uint256", // managerFee
+  //     "address", // depositTreasury
+  //     "uint256", // initialPrice
+  //     "address", // deployer
+  //     "address", // manager
+  //   ],
+  //   [
+  //     rbuId,
+  //     name,
+  //     symbol,
+  //     assetToken.address,
+  //     maxSupply,
+  //     activeStartTime,
+  //     activeEndTime,
+  //     minDepositAmount,
+  //     managerFee,
+  //     depositTreasury,
+  //     initialPrice,
+  //     manager,
+  //     manager,
+  //   ]
+  // );
 
+const rbuDeployData = {
+  rbuId:rbuId,
+  name:name,
+  symbol:symbol,
+  assetToken:assetToken.address,
+  maxSupply:maxSupply,
+  activeStartTime:activeStartTime,
+  activeEndTime:activeEndTime,
+  minDepositAmount:minDepositAmount,
+  managerFee:managerFee,
+  depositTreasury:depositTreasury,
+  initialPrice:initialPrice,
+  deployer:manager,
+  manager:manager,
+};
+
+  const deployData = await rbuRouter.getEncodeData(rbuDeployData);
+  console.log("deployData:",deployData);
   const deployDataHash = ethers.keccak256(deployData);
   const signer = await ethers.getSigner(deployer);
   const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -101,11 +117,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const rbuInfo = await rbuRouter.getRBUInfo(rbuId);
   console.log("rbuInfo:",rbuInfo);
-
-
-
-
-
   
 };
 

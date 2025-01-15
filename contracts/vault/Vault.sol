@@ -16,7 +16,6 @@ contract Vault is ERC4626,Ownable,AccessControl{
     uint256 public constant BPS_DENOMINATOR = 10_000;
     address public immutable assetToken;
     address public immutable rbuManager;
-    address public immutable feeEscrow;
     uint256 public maxSupply;
     uint256 public subStartTime;
     uint256 public subEndTime;
@@ -24,6 +23,7 @@ contract Vault is ERC4626,Ownable,AccessControl{
     uint256 public fundThreshold;
     uint256 public managerFee;
     uint256 public minDepositAmount;
+    address public feeEscrow;
     address public manager;
     uint256 public totalDeposit;
     uint256 public withdrawTime; 
@@ -72,7 +72,7 @@ contract Vault is ERC4626,Ownable,AccessControl{
     }
 
     function setMinDepositAmount(uint256 _minDepositAmount) external onlyOwner(){
-        require(minDepositAmount>0 && minDepositAmount<maxSupply,"Invalid minDepositAmount");
+        require(_minDepositAmount>0 && _minDepositAmount<=maxSupply,"Invalid minDepositAmount");
         minDepositAmount=_minDepositAmount;
     }
 
@@ -81,8 +81,8 @@ contract Vault is ERC4626,Ownable,AccessControl{
         managerFee=_managerFee;
     }
 
-    function deposit(uint256 assets, address receiver) public virtual override returns (uint256) {
-        
+
+     function deposit(uint256 assets, address receiver) public virtual override returns (uint256) {
         require(assets <= maxDeposit(receiver), "Vault: deposit more than max");
         require(assets >= minDepositAmount,"Vault: deposit less than min");
         require(block.timestamp>=subStartTime && block.timestamp<=subEndTime,"Invalid time");
