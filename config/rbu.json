@@ -2,13 +2,13 @@
     "ganache":{
         "name":"RBU",
         "symbol":"RBU",
-        "maxSupply":"100000000000000000000000",
+        "maxSupply":"1000000000000000000000",
         "activeStartTime":"1735660800",
-        "activeEndTime":"1738252800",
+        "activeEndTime":"1738339200",
         "minDepositAmount":"100000000000000000000",
-        "managerFee":50,
-        "depositTreasury":"0x7B843F5247a790B9d2E5aaE05919b2c5a38ADCC0",
+        "managerFee":0,
+        "depositTreasury":"0x0B99Ebb13c3E4e284a3243D15Adfc1de9b83B34A",
         "initialPrice":"1000000000000000000",
-        "manager":"0x7B843F5247a790B9d2E5aaE05919b2c5a38ADCC0"
+        "manager":"0x0B99Ebb13c3E4e284a3243D15Adfc1de9b83B34A"
     }
 }

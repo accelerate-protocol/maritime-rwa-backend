@@ -7,75 +7,102 @@ import "./Vault.sol";
 import "../interface/IEscrowFactory.sol";
 import "../interface/IVaultFactory.sol";
 
-struct VaultInfo{
-        uint256 createdAt;
-        address vault;
-        address feeEscrow;
-    }
+struct VaultInfo {
+    uint256 createdAt;
+    address vault;
+    address feeEscrow;
+    address dividendEscrow;
+}
 
-    struct VaultDeployData{
-        string  name;
-        string  symbol;
-        address assetToken;
-        address rbuManager;
-        uint256 maxSupply;
-        uint256 subStartTime;
-        uint256 subEndTime;
-        uint256 duration;
-        uint256 fundThreshold;
-        uint256 minDepositAmount;
-        uint256 managerFee;
-        address manager;
-    }
+struct VaultDeployData {
+    string name;
+    string symbol;
+    address assetToken;
+    address rbuManager;
+    uint256 maxSupply;
+    uint256 subStartTime;
+    uint256 subEndTime;
+    uint256 duration;
+    uint256 fundThreshold;
+    uint256 minDepositAmount;
+    uint256 managerFee;
+    address manager;
+}
+
+struct VaultData {
+    string name;
+    string symbol;
+    address assetToken;
+    address rbuManager;
+    address feeEscrow;
+    address dividendEscrow;
+    address manager;
+}
 
 contract VaultRouter is Ownable {
-     event DeployVaultEvent(uint64 vaultId,address vault,address feeEscrow);
+    event DeployVaultEvent(
+        uint64 vaultId,
+        address vault,
+        address feeEscrow,
+        address dividendEscrow
+    );
 
     IEscrowFactory public escrowFactory;
     IVaultFactory public vaultFactory;
     uint64 public vaultNonce;
     mapping(uint64 => VaultInfo) internal vaults;
 
-    constructor(
-        address _escrowFactory,
-        address _vaultFactory
-    ) Ownable() {
-       escrowFactory = IEscrowFactory(_escrowFactory);
-       vaultFactory = IVaultFactory(_vaultFactory);
+    constructor(address _escrowFactory, address _vaultFactory) Ownable() {
+        escrowFactory = IEscrowFactory(_escrowFactory);
+        vaultFactory = IVaultFactory(_vaultFactory);
     }
 
-    function deployVault(
-        VaultDeployData memory vaultDeployData
-    ) public{
+    function deployVault(VaultDeployData memory vaultDeployData) public {
         address escrow = escrowFactory.newEscrow(address(this));
+        address dividendEscrow = escrowFactory.newEscrow(address(this));
         uint64 vaultId = vaultNonce;
         address vault = vaultFactory.newVault(
             vaultDeployData.name,
             vaultDeployData.symbol,
             vaultDeployData.assetToken,
             vaultDeployData.rbuManager,
-            address(escrow),
-            vaultDeployData.manager
+            escrow,
+            dividendEscrow
         );
         Vault(vault).setMaxsupply(vaultDeployData.maxSupply);
-        Vault(vault).setSubTime(vaultDeployData.subStartTime,vaultDeployData.subEndTime);
+        Vault(vault).setSubTime(
+            vaultDeployData.subStartTime,
+            vaultDeployData.subEndTime
+        );
         Vault(vault).setDuration(vaultDeployData.duration);
         Vault(vault).setFundThreshold(vaultDeployData.fundThreshold);
         Vault(vault).setMinDepositAmount(vaultDeployData.minDepositAmount);
         Vault(vault).setManagerFee(vaultDeployData.managerFee);
-    
-        Escrow(escrow).approveMax(vaultDeployData.assetToken,vault);
-        vaults[vaultId] = VaultInfo(block.timestamp,vault,escrow);
+        Vault(vault).setManager(msg.sender);
+
+        Escrow(escrow).approveMax(vaultDeployData.assetToken, vault);
+        vaults[vaultId] = VaultInfo(
+            block.timestamp,
+            vault,
+            escrow,
+            dividendEscrow
+        );
         Escrow(escrow).rely(address(vault));
         Escrow(escrow).deny(address(this));
+
+        Escrow(dividendEscrow).approveMax(vaultDeployData.assetToken, vault);
+        Escrow(dividendEscrow).rely(address(vault));
+        Escrow(dividendEscrow).deny(address(this));
+
         vaultNonce++;
 
-        emit DeployVaultEvent(vaultId,vault,escrow);
+        emit DeployVaultEvent(vaultId, vault, escrow, dividendEscrow);
     }
 
-    function getVaultInfo(uint64 vaultId) public view returns (uint256,address,address) {
-        VaultInfo memory vault= vaults[vaultId];
-        return (vault.createdAt,vault.vault,vault.feeEscrow);
+    function getVaultInfo(
+        uint64 vaultId
+    ) public view returns (VaultInfo memory) {
+        VaultInfo memory vault = vaults[vaultId];
+        return vault;
     }
-
 }

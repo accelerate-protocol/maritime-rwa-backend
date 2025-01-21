@@ -2,13 +2,13 @@
     "ganache":{
         "name":"vToken",
         "symbol":"vToken",
-        "maxSupply":"100000000000000000000000",
-        "subStartTime":"1736324802",
-        "subEndTime":"1736324810",
-        "duration":"2592000",
+        "maxSupply":"1000000000000000000000",
+        "subStartTime":"1735660800",
+        "subEndTime":"1738339200",
+        "duration":"120",
         "fundThreshold":3000,
         "minDepositAmount":"100000000000000000000",
-        "managerFee":50,
-        "manager":"0x7B843F5247a790B9d2E5aaE05919b2c5a38ADCC0"
+        "managerFee":0,
+        "manager":"0x0B99Ebb13c3E4e284a3243D15Adfc1de9b83B34A"
     }
 }

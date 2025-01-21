@@ -15,8 +15,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const symbol=deployInitParams.symbol;
     const assetToken= await deployments.get("MockUSDT"); 
     const maxSupply=deployInitParams.maxSupply;
-    const subStartTime = deployInitParams.subStartTime;
-    const subEndTime = deployInitParams.subEndTime;
+    // const subStartTime = deployInitParams.subStartTime;
+    // const subEndTime = deployInitParams.subEndTime;
+
+    const subStartTime = Math.floor(Date.now() / 1000);
+    const subEndTime = subStartTime+60;
+
+
     const duration = deployInitParams.duration;
     const fundThreshold = deployInitParams.fundThreshold;
     const minDepositAmount = deployInitParams.minDepositAmount;

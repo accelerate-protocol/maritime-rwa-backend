@@ -15,7 +15,7 @@ contract VaultFactory is Auth, IVaultFactory {
         address _assetToken,
         address _rbuManager,
         address _feeEscrow,
-        address _manager
+        address _dividendEscrow
     ) public auth override returns (address){
         Vault vault = new Vault(
             _name,
@@ -23,7 +23,7 @@ contract VaultFactory is Auth, IVaultFactory {
             _assetToken,
             _rbuManager,
             _feeEscrow,
-            _manager
+            _dividendEscrow
         );
         vault.transferOwnership(msg.sender);
         return address(vault);

@@ -13,18 +13,18 @@ contract RBUManagerFactory is Auth, IRBUManagerFactory {
         uint256 _maxSupply,
         address _depositTreasury,
         address _withdrawTreasury,
-        address _manager,
-        address _owner
+        address _dividendTreasury,
+        address _manager
     ) public auth override returns (address){
         RBUManager rbuManager = new RBUManager(
             _assetToken,
             _maxSupply,
             _depositTreasury,
             _withdrawTreasury,
+            _dividendTreasury,
             _manager
         );
-        rbuManager.transferOwnership(_owner);
+        rbuManager.transferOwnership(msg.sender);
         return address(rbuManager);
-        
     }
 }

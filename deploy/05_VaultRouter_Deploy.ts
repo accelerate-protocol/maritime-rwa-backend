@@ -32,7 +32,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         { from: deployer, log: true,  gasLimit: 10000000  },
         'rely',
         vaultRouter.address
-    );    
+    );
 };
 
 export default func;

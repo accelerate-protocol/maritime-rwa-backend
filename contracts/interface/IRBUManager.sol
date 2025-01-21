@@ -5,5 +5,6 @@ interface IRBUManager {
     function deposit(uint256 amount) external;
     function withdraw(uint256 sharesAmount) external;
     function getRBUShareToken() external view returns (address);
+    function getAssetsNav() external view returns(uint256);
 }
 

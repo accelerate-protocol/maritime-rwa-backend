@@ -8,8 +8,8 @@ interface IRBUManagerFactory {
         uint256 _maxSupply,
         address _depositTreasury,
         address _withdrawTreasury,
-        address _manager,
-        address _owner
+        address _dividendTreasury,
+        address _manager
     ) external returns (address);
 }
 

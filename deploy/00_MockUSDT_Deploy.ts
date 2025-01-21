@@ -12,8 +12,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     });
 
     console.log("MockUSDT:",usdt.address);
-
 };
+
 
 export default func;
 func.tags = ['00_MockUSDT_Deploy'];

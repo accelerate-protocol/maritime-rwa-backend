@@ -10,7 +10,7 @@ interface IVaultFactory {
         address _assetToken,
         address _rbuManager,
         address _feeEscrow,
-        address _manager
+        address _dividendEscrow
     ) external returns (address); 
 
 }
