@@ -42,7 +42,6 @@ contract RBUManager is IRBUManager, Ownable, AccessControl {
     address public price;
     uint256 public decimalsMultiplier;
     address public manager;
-    uint256 public lockSupply;
 
     mapping(address => bool) private whitelist;
     address[] private whitelistedAddresses;
@@ -224,7 +223,6 @@ contract RBUManager is IRBUManager, Ownable, AccessControl {
         whitelist[_address] = true;
         whitelistedAddresses.push(_address);
     }
-
     function removeFromWhitelist(
         address _address
     ) external onlyRole(MANAGER_ROLE) {
@@ -250,7 +248,6 @@ contract RBUManager is IRBUManager, Ownable, AccessControl {
     {
         return whitelistedAddresses;
     }
-
     function _getMintAmountForPrice(
         uint256 depositAmount,
         uint256 tokenPrice
@@ -258,7 +255,6 @@ contract RBUManager is IRBUManager, Ownable, AccessControl {
         uint256 rwaAmount = (_scaleUp(depositAmount) * 1e18) / tokenPrice;
         return rwaAmount;
     }
-
     function _getWithdrawAmountForRwa(
         uint256 rwaAmount,
         uint256 tokenPrice
@@ -266,15 +262,12 @@ contract RBUManager is IRBUManager, Ownable, AccessControl {
         uint256 withdrawAmount = _scaleDown((rwaAmount * tokenPrice) / 1e18);
         return withdrawAmount;
     }
-
     function _scaleUp(uint256 amount) internal view returns (uint256) {
         return amount * decimalsMultiplier;
     }
-
     function _scaleDown(uint256 amount) internal view returns (uint256) {
         return amount / decimalsMultiplier;
     }
-
     function dividend() public onlyRole(MANAGER_ROLE) {
         uint256 totalDividend = IERC20(assetToken).balanceOf(dividendTreasury);
         require(totalDividend > 0, "totalDividend must be greater than 0");
@@ -296,7 +289,6 @@ contract RBUManager is IRBUManager, Ownable, AccessControl {
             }
         }
     }
-
     function _dividend(
         uint256 rbuAmount,
         uint256 totalSupply,
@@ -312,17 +304,14 @@ contract RBUManager is IRBUManager, Ownable, AccessControl {
             dividendAmount
         );
     }
-
     function withdrawFee() external onlyOwner {
         uint256 balance = IERC20(assetToken).balanceOf(address(this));
         SafeERC20.safeTransfer(IERC20(assetToken), msg.sender, balance);
     }
-
     function getAssetsNav() public override view returns(uint256){
         uint256 lastPrice= IPricer(price).getLatestPrice();
         uint256 amount= IERC20(rbuToken).balanceOf(msg.sender);
         return amount*lastPrice/1e18;
     }
-
 
 }

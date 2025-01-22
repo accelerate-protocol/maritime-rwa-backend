@@ -1,4 +1,16 @@
 {
+    "base":{
+        "name":"vToken",
+        "symbol":"vToken",
+        "maxSupply":"1000000000000000000000",
+        "subStartTime":"1735660800",
+        "subEndTime":"1738339200",
+        "duration":"120",
+        "fundThreshold":3000,
+        "minDepositAmount":"100000000000000000000",
+        "managerFee":0,
+        "manager":"0x79a1215469FaB6f9c63c1816b45183AD3624bE34"
+    },
     "ganache":{
         "name":"vToken",
         "symbol":"vToken",

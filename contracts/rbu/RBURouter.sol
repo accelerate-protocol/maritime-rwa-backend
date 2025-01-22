@@ -12,7 +12,7 @@ import "../common/Escrow.sol";
 struct RBUInfo {
     uint256 createdAt;
     address rbuManager;
-    address rbuEscrow;
+    address withdrawTreasury;
     address dividendTreasury;
     address rbuToken;
     address rbuPrice;
@@ -92,13 +92,13 @@ contract RBURouter is Ownable {
         require(rbuDeployData.rbuId == rbuNonce, "Invalid rbuId");
         require(rbuDeployData.deployer == msg.sender, "Invalid deployer");
 
-        address escrow = escrowFactory.newEscrow(address(this));
+        address withdrawTreasury = escrowFactory.newEscrow(address(this));
         address dividendTreasury = escrowFactory.newEscrow(address(this));
         address rbuManager = rbuManagerFactory.newRBUManager(
             rbuDeployData.assetToken,
             rbuDeployData.maxSupply,
             rbuDeployData.depositTreasury,
-            escrow,
+            withdrawTreasury,
             dividendTreasury,
             rbuDeployData.manager
         );
@@ -126,15 +126,15 @@ contract RBURouter is Ownable {
         rbus[rbuDeployData.rbuId] = RBUInfo(
             block.timestamp,
             address(rbuManager),
-            address(escrow),
+            address(withdrawTreasury),
             address(dividendTreasury),
             address(rbuToken),
             address(pricer)
         );
 
-        Escrow(escrow).approveMax(rbuDeployData.assetToken, rbuManager);
-        Escrow(escrow).rely(address(rbuManager));
-        Escrow(escrow).deny(address(this));
+        Escrow(withdrawTreasury).approveMax(rbuDeployData.assetToken, rbuManager);
+        Escrow(withdrawTreasury).rely(address(rbuManager));
+        Escrow(withdrawTreasury).deny(address(this));
         Escrow(dividendTreasury).approveMax(
             rbuDeployData.assetToken,
             rbuManager
@@ -149,7 +149,7 @@ contract RBURouter is Ownable {
             rbuToken,
             pricer,
             rbuManager,
-            escrow,
+            withdrawTreasury,
             dividendTreasury
         );
     }

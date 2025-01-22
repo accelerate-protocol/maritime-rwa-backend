@@ -8,10 +8,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {deployer} = await getNamedAccounts();
     const usdt=await deploy('MockUSDT', {
       from: deployer,
-      args: ["USDT","USDT"],
+      args: ["USDC","UDSC"],
     });
 
     console.log("MockUSDT:",usdt.address);
+
 };
 
 

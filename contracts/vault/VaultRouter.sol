@@ -2,10 +2,12 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../common/Escrow.sol";
 import "./Vault.sol";
 import "../interface/IEscrowFactory.sol";
 import "../interface/IVaultFactory.sol";
+import "../rbu/RBUManager.sol";
 
 struct VaultInfo {
     uint256 createdAt;
@@ -58,6 +60,7 @@ contract VaultRouter is Ownable {
     }
 
     function deployVault(VaultDeployData memory vaultDeployData) public {
+        require(vaultDeployData.maxSupply<=(RBUManager(vaultDeployData.rbuManager).maxSupply()-IERC20(RBUManager(vaultDeployData.rbuManager).assetToken()).totalSupply()),"vault maxSupply must less than rwa supply");
         address escrow = escrowFactory.newEscrow(address(this));
         address dividendEscrow = escrowFactory.newEscrow(address(this));
         uint64 vaultId = vaultNonce;

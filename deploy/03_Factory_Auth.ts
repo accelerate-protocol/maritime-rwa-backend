@@ -37,4 +37,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 
 export default func;
-func.tags = ['02_RBURouter_Deploy'];
+func.tags = ['03_Factory_Auth'];

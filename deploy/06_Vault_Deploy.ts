@@ -10,16 +10,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const deployInitParams = vaultParams[hre.network.name];
     if (!deployInitParams) return;
-
+    
     const name=deployInitParams.name;
     const symbol=deployInitParams.symbol;
     const assetToken= await deployments.get("MockUSDT"); 
     const maxSupply=deployInitParams.maxSupply;
-    // const subStartTime = deployInitParams.subStartTime;
-    // const subEndTime = deployInitParams.subEndTime;
+    const subStartTime = deployInitParams.subStartTime;
+    const subEndTime = deployInitParams.subEndTime;
 
-    const subStartTime = Math.floor(Date.now() / 1000);
-    const subEndTime = subStartTime+60;
 
 
     const duration = deployInitParams.duration;

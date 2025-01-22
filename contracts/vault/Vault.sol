@@ -146,6 +146,7 @@ contract Vault is ERC4626, Ownable, AccessControl {
         address owner
     ) public virtual override onlyWhiteList(msg.sender) returns (uint256) {
         require(receiver==msg.sender, "Vault: receiver must be msg.sender");
+        require(owner==msg.sender, "Vault: owner must be msg.sender");
         require(shares <= maxRedeem(owner), "ERC4626: redeem more than max");
         require(block.timestamp >= withdrawTime, "Invalid time");
 
@@ -291,7 +292,7 @@ contract Vault is ERC4626, Ownable, AccessControl {
        return nav*1e18/totalSupply;
     }
 
-     function totalAssets() public view virtual override returns (uint256) {
+    function totalAssets() public view virtual override returns (uint256) {
         return IERC20(asset()).balanceOf(address(this))+IRBUManager(rbuManager).getAssetsNav();
     }
 
