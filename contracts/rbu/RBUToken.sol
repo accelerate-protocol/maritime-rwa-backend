@@ -59,6 +59,11 @@ contract RBUToken is ERC20, IRBUToken {
         emit Burn(_from, _amount);
     }
 
+    function decimals() public view virtual override returns (uint8) {
+        return 6;
+    }
+    
+
     
 
 

@@ -1,26 +1,14 @@
 {
     "base":{
-        "name":"vToken",
-        "symbol":"vToken",
-        "maxSupply":"1000000000000000000000",
+        "name":"RBF",
+        "symbol":"RBF",
+        "maxSupply":"10000000",
         "subStartTime":"1735660800",
         "subEndTime":"1738339200",
-        "duration":"120",
+        "duration":"2592000",
         "fundThreshold":3000,
-        "minDepositAmount":"100000000000000000000",
-        "managerFee":0,
-        "manager":"0x79a1215469FaB6f9c63c1816b45183AD3624bE34"
-    },
-    "ganache":{
-        "name":"vToken",
-        "symbol":"vToken",
-        "maxSupply":"1000000000000000000000",
-        "subStartTime":"1735660800",
-        "subEndTime":"1738339200",
-        "duration":"120",
-        "fundThreshold":3000,
-        "minDepositAmount":"100000000000000000000",
-        "managerFee":0,
-        "manager":"0x0B99Ebb13c3E4e284a3243D15Adfc1de9b83B34A"
+        "minDepositAmount":"1000000",
+        "managerFee":50,
+        "manager":"0x09f6382f84a7E6Efde7a0428ab5a881bcFE0F0fb"
     }
 }

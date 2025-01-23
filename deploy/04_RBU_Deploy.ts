@@ -15,7 +15,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const name=deployInitParams.name;
     const symbol=deployInitParams.symbol;
-    const assetToken= await deployments.get("MockUSDT"); 
+    const assetToken= "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"; 
     const maxSupply=deployInitParams.maxSupply;
     const activeStartTime = deployInitParams.activeStartTime;
     const activeEndTime = deployInitParams.activeEndTime;
@@ -43,7 +43,7 @@ const rbuDeployData = {
   rbuId:rbuId,
   name:name,
   symbol:symbol,
-  assetToken:assetToken.address,
+  assetToken:assetToken,
   maxSupply:maxSupply,
   activeStartTime:activeStartTime,
   activeEndTime:activeEndTime,

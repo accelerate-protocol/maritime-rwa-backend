@@ -60,7 +60,7 @@ contract VaultRouter is Ownable {
     }
 
     function deployVault(VaultDeployData memory vaultDeployData) public {
-        require(vaultDeployData.maxSupply<=(RBUManager(vaultDeployData.rbuManager).maxSupply()-IERC20(RBUManager(vaultDeployData.rbuManager).assetToken()).totalSupply()),"vault maxSupply must less than rwa supply");
+        require(vaultDeployData.maxSupply<=RBUManager(vaultDeployData.rbuManager).getAllowSupply(),"vault maxSupply must less than rwa allow supply");
         address escrow = escrowFactory.newEscrow(address(this));
         address dividendEscrow = escrowFactory.newEscrow(address(this));
         uint64 vaultId = vaultNonce;
@@ -98,6 +98,8 @@ contract VaultRouter is Ownable {
         Escrow(dividendEscrow).deny(address(this));
 
         vaultNonce++;
+
+        Vault(vault).transferOwnership(msg.sender);
 
         emit DeployVaultEvent(vaultId, vault, escrow, dividendEscrow);
     }

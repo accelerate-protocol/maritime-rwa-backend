@@ -23,4 +23,13 @@ contract MockUSDT is ERC20, Ownable {
         _burn(_from, _amount);
         emit Burn(_from, _amount);
     }
+
+    function decimals() public view virtual override returns (uint8) {
+        return 6;
+    }
+
+
+
+
+
 }

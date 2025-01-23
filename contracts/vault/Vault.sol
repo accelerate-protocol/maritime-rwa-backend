@@ -101,7 +101,7 @@ contract Vault is ERC4626, Ownable, AccessControl {
         uint256 assets,
         address receiver
     ) public virtual override onlyWhiteList(msg.sender) returns (uint256) {
-        //require(receiver==msg.sender, "Vault: receiver must be msg.sender");
+        require(receiver==msg.sender, "Vault: receiver must be msg.sender");
         require(assets <= maxDeposit(receiver), "Vault: deposit more than max");
         require(assets >= minDepositAmount, "Vault: deposit less than min");
         require(
@@ -109,6 +109,7 @@ contract Vault is ERC4626, Ownable, AccessControl {
             "Invalid time"
         );
         require(totalDeposit < maxSupply, "Vault: maxSupply reached");
+        require(assets<=(maxSupply-totalDeposit),"Vault: maxSupply reached");
 
         uint256 amountFee = (assets * managerFee) / BPS_DENOMINATOR;
 
@@ -148,7 +149,7 @@ contract Vault is ERC4626, Ownable, AccessControl {
         require(receiver==msg.sender, "Vault: receiver must be msg.sender");
         require(owner==msg.sender, "Vault: owner must be msg.sender");
         require(shares <= maxRedeem(owner), "ERC4626: redeem more than max");
-        require(block.timestamp >= withdrawTime, "Invalid time");
+        require(withdrawTime!=0 && block.timestamp >= withdrawTime, "Vault: WithdrawTime not reached");
 
         uint256 assets = previewRedeem(shares);
         _withdraw(_msgSender(), receiver, owner, assets, shares);
@@ -276,10 +277,10 @@ contract Vault is ERC4626, Ownable, AccessControl {
         );
     }
 
-    function withdrawFee() public onlyOwner(){
+    function withdrawFee(address receiver) public onlyRole(MANAGER_ROLE){
         require(withdrawTime!=0, "withdrawTime is zero");
         uint256 balance = IERC20(asset()).balanceOf(feeEscrow);
-        SafeERC20.safeTransfer(IERC20(asset()), msg.sender, balance);
+        SafeERC20.safeTransferFrom(IERC20(asset()),feeEscrow, receiver, balance);
     }
     
 
@@ -303,5 +304,9 @@ contract Vault is ERC4626, Ownable, AccessControl {
 
     function transferFrom(address from, address to, uint256 amount) public virtual override returns (bool) {
         revert("not supprot transfer");
+    }
+
+     function decimals() public view virtual override returns (uint8) {
+        return 6;
     }
 }

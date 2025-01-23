@@ -20,15 +20,6 @@ module.exports = {
       url: "https://sepolia.infura.io/v3/a8fd70fa80a3484ab0afcdcc8935fabd",
       accounts: [],
     },
-    ganache:{
-      url: "http://127.0.0.1:7545",
-      accounts:[]
-     },
-    base:{
-      url: "https://base-sepolia-rpc.publicnode.com",
-      accounts: [],
-      
-    },
     
   },
   solidity: {

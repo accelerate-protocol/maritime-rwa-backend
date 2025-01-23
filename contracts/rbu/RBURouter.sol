@@ -8,7 +8,7 @@ import "../interface/IEscrowFactory.sol";
 import "../interface/IPricerFactory.sol";
 import "./RBUManager.sol";
 import "../common/Escrow.sol";
-
+import "./RBUToken.sol";
 struct RBUInfo {
     uint256 createdAt;
     address rbuManager;

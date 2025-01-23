@@ -9,30 +9,34 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {deployer} = await getNamedAccounts();
 
     const rbuRouter = await deployments.get("RBURouter");
-    await execute(
+    var tx=await execute(
         'EscrowFactory', 
         { from: deployer, log: true,  gasLimit: 10000000  },
         'rely',
         rbuRouter.address
     );
-    await execute(
+    console.log("tx:",tx.transactionHash)
+    tx=await execute(
         'PricerFactory', 
         { from: deployer, log: true,  gasLimit: 10000000  },
         'rely',
         rbuRouter.address
     );
-    await execute(
+    console.log("tx:",tx.transactionHash)
+    tx=await execute(
         'RBUManagerFactory', 
         { from: deployer, log: true,  gasLimit: 10000000  },
         'rely',
         rbuRouter.address
     );
-    await execute(
+    console.log("tx:",tx.transactionHash)
+    tx=await execute(
         'RBUTokenFactory', 
         { from: deployer, log: true,  gasLimit: 10000000  },
         'rely',
         rbuRouter.address
     );
+    console.log("tx:",tx.transactionHash)
 
 };
 

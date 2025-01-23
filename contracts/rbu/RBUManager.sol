@@ -314,4 +314,12 @@ contract RBUManager is IRBUManager, Ownable, AccessControl {
         return amount*lastPrice/1e18;
     }
 
+    function getAllowSupply() public view returns(uint256){
+        uint256 totalSupply= IERC20(rbuToken).totalSupply();
+        uint256 lastPrice= IPricer(price).getLatestPrice();
+        return maxSupply-totalSupply*1e18/lastPrice;
+    }
+
+
+
 }

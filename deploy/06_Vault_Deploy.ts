@@ -13,7 +13,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     
     const name=deployInitParams.name;
     const symbol=deployInitParams.symbol;
-    const assetToken= await deployments.get("MockUSDT"); 
+    const assetToken= "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"; 
     const maxSupply=deployInitParams.maxSupply;
     const subStartTime = deployInitParams.subStartTime;
     const subEndTime = deployInitParams.subEndTime;
@@ -31,11 +31,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       "RBURouter", 
       rbuRouterDeployment.address
     );
-    const rbuInfo = await rbuRouter.getRBUInfo(0);
+    const rbuId= await rbuRouter.rbuNonce()
+    const rbuInfo = await rbuRouter.getRBUInfo(rbuId-1n);
     const rbuManager = rbuInfo.rbuManager;
     console.log("name:",name);
     console.log("symbol:",symbol);
-    console.log("assetToken:",assetToken.address);
+    console.log("assetToken:",assetToken);
     console.log("rbuManager:",rbuManager);
     console.log("maxSupply:",maxSupply);
     console.log("subStartTime:",subStartTime);
@@ -55,7 +56,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const vaultDeployData = {
       name: name,
       symbol: symbol,
-      assetToken: assetToken.address,
+      assetToken: assetToken,
       rbuManager: rbuManager,
       maxSupply: maxSupply,
       subStartTime: subStartTime,
@@ -69,9 +70,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log("maxSupply:",maxSupply)
     console.log("minDepositAmount",minDepositAmount)
   
-  
 
-  
     await execute(
       'VaultRouter', 
       { from: deployer, log: true,  gasLimit: 10000000  },
@@ -79,7 +78,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       vaultDeployData
     );
 
-    const vaultInfo = await vaultRouter.getVaultInfo(0);
+    const vaultId= await vaultRouter.vaultNonce()
+    const vaultInfo = await vaultRouter.getVaultInfo(vaultId-1n);
     console.log("vaultInfo:",vaultInfo);
 
 };
