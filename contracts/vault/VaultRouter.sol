@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -7,103 +7,97 @@ import "../common/Escrow.sol";
 import "./Vault.sol";
 import "../interface/IEscrowFactory.sol";
 import "../interface/IVaultFactory.sol";
-import "../rbu/RBUManager.sol";
+import "../interface/IVaultRouter.sol";
+import "../rbf/RBF.sol";
 
-struct VaultInfo {
-    uint256 createdAt;
-    address vault;
-    address feeEscrow;
-    address dividendEscrow;
-}
+/**
+ * @author  tmpAuthor
+ * @title   VaultRouter
+ * @dev     Manages the deployment of vaults and associated escrow contracts.
+ * @notice  This contract allows users to deploy new vaults and retrieve vault information.
+ */
+contract VaultRouter is Ownable,IVaultRouter {
+    struct VaultInfo {
+        uint256 createdAt;
+        address vault;
+        address dividendEscrow;
+    }
+    struct VaultData {
+        string name;
+        string symbol;
+        address assetToken;
+        address rbuManager;
+        address feeEscrow;
+        address dividendEscrow;
+        address manager;
+    }
 
-struct VaultDeployData {
-    string name;
-    string symbol;
-    address assetToken;
-    address rbuManager;
-    uint256 maxSupply;
-    uint256 subStartTime;
-    uint256 subEndTime;
-    uint256 duration;
-    uint256 fundThreshold;
-    uint256 minDepositAmount;
-    uint256 managerFee;
-    address manager;
-}
-
-struct VaultData {
-    string name;
-    string symbol;
-    address assetToken;
-    address rbuManager;
-    address feeEscrow;
-    address dividendEscrow;
-    address manager;
-}
-
-contract VaultRouter is Ownable {
-    event DeployVaultEvent(
-        uint64 vaultId,
-        address vault,
-        address feeEscrow,
-        address dividendEscrow
-    );
-
-    IEscrowFactory public escrowFactory;
-    IVaultFactory public vaultFactory;
+    IEscrowFactory public immutable escrowFactory;
+    IVaultFactory public immutable vaultFactory;
     uint64 public vaultNonce;
-    mapping(uint64 => VaultInfo) internal vaults;
+    mapping(uint64 => VaultInfo) private vaults;
+    mapping(address => bool) public rbfVaultExist;
 
+    /**
+     * @dev Constructor initializes the VaultRouter with escrow and vault factory addresses.
+     * @param _escrowFactory Address of the escrow factory contract.
+     * @param _vaultFactory Address of the vault factory contract.
+     */
     constructor(address _escrowFactory, address _vaultFactory) Ownable() {
         escrowFactory = IEscrowFactory(_escrowFactory);
         vaultFactory = IVaultFactory(_vaultFactory);
     }
 
+    /**
+     * @dev Deploys a new vault using provided deployment data.
+     * @param vaultDeployData Struct containing vault initialization parameters.
+     * @notice Only the owner of the associated RBF contract can deploy a vault.
+     */
     function deployVault(VaultDeployData memory vaultDeployData) public {
-        require(vaultDeployData.maxSupply<=RBUManager(vaultDeployData.rbuManager).getAllowSupply(),"vault maxSupply must less than rwa allow supply");
-        address escrow = escrowFactory.newEscrow(address(this));
-        address dividendEscrow = escrowFactory.newEscrow(address(this));
-        uint64 vaultId = vaultNonce;
-        address vault = vaultFactory.newVault(
-            vaultDeployData.name,
-            vaultDeployData.symbol,
-            vaultDeployData.assetToken,
-            vaultDeployData.rbuManager,
-            escrow,
-            dividendEscrow
-        );
-        Vault(vault).setMaxsupply(vaultDeployData.maxSupply);
-        Vault(vault).setSubTime(
-            vaultDeployData.subStartTime,
-            vaultDeployData.subEndTime
-        );
-        Vault(vault).setDuration(vaultDeployData.duration);
-        Vault(vault).setFundThreshold(vaultDeployData.fundThreshold);
-        Vault(vault).setMinDepositAmount(vaultDeployData.minDepositAmount);
-        Vault(vault).setManagerFee(vaultDeployData.managerFee);
-        Vault(vault).setManager(msg.sender);
+        require(vaultDeployData.vaultId == vaultNonce, "Invalid vaultId");
+        uint64 vaultId=vaultDeployData.vaultId;
+        vaultNonce++;
 
-        Escrow(escrow).approveMax(vaultDeployData.assetToken, vault);
-        vaults[vaultId] = VaultInfo(
+        require(RBF(vaultDeployData.rbf).owner() == msg.sender,"only rbf owner can deploy vault");
+        require(!rbfVaultExist[vaultDeployData.rbf],"rbf vault already exist");
+        rbfVaultExist[vaultDeployData.rbf]=true;
+        address dividendEscrow = escrowFactory.newEscrow(address(this));
+
+        VaultInitializeData memory data=VaultInitializeData({
+            name: vaultDeployData.name,
+            symbol: vaultDeployData.symbol,
+            assetToken: vaultDeployData.assetToken,
+            rbf: vaultDeployData.rbf,
+            subStartTime: vaultDeployData.subStartTime,
+            subEndTime: vaultDeployData.subEndTime,
+            duration: vaultDeployData.duration,
+            fundThreshold: vaultDeployData.fundThreshold,
+            minDepositAmount: vaultDeployData.minDepositAmount,
+            managerFee: vaultDeployData.managerFee,
+            manager: vaultDeployData.manager,
+            feeReceiver:vaultDeployData.feeReceiver,
+            dividendEscrow: dividendEscrow,
+            whitelists:vaultDeployData.whitelists
+        });
+
+        (address vault,,) = vaultFactory.newVault(data,vaultDeployData.guardian);
+         vaults[vaultId] = VaultInfo(
             block.timestamp,
             vault,
-            escrow,
             dividendEscrow
         );
-        Escrow(escrow).rely(address(vault));
-        Escrow(escrow).deny(address(this));
-
         Escrow(dividendEscrow).approveMax(vaultDeployData.assetToken, vault);
         Escrow(dividendEscrow).rely(address(vault));
         Escrow(dividendEscrow).deny(address(this));
-
-        vaultNonce++;
-
         Vault(vault).transferOwnership(msg.sender);
-
-        emit DeployVaultEvent(vaultId, vault, escrow, dividendEscrow);
+        emit DeployVaultEvent(vaultId, vault, dividendEscrow);
     }
 
+    /**
+     * @dev Retrieves information about a deployed vault.
+     * @param vaultId The unique ID of the vault.
+     * @return VaultInfo struct containing details of the vault.
+     */
     function getVaultInfo(
         uint64 vaultId
     ) public view returns (VaultInfo memory) {

@@ -8,35 +8,56 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {deploy,execute} = deployments;
     const {deployer} = await getNamedAccounts();
 
-    const rbuRouter = await deployments.get("RBURouter");
+    const rbfRouter = await deployments.get("RBFRouter");
+    const vaultRouter = await deployments.get("VaultRouter");
+
+
     var tx=await execute(
         'EscrowFactory', 
-        { from: deployer, log: true,  gasLimit: 10000000  },
+        { from: deployer, log: true,  gasLimit: 1000000  },
         'rely',
-        rbuRouter.address
+        rbfRouter.address
     );
     console.log("tx:",tx.transactionHash)
     tx=await execute(
-        'PricerFactory', 
-        { from: deployer, log: true,  gasLimit: 10000000  },
+        'PriceFeedFactory', 
+        { from: deployer, log: true,  gasLimit: 1000000  },
         'rely',
-        rbuRouter.address
+        rbfRouter.address
     );
     console.log("tx:",tx.transactionHash)
     tx=await execute(
-        'RBUManagerFactory', 
-        { from: deployer, log: true,  gasLimit: 10000000  },
+        'RBFFactory', 
+        { from: deployer, log: true,  gasLimit: 1000000  },
         'rely',
-        rbuRouter.address
+        rbfRouter.address
+    );
+    console.log("tx:",tx.transactionHash)
+
+
+    tx=await execute(
+        'EscrowFactory', 
+        { from: deployer, log: true,  gasLimit: 1000000  },
+        'rely',
+        vaultRouter.address
     );
     console.log("tx:",tx.transactionHash)
     tx=await execute(
-        'RBUTokenFactory', 
-        { from: deployer, log: true,  gasLimit: 10000000  },
+        'VaultFactory', 
+        { from: deployer, log: true,  gasLimit: 1000000  },
         'rely',
-        rbuRouter.address
-    );
+        vaultRouter.address
+    )
     console.log("tx:",tx.transactionHash)
+
+
+
+
+
+   
+
+
+
 
 };
 

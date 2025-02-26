@@ -13,17 +13,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       args: [deployer],
     });
 
-    const PricerFactory = await deploy('PricerFactory', {
+    const PriceFeedFactory = await deploy('PriceFeedFactory', {
         from: deployer,
         args: [deployer],
     });
 
-    const RBUManagerFactory =await deploy('RBUManagerFactory', {
-        from: deployer,
-        args: [deployer],
-    });
-
-    const RBUTokenFactory = await deploy('RBUTokenFactory', {
+    const RBFFactory =await deploy('RBFFactory', {
         from: deployer,
         args: [deployer],
     });
@@ -34,9 +29,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     });
 
     console.log("EscrowFactory:",EscrowFactory.address);
-    console.log("PricerFactory:",PricerFactory.address);
-    console.log("RBUManagerFactory:",RBUManagerFactory.address);
-    console.log("RBUTokenFactory:",RBUTokenFactory.address);
+    console.log("PriceFeedFactory:",PriceFeedFactory.address);
+    console.log("RBFFactory:",RBFFactory.address);
     console.log("VaultFactory:",VaultFactory.address);
 };
 

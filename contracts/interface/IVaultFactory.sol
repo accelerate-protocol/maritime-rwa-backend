@@ -1,16 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-
-
+pragma solidity 0.8.26;
+import "../vault/Vault.sol";
 interface IVaultFactory {
-
     function newVault(
-        string memory _name,  
-        string memory _symbol,
-        address _assetToken,
-        address _rbuManager,
-        address _feeEscrow,
-        address _dividendEscrow
-    ) external returns (address); 
-
+        VaultInitializeData memory data,
+        address guardian
+    ) external returns (address,address,address); 
 }

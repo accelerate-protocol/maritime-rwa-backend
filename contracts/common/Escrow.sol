@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity ^0.8.0;
+pragma solidity 0.8.26;
 
 import "./Auth.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interface/IEscrow.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 
 /// @title  Escrow
 /// @notice Escrow contract that holds tokens.
 ///         Only wards can approve funds to be taken out.
+/// @author Based on code from https://github.com/centrifuge/liquidity-pools
 contract Escrow is Auth, IEscrow {
+    
     constructor(address deployer) Auth(deployer) {}
 
     // --- Token approvals ---
@@ -27,7 +29,5 @@ contract Escrow is Auth, IEscrow {
         SafeERC20.safeApprove(IERC20(token), spender, 0);
         emit Approve(token, spender, 0);
     }
-
-
 
 }

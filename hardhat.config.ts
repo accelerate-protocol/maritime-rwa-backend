@@ -4,7 +4,7 @@ import "@nomicfoundation/hardhat-ethers";
 import "hardhat-deploy";
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.1",
+  solidity: "0.8.26",
 };
 export default config;
 
@@ -25,7 +25,7 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: "0.8.1",
+        version: "0.8.26",
         settings: {
           viaIR: true,
           optimizer: {

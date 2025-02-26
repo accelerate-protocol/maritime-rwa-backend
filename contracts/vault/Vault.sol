@@ -1,16 +1,43 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "../interface/IRBUManager.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "../interface/AggregatorV3Interface.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC4626Upgradeable.sol";
+import "../rbf/RBF.sol";
 
-contract Vault is ERC4626, Ownable, AccessControl {
-    bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+struct VaultInitializeData {
+    string name;
+    string symbol;
+    address assetToken;
+    address rbf;
+    uint256 subStartTime;
+    uint256 subEndTime;
+    uint256 duration;
+    uint256 fundThreshold;
+    uint256 minDepositAmount;
+    uint256 managerFee;
+    address manager;
+    address feeReceiver;
+    address dividendEscrow;
+    address[] whitelists;
+}
+
+/**
+ * @author  tmpAuthor
+ * @title   Vault
+ * @dev     A contract for handling deposit and minting of vault tokens, managing dividends, and controlling access by the manager.
+ * @notice  This contract allows deposits in an underlying asset token and mints a corresponding amount of Vault tokens based on the deposit and the rbf asset's price. It also supports dividend distribution and fee management by manager.
+ */
+contract Vault is ERC20Upgradeable, OwnableUpgradeable {
     uint256 public constant BPS_DENOMINATOR = 10_000;
-    address public immutable rbuManager;
+    address public rbf;
+    address public assetToken;
+    address public feeReceiver;
+    address public dividendEscrow;
     uint256 public maxSupply;
     uint256 public subStartTime;
     uint256 public subEndTime;
@@ -18,172 +45,219 @@ contract Vault is ERC4626, Ownable, AccessControl {
     uint256 public fundThreshold;
     uint256 public managerFee;
     uint256 public minDepositAmount;
-    address public feeEscrow;
-    address public dividendEscrow;
+    uint256 public decimalsMultiplier;
     address public manager;
     uint256 public totalDeposit;
-    uint256 public withdrawTime;
-    mapping(address => bool) private whitelist;
-    address[] private whitelistedAddresses;
+    uint256 public assetBalance;
+    uint256 public manageFeeBalance;
+    uint256 public endTime;
+    mapping(address => bool) public whitelistMap;
+    address[] public whitelists;
 
     modifier onlyWhiteList(address _address) {
-        require(whitelist[_address], "Not white list");
+        require(whitelistMap[_address], "Vault: you are not int whitelist");
         _;
     }
 
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        address _assetToken,
-        address _rbuManager,
-        address _feeEscrow,
-        address _dividendEscrow
-    ) ERC4626(IERC20(_assetToken)) ERC20(_name, _symbol) Ownable() {
-        require(_assetToken != address(0), "Invalid address");
-        require(_rbuManager != address(0), "Invalid address");
-        rbuManager = _rbuManager;
-        require(_feeEscrow != address(0), "Invalid address");
-        feeEscrow = _feeEscrow;
-        require(_dividendEscrow != address(0), "Invalid address");
-        dividendEscrow = _dividendEscrow;
+    modifier onlyManager() {
+        require(msg.sender == manager, "Vault: you are not manager");
+        _;
     }
 
-    function setManager(address _manager) external onlyOwner {
-        if (manager != address(0)) {
-            _revokeRole(MANAGER_ROLE, manager);
-        }
-        require(_manager != address(0), "Invalid address");
-        manager = _manager;
-        _grantRole(MANAGER_ROLE, _manager);
-    }
-
-    function setMaxsupply(uint256 _maxSupply) external onlyOwner {
-        require(_maxSupply > 0, "Invalid maxSupply");
-        maxSupply = _maxSupply;
-    }
-
-    function setSubTime(
-        uint256 _subStartTime,
-        uint256 _subEndTime
-    ) external onlyOwner {
-        require(_subStartTime < _subEndTime, "Invalid subTime");
-        subStartTime = _subStartTime;
-        subEndTime = _subEndTime;
-    }
-
-    function setDuration(uint256 _duration) external onlyOwner {
-        require(_duration > 0, "Invalid duration");
-        duration = _duration;
-    }
-
-    function setFundThreshold(uint256 _fundThreshold) external onlyOwner {
+    /**
+     * @notice  Initializes the Vault contract with given parameters.
+     * @dev     This function sets the vault's basic parameters and ensures valid input values.
+     * @param   data Struct containing initialization parameters.
+     */
+    function initialize(VaultInitializeData memory data) public initializer {
+        __ERC20_init(data.name, data.symbol);
+        __Ownable_init();
         require(
-            _fundThreshold > 0 && _fundThreshold <= BPS_DENOMINATOR,
-            "Invalid fundThreshold"
+            data.assetToken != address(0),
+            "Vault: Invalid assetToken address"
         );
-        fundThreshold = _fundThreshold;
+        assetToken = data.assetToken;
+        require(data.rbf != address(0), "Vault: Invalid rbf address");
+        rbf = data.rbf;
+        maxSupply = RBF(data.rbf).maxSupply();
+        require(
+            data.subStartTime < data.subStartTime,
+            "Vault: Invalid subTime"
+        );
+        subStartTime = data.subStartTime;
+        subEndTime = data.subStartTime;
+        require(data.duration > 0, "Vault: Invalid duration");
+        duration = data.duration;
+        require(
+            data.fundThreshold > 0 && data.fundThreshold <= BPS_DENOMINATOR,
+            "Vault: Invalid fundThreshold"
+        );
+        fundThreshold = data.fundThreshold;
+        require(
+            data.minDepositAmount > 0 && data.minDepositAmount <= maxSupply,
+            "Vault: Invalid minDepositAmount"
+        );
+        minDepositAmount = data.minDepositAmount;
+        require(
+            data.managerFee > 0 && data.managerFee <= BPS_DENOMINATOR,
+            "Vault: Invalid managerFee"
+        );
+        managerFee = data.managerFee;
+        require(data.manager != address(0), "Vault: Invalid manager");
+        manager = data.manager;
+        require(
+            data.feeReceiver != address(0),
+            "Vault: Invalid feeReceiver address"
+        );
+        feeReceiver = data.feeReceiver;
+        require(
+            data.dividendEscrow != address(0),
+            "Vault: Invalid dividendEscrow address"
+        );
+        dividendEscrow = data.dividendEscrow;
+        require(
+            (data.whitelists.length > 0) && (data.whitelists.length <= 100),
+            "Vault: Invalid whitelists length"
+        );
+        whitelists = data.whitelists;
+        for (uint256 i = 0; i < data.whitelists.length; i++) {
+            whitelistMap[data.whitelists[i]] = true;
+        }
+        decimalsMultiplier =
+            10 ** (decimals() - IERC20Metadata(data.assetToken).decimals());
     }
 
-    function setMinDepositAmount(uint256 _minDepositAmount) external onlyOwner {
+    /**
+     * @notice  Sets the minimum deposit amount.
+     * @dev     Only callable by the contract owner.
+     * @param   minAmount The minimum amount that can be deposited.
+     */
+    function setMinDepositAmount(uint256 minAmount) external onlyManager {
         require(
-            _minDepositAmount > 0 && _minDepositAmount <= maxSupply,
+            minAmount > 0 && minAmount <= maxSupply,
             "Invalid minDepositAmount"
         );
-        minDepositAmount = _minDepositAmount;
+        minDepositAmount = minAmount;
     }
 
-    function setManagerFee(uint256 _managerFee) external onlyOwner {
-        require( _managerFee <= BPS_DENOMINATOR,"Invalid managerFee");
-        managerFee = _managerFee;
+    /**
+     * @notice  Sets the manager fee percentage.
+     * @dev     Fee must be within the valid basis point range (0-10,000).
+     * @param   feeRate  The new manager fee percentage.
+     */
+    function setManagerFee(uint256 feeRate) external onlyManager {
+        require(feeRate <= BPS_DENOMINATOR, "Invalid managerFee");
+        managerFee = feeRate;
     }
 
+    /**
+     * @notice  Assigns a manager for the vault.
+     * @dev     The manager is responsible for executing investment strategies.
+     * @param   managerAddr Address of the new manager.  .
+     */
+    function setManager(address managerAddr) external onlyOwner {
+        require(managerAddr != address(0), "Invalid address");
+        manager = managerAddr;
+    }
+
+    /**
+     * @notice  Deposits assets into the vault during the subscription period.
+     * @dev     Ensures that deposits meet the minimum requirement and fall within the allowed period.
+     * @param   assets The amount of assets to deposit.
+     * @return  uint256 The amount of shares minted in exchange for the deposit.
+     */
     function deposit(
-        uint256 assets,
-        address receiver
-    ) public virtual override onlyWhiteList(msg.sender) returns (uint256) {
-        require(receiver==msg.sender, "Vault: receiver must be msg.sender");
-        require(assets <= maxDeposit(receiver), "Vault: deposit more than max");
+        uint256 assets
+    ) public virtual onlyWhiteList(msg.sender) returns (uint256) {
         require(assets >= minDepositAmount, "Vault: deposit less than min");
         require(
             block.timestamp >= subStartTime && block.timestamp <= subEndTime,
-            "Invalid time"
+            "Vault: Invalid time"
         );
-        require(totalDeposit < maxSupply, "Vault: maxSupply reached");
-        require(assets<=(maxSupply-totalDeposit),"Vault: maxSupply reached");
-
-        uint256 amountFee = (assets * managerFee) / BPS_DENOMINATOR;
-
-        SafeERC20.safeTransferFrom(
-            IERC20(asset()),
-            msg.sender,
-            feeEscrow,
-            amountFee
-        );
-
-        uint256 shares = previewDeposit(assets);
-        _deposit(_msgSender(), receiver, assets, shares);
         totalDeposit = totalDeposit + assets;
+        uint256 manageFeeAmount = (assets * managerFee) / BPS_DENOMINATOR;
+        manageFeeBalance = manageFeeBalance + manageFeeAmount;
+        assetBalance = assetBalance + assets;
+        SafeERC20.safeTransferFrom(
+            IERC20(assetToken),
+            msg.sender,
+            address(this),
+            assets + manageFeeAmount
+        );
+        uint256 shares = _getMintAmountForPrice(assets);
+        require(
+            totalSupply() + shares <= maxSupply,
+            "Vault: maxSupply exceeded"
+        );
+        _mint(msg.sender, shares);
         return shares;
     }
 
-    function mint(
-        uint256 shares,
-        address receiver
-    ) public virtual override returns (uint256) {
-        revert("not support mint");
-    }
-
-    function withdraw(
-        uint256 assets,
-        address receiver,
-        address owner
-    ) public virtual override returns (uint256) {
-        revert("not support withdraw");
-    }
-
-    function redeem(
-        uint256 shares,
-        address receiver,
-        address owner
-    ) public virtual override onlyWhiteList(msg.sender) returns (uint256) {
-        require(receiver==msg.sender, "Vault: receiver must be msg.sender");
-        require(owner==msg.sender, "Vault: owner must be msg.sender");
-        require(shares <= maxRedeem(owner), "ERC4626: redeem more than max");
-        require(withdrawTime!=0 && block.timestamp >= withdrawTime, "Vault: WithdrawTime not reached");
-
-        uint256 assets = previewRedeem(shares);
-        _withdraw(_msgSender(), receiver, owner, assets, shares);
-
-        return assets;
-    }
-
-    function withdrawFund()
+    /**
+     * @notice Allows whitelisted users to redeem their shares for underlying assets.
+     * @dev Users can redeem only after the subscription period ends and if the
+     *      fund threshold is not met. The function burns the user's shares,
+     *      calculates the corresponding asset amount, and transfers assets back
+     *      to the user including the manager's fee.
+     * @return The total amount of assets transferred to the user.
+     */
+    function redeem()
         public
         virtual
         onlyWhiteList(msg.sender)
         returns (uint256)
     {
-        require(block.timestamp >= subEndTime, "Invalid time");
+        require(block.timestamp >= subEndTime, "Vault: Invalid time");
         require(
             (maxSupply * fundThreshold) / BPS_DENOMINATOR > totalDeposit,
-            "not allowed withdraw"
+            "Vault: not allowed withdraw"
         );
         uint256 shares = balanceOf(msg.sender);
-        uint256 assets = previewRedeem(shares);
-        _withdraw(_msgSender(), msg.sender, msg.sender, assets, shares);
-        uint256 feeAmount = shares /
-            (1 - managerFee / BPS_DENOMINATOR) -
-            shares;
-        SafeERC20.safeTransferFrom(
-            IERC20(asset()),
-            feeEscrow,
+        uint256 assetAmount = _getWithdrawAmountForVault(shares);
+        _burn(msg.sender, shares);
+        uint256 feeAmount = (assetAmount * managerFee) / BPS_DENOMINATOR;
+        manageFeeBalance = manageFeeBalance + feeAmount;
+        assetBalance = assetBalance + assetAmount;
+        SafeERC20.safeTransfer(
+            IERC20(assetToken),
             msg.sender,
-            feeAmount
+            assetAmount + feeAmount
         );
-        return assets + feeAmount;
+        return assetAmount + feeAmount;
     }
 
-    function execStrategy() public onlyRole(MANAGER_ROLE) {
+    /**
+     * @notice Allows the manager to withdraw accumulated management fees.
+     * @dev The function ensures that withdrawals are only possible after the
+     *      subscription period ends and if the fundraising threshold is met.
+     *      The entire balance of management fees is transferred to the designated
+     *      fee receiver.
+     */
+    function withdrawManageFee() public onlyManager {
+        require(endTime!=0,"Vault: Invalid endTime");
+        require(block.timestamp >= subEndTime, "Vault: Invalid time");
+        require(
+            (maxSupply * fundThreshold) / BPS_DENOMINATOR <= totalDeposit,
+            "Vault: not allowed withdraw"
+        );
+        uint256 feeAmount = manageFeeBalance;
+        manageFeeBalance = 0;
+        SafeERC20.safeTransfer(IERC20(assetToken), feeReceiver, feeAmount);
+    }
+
+    /**
+     * @notice Executes an investment strategy by depositing assets into the RBF contract.
+     * @dev This function ensures that the asset amount does not exceed the vault’s balance.
+     *      It also verifies that fundraising is either complete or has met the required
+     *      threshold before proceeding. The function approves the asset transfer and
+     *      deposits the assets into the RBF contract.
+     * @param assetAmount The amount of assets to invest in the RBF contract.
+     */
+    function execStrategy(uint256 assetAmount) public onlyManager {
+        require(
+            assetAmount <= IERC20(assetToken).balanceOf(address(this)),
+            "assetAmount error"
+        );
         require(
             totalDeposit == maxSupply ||
                 (block.timestamp >= subEndTime &&
@@ -191,73 +265,136 @@ contract Vault is ERC4626, Ownable, AccessControl {
                     totalDeposit),
             "fundraising fail"
         );
-        address assetToken= asset();
-        uint256 asset = IERC20(assetToken).balanceOf(address(this));
-        IERC20(assetToken).approve(rbuManager, asset);
-        IRBUManager(rbuManager).deposit(asset);
-        withdrawTime = block.timestamp + duration;
+        if (endTime==0){
+            endTime = block.timestamp + duration;
+        }
+        require(assetAmount <= assetBalance, "Vault: assetAmount error");
+        assetBalance = assetBalance - assetAmount;
+        bool authRes = IERC20(assetToken).approve(rbf, assetAmount);
+        require(authRes, "assetToken approve error");
+        RBF(rbf).deposit(assetAmount);
     }
 
-    function harvest() public onlyRole(MANAGER_ROLE) {
-        address rbuShareToken = IRBUManager(rbuManager).getRBUShareToken();
-        uint256 rbuShares = IERC20(rbuShareToken).balanceOf(address(this));
-        IERC20(rbuShareToken).approve(rbuManager, rbuShares);
-        IRBUManager(rbuManager).withdraw(rbuShares);
+    /**
+     * @notice Adds an address to the whitelist, allowing it to participate in the vault.
+     * @dev Only the contract owner can add addresses to the whitelist. Ensures that an address
+     *      is not already whitelisted and that the whitelist does not exceed 100 entries.
+     * @param whitelistAddr The address to be added to the whitelist.
+     */
+    function addToWhitelist(address whitelistAddr) public onlyOwner {
+        require(
+            !whitelistMap[whitelistAddr],
+            "Vault: Address is already whitelisted"
+        );
+        require(whitelists.length < 100, "Vault: Whitelist is full");
+        whitelistMap[whitelistAddr] = true;
+        whitelists.push(whitelistAddr);
     }
 
-    function addToWhitelist(address _address) public onlyRole(MANAGER_ROLE) {
-        require(!whitelist[_address], "Address is already whitelisted");
-        whitelist[_address] = true;
-        whitelistedAddresses.push(_address);
-    }
+    /**
+     * @notice Removes an address from the whitelist, preventing further participation in the vault.
+     * @dev Only the contract owner can remove addresses from the whitelist. Ensures the address
+     *      is currently whitelisted before proceeding.
+     * @param whitelistAddr The address to be removed from the whitelist.
+     */
+    function removeFromWhitelist(address whitelistAddr) public onlyOwner {
+        require(
+            whitelistMap[whitelistAddr],
+            "Vault: Address is not in the whitelist"
+        );
+        whitelistMap[whitelistAddr] = false;
 
-    function removeFromWhitelist(
-        address _address
-    ) external onlyRole(MANAGER_ROLE) {
-        require(whitelist[_address], "Address is not in the whitelist");
-        whitelist[_address] = false;
-
-        for (uint256 i = 0; i < whitelistedAddresses.length; i++) {
-            if (whitelistedAddresses[i] == _address) {
-                whitelistedAddresses[i] = whitelistedAddresses[
-                    whitelistedAddresses.length - 1
-                ];
-                whitelistedAddresses.pop();
+        for (uint256 i = 0; i < whitelists.length; i++) {
+            if (whitelists[i] == whitelistAddr) {
+                whitelists[i] = whitelists[whitelists.length - 1];
+                whitelists.pop();
                 break;
             }
         }
     }
 
-    function getDividendEscrow() public view returns (address) {
-        return dividendEscrow;
-    }
-
-    function getAllWhitelistedAddresses()
-        external
-        view
-        returns (address[] memory)
-    {
-        return whitelistedAddresses;
-    }
-
-    function dividend() public onlyRole(MANAGER_ROLE) {
-        uint256 totalDividend = IERC20(asset()).balanceOf(dividendEscrow);
-        require(totalDividend>0, "No dividend to pay");
+    /**
+     * @notice Distributes dividends to whitelisted users based on their shareholding.
+     * @dev The function calculates the dividend amount for each whitelisted user and transfers
+     *      the corresponding amount. Only users with a nonzero balance receive dividends.
+     */
+    function dividend() public onlyManager {
+        uint256 totalDividend = IERC20(assetToken).balanceOf(dividendEscrow);
+        require(totalDividend > 0, "No dividend to pay");
         uint256 totalSupply = totalSupply();
-        require(totalSupply>0, "No rbu to pay");
-        for (uint8 i = 0; i < whitelistedAddresses.length; i++) {
-            if (whitelist[whitelistedAddresses[i]]) {
-                if(balanceOf(whitelistedAddresses[i])!=0){
+        require(totalSupply > 0, "No rbu to pay");
+        for (uint8 i = 0; i < whitelists.length; i++) {
+            if (whitelistMap[whitelists[i]]) {
+                if (balanceOf(whitelists[i]) != 0) {
                     _dividend(
-                        balanceOf(whitelistedAddresses[i]),
+                        balanceOf(whitelists[i]),
                         totalSupply,
                         totalDividend,
-                        whitelistedAddresses[i]
+                        whitelists[i]
                     );
                 }
-                
             }
         }
+    }
+
+    /**
+     * @notice Calculates the price of a single share in the vault.
+     * @dev The price is determined by fetching the NAV (Net Asset Value) from the RBF contract
+     *      and adjusting it according to the price feed's decimal format.
+     * @return The price of one share in the vault.
+     */
+    function price() public view returns (uint256) {
+        uint256 totalSupply = totalSupply();
+        uint256 nav = RBF(rbf).getAssetsNav();
+        return (nav * RBF(rbf).priceFeedDecimals()) / totalSupply;
+    }
+
+    /**
+     * @notice Returns the decimal precision of the vault token.
+     * @dev Overrides the default ERC20 decimals function and sets it to 6.
+     * @return The number of decimals used for the vault token.
+     */
+    function decimals() public view virtual override returns (uint8) {
+        return 6;
+    }
+
+    /**
+     * @notice Transfers tokens from the caller to another address.
+     * @dev The function checks if the transfer is authorized before executing it.
+     *      It then updates the sender and receiver balances accordingly.
+     * @param to The recipient address.
+     * @param amount The amount of tokens to transfer.
+     * @return A boolean value indicating whether the transfer was successful.
+     */
+    function transfer(
+        address to,
+        uint256 amount
+    ) public virtual override returns (bool) {
+        _checkTransferAuth(msg.sender, to);
+        address owner = _msgSender();
+        _transfer(owner, to, amount);
+        return true;
+    }
+
+    /**
+     * @notice Transfers tokens from one address to another using an allowance mechanism.
+     * @dev The function ensures the sender is authorized to transfer on behalf of `from`.
+     *      It then deducts the allowance and transfers the specified amount.
+     * @param from The address from which tokens are transferred.
+     * @param to The recipient address.
+     * @param amount The amount of tokens to transfer.
+     * @return A boolean value indicating whether the transfer was successful.
+     */
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) public virtual override returns (bool) {
+        _checkTransferAuth(msg.sender, to);
+        address spender = _msgSender();
+        _spendAllowance(from, spender, amount);
+        _transfer(from, to, amount);
+        return true;
     }
 
     function _dividend(
@@ -266,47 +403,53 @@ contract Vault is ERC4626, Ownable, AccessControl {
         uint256 totalDividend,
         address receipter
     ) internal {
+        require(receipter != address(0), "receipter can not be zero");
         uint256 dividendAmount = (vaultTokenAmount * totalDividend) /
             totalSupply;
-        require(dividendAmount>0, "dividendAmount must bigger than zero");
+        require(dividendAmount > 0, "dividendAmount must bigger than zero");
         SafeERC20.safeTransferFrom(
-            IERC20(asset()),
+            IERC20(assetToken),
             dividendEscrow,
             receipter,
             dividendAmount
         );
     }
 
-    function withdrawFee(address receiver) public onlyRole(MANAGER_ROLE){
-        require(withdrawTime!=0, "withdrawTime is zero");
-        uint256 balance = IERC20(asset()).balanceOf(feeEscrow);
-        SafeERC20.safeTransferFrom(IERC20(asset()),feeEscrow, receiver, balance);
-    }
-    
-
-    function price() public view returns (uint256) {
-       uint256 totalSupply=totalSupply();
-       if (totalSupply==0){
-           return 1e18;
-       }
-       uint256 nav=IERC20(asset()).balanceOf(address(this))+IRBUManager(rbuManager).getAssetsNav();
-       return nav*1e18/totalSupply;
+    function _checkTransferAuth(address from, address to) internal view {
+        require(
+            whitelistMap[from] && whitelistMap[to],
+            "transfer from and to must in whitelist"
+        );
     }
 
-    function totalAssets() public view virtual override returns (uint256) {
-        return IERC20(asset()).balanceOf(address(this))+IRBUManager(rbuManager).getAssetsNav();
+    function _getMintAmountForPrice(
+        uint256 depositAmount
+    ) internal view returns (uint256) {
+        int256 tokenPrice = RBF(rbf).getLatestPrice();
+        require(tokenPrice > 0, "Invalid price data");
+        uint256 uTokenPrice = uint256(tokenPrice);
+        uint256 rwaAmount = (_scaleUp(depositAmount) *
+            RBF(rbf).priceFeedDecimals()) / uTokenPrice;
+        return rwaAmount;
     }
 
-
-    function transfer(address to, uint256 amount) public virtual override returns (bool) {
-        revert("not supprot transfer");
+    function _getWithdrawAmountForVault(
+        uint256 vaultAmount
+    ) internal view returns (uint256) {
+        int256 tokenPrice = RBF(rbf).getLatestPrice();
+        require(tokenPrice > 0, "Invalid price data");
+        uint256 uTokenPrice = uint256(tokenPrice);
+        uint256 withdrawAmount = _scaleDown(
+            (vaultAmount * uTokenPrice) / RBF(rbf).priceFeedDecimals()
+        );
+        return withdrawAmount;
     }
 
-    function transferFrom(address from, address to, uint256 amount) public virtual override returns (bool) {
-        revert("not supprot transfer");
+    function _scaleUp(uint256 amount) internal view returns (uint256) {
+        return amount * decimalsMultiplier;
     }
 
-     function decimals() public view virtual override returns (uint8) {
-        return 6;
+    function _scaleDown(uint256 amount) internal view returns (uint256) {
+        return amount / decimalsMultiplier;
     }
 }

@@ -1,0 +1,10 @@
+{
+    "base":{
+        "threshold":1,
+        "whiteLists":["0x09f6382f84a7E6Efde7a0428ab5a881bcFE0F0fb"]
+    },
+    "ganache":{
+        "threshold":1,
+        "whiteLists":["0x09f6382f84a7E6Efde7a0428ab5a881bcFE0F0fb"]
+    }
+}
