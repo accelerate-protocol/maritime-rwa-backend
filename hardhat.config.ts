@@ -4,24 +4,6 @@ import "@nomicfoundation/hardhat-ethers";
 import "hardhat-deploy";
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.26",
-};
-export default config;
-
-module.exports = {
-  namedAccounts: {
-    deployer: 0
-  },
-  networks: {
-    hardhat: {
-      allowUnlimitedContractSize: true,
-    },
-    sepolia:{
-      url: "https://sepolia.infura.io/v3/a8fd70fa80a3484ab0afcdcc8935fabd",
-      accounts: [],
-    },
-    
-  },
   solidity: {
     compilers: [
       {
@@ -32,13 +14,33 @@ module.exports = {
             enabled: true,
             runs: 200,
             details: {
-              yul: true
-            }
-          }
+              yul: true,
+            },
+          },
         },
-      }
-    ]
-  }
+      },
+    ],
+  },
 
+  namedAccounts: {
+    deployer: 0,
+    guardian: 1,
+    manager: 2,
+    rbfSigner: 3,
+    depositTreasury: 4,
+    feeReceiver: 5,
+    investor1: 6,
+    investor2: 7,
+    investor3: 8,
+    investor4: 9,
+    investor5: 10,
+  },
 
-}
+  networks: {
+    hardhat: {
+      allowUnlimitedContractSize: true,
+    }
+  },
+};
+
+export default config;

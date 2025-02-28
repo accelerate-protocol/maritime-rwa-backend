@@ -15,6 +15,7 @@ struct RBFInitializeData {
     string symbol;
     address assetToken;
     uint256 maxSupply;
+    uint256 manageFee;
     address depositTreasury;
     address dividendTreasury;
     address priceFeed;
@@ -38,7 +39,6 @@ contract RBF is IRBF, OwnableUpgradeable, ERC20Upgradeable {
     address public manager;
     uint256 public manageFee;
     uint256 public decimalsMultiplier;
-    //uint256 public totalDeposit;
     address public vault;
 
     modifier onlyVault() {
@@ -97,18 +97,18 @@ contract RBF is IRBF, OwnableUpgradeable, ERC20Upgradeable {
             10 ** (decimals() - IERC20MetadataUpgradeable(data.assetToken).decimals());
     }
 
-    /**
-     * @notice  Allows the owner to set the manager's fee rate.
-     * @dev     The fee rate is specified in basis points (bps) and should not exceed 100%.
-     * @param   manageFeeRate  The fee rate to be set for the manager.
-     */
-    function setManagerFee(uint256 manageFeeRate) public onlyOwner {
-        require(
-            manageFeeRate < BPS_DENOMINATOR,
-            "RBF: manageFeeRate must be less than 100%"
-        );
-        manageFee = manageFeeRate;
-    }
+    // /**
+    //  * @notice  Allows the owner to set the manager's fee rate.
+    //  * @dev     The fee rate is specified in basis points (bps) and should not exceed 100%.
+    //  * @param   manageFeeRate  The fee rate to be set for the manager.
+    //  */
+    // function setManagerFee(uint256 manageFeeRate) public onlyOwner {
+    //     require(
+    //         manageFeeRate < BPS_DENOMINATOR,
+    //         "RBF: manageFeeRate must be less than 100%"
+    //     );
+    //     manageFee = manageFeeRate;
+    // }
 
     /**
      * @notice  Allows the vault to deposit the asset token and mint corresponding RBF tokens.
@@ -135,11 +135,7 @@ contract RBF is IRBF, OwnableUpgradeable, ERC20Upgradeable {
             depositTreasury,
             depositAmount
         );
-        int256 tokenPrice = getLatestPrice();
-        uint256 rwaAmount = _getMintAmountForPrice(
-            depositAmount,
-            uint256(tokenPrice)
-        );
+        uint256 rwaAmount = _getMintAmountForPrice(depositAmount);
         require(
             totalSupply() + rwaAmount <= maxSupply,
             "RBF: maxSupply exceeded"
@@ -206,7 +202,8 @@ contract RBF is IRBF, OwnableUpgradeable, ERC20Upgradeable {
     function getAssetsNav() public view returns (uint256) {
         int256 lastPrice = getLatestPrice();
         uint256 amount = balanceOf(vault);
-        return (amount * uint256(lastPrice)) / priceFeedDecimals();
+        uint256 indexDecimals = 10**priceFeedDecimals();
+        return (amount * uint256(lastPrice)) / indexDecimals;
     }
 
     /**
@@ -260,10 +257,11 @@ contract RBF is IRBF, OwnableUpgradeable, ERC20Upgradeable {
     }
 
     function _getMintAmountForPrice(
-        uint256 depositAmount,
-        uint256 tokenPrice
+        uint256 depositAmount
     ) internal view returns (uint256) {
-        uint256 rwaAmount = (_scaleUp(depositAmount) * 1e18) / tokenPrice;
+        uint256 tokenPrice = (uint256)(getLatestPrice());
+        uint256 indexDecimals = 10**priceFeedDecimals();
+        uint256 rwaAmount = (_scaleUp(depositAmount) * indexDecimals) / tokenPrice;
         return rwaAmount;
     }
 

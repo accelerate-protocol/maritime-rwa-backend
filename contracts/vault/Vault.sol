@@ -19,7 +19,7 @@ struct VaultInitializeData {
     uint256 duration;
     uint256 fundThreshold;
     uint256 minDepositAmount;
-    uint256 managerFee;
+    uint256 manageFee;
     address manager;
     address feeReceiver;
     address dividendEscrow;
@@ -43,7 +43,7 @@ contract Vault is ERC20Upgradeable, OwnableUpgradeable {
     uint256 public subEndTime;
     uint256 public duration;
     uint256 public fundThreshold;
-    uint256 public managerFee;
+    uint256 public manageFee;
     uint256 public minDepositAmount;
     uint256 public decimalsMultiplier;
     address public manager;
@@ -81,11 +81,11 @@ contract Vault is ERC20Upgradeable, OwnableUpgradeable {
         rbf = data.rbf;
         maxSupply = RBF(data.rbf).maxSupply();
         require(
-            data.subStartTime < data.subStartTime,
+            data.subStartTime < data.subEndTime,
             "Vault: Invalid subTime"
         );
         subStartTime = data.subStartTime;
-        subEndTime = data.subStartTime;
+        subEndTime = data.subEndTime;
         require(data.duration > 0, "Vault: Invalid duration");
         duration = data.duration;
         require(
@@ -99,10 +99,10 @@ contract Vault is ERC20Upgradeable, OwnableUpgradeable {
         );
         minDepositAmount = data.minDepositAmount;
         require(
-            data.managerFee > 0 && data.managerFee <= BPS_DENOMINATOR,
+            data.manageFee > 0 && data.manageFee <= BPS_DENOMINATOR,
             "Vault: Invalid managerFee"
         );
-        managerFee = data.managerFee;
+        manageFee = data.manageFee;
         require(data.manager != address(0), "Vault: Invalid manager");
         manager = data.manager;
         require(
@@ -127,38 +127,38 @@ contract Vault is ERC20Upgradeable, OwnableUpgradeable {
             10 ** (decimals() - IERC20Metadata(data.assetToken).decimals());
     }
 
-    /**
-     * @notice  Sets the minimum deposit amount.
-     * @dev     Only callable by the contract owner.
-     * @param   minAmount The minimum amount that can be deposited.
-     */
-    function setMinDepositAmount(uint256 minAmount) external onlyManager {
-        require(
-            minAmount > 0 && minAmount <= maxSupply,
-            "Invalid minDepositAmount"
-        );
-        minDepositAmount = minAmount;
-    }
+    // /**
+    //  * @notice  Sets the minimum deposit amount.
+    //  * @dev     Only callable by the contract owner.
+    //  * @param   minAmount The minimum amount that can be deposited.
+    //  */
+    // function setMinDepositAmount(uint256 minAmount) external onlyManager {
+    //     require(
+    //         minAmount > 0 && minAmount <= maxSupply,
+    //         "Invalid minDepositAmount"
+    //     );
+    //     minDepositAmount = minAmount;
+    // }
 
-    /**
-     * @notice  Sets the manager fee percentage.
-     * @dev     Fee must be within the valid basis point range (0-10,000).
-     * @param   feeRate  The new manager fee percentage.
-     */
-    function setManagerFee(uint256 feeRate) external onlyManager {
-        require(feeRate <= BPS_DENOMINATOR, "Invalid managerFee");
-        managerFee = feeRate;
-    }
+    // /**
+    //  * @notice  Sets the manager fee percentage.
+    //  * @dev     Fee must be within the valid basis point range (0-10,000).
+    //  * @param   feeRate  The new manager fee percentage.
+    //  */
+    // function setManagerFee(uint256 feeRate) external onlyManager {
+    //     require(feeRate <= BPS_DENOMINATOR, "Invalid managerFee");
+    //     managerFee = feeRate;
+    // }
 
-    /**
-     * @notice  Assigns a manager for the vault.
-     * @dev     The manager is responsible for executing investment strategies.
-     * @param   managerAddr Address of the new manager.  .
-     */
-    function setManager(address managerAddr) external onlyOwner {
-        require(managerAddr != address(0), "Invalid address");
-        manager = managerAddr;
-    }
+    // /**
+    //  * @notice  Assigns a manager for the vault.
+    //  * @dev     The manager is responsible for executing investment strategies.
+    //  * @param   managerAddr Address of the new manager.  .
+    //  */
+    // function setManager(address managerAddr) external onlyOwner {
+    //     require(managerAddr != address(0), "Invalid address");
+    //     manager = managerAddr;
+    // }
 
     /**
      * @notice  Deposits assets into the vault during the subscription period.
@@ -175,7 +175,7 @@ contract Vault is ERC20Upgradeable, OwnableUpgradeable {
             "Vault: Invalid time"
         );
         totalDeposit = totalDeposit + assets;
-        uint256 manageFeeAmount = (assets * managerFee) / BPS_DENOMINATOR;
+        uint256 manageFeeAmount = (assets * manageFee) / BPS_DENOMINATOR;
         manageFeeBalance = manageFeeBalance + manageFeeAmount;
         assetBalance = assetBalance + assets;
         SafeERC20.safeTransferFrom(
@@ -215,7 +215,7 @@ contract Vault is ERC20Upgradeable, OwnableUpgradeable {
         uint256 shares = balanceOf(msg.sender);
         uint256 assetAmount = _getWithdrawAmountForVault(shares);
         _burn(msg.sender, shares);
-        uint256 feeAmount = (assetAmount * managerFee) / BPS_DENOMINATOR;
+        uint256 feeAmount = (assetAmount * manageFee) / BPS_DENOMINATOR;
         manageFeeBalance = manageFeeBalance + feeAmount;
         assetBalance = assetBalance + assetAmount;
         SafeERC20.safeTransfer(
@@ -428,8 +428,9 @@ contract Vault is ERC20Upgradeable, OwnableUpgradeable {
         int256 tokenPrice = RBF(rbf).getLatestPrice();
         require(tokenPrice > 0, "Invalid price data");
         uint256 uTokenPrice = uint256(tokenPrice);
-        uint256 rwaAmount = (_scaleUp(depositAmount) *
-            RBF(rbf).priceFeedDecimals()) / uTokenPrice;
+        uint256 indexDecimals = 10**RBF(rbf).priceFeedDecimals();
+    
+        uint256 rwaAmount = (_scaleUp(depositAmount) * indexDecimals) / uTokenPrice;
         return rwaAmount;
     }
 
@@ -439,8 +440,9 @@ contract Vault is ERC20Upgradeable, OwnableUpgradeable {
         int256 tokenPrice = RBF(rbf).getLatestPrice();
         require(tokenPrice > 0, "Invalid price data");
         uint256 uTokenPrice = uint256(tokenPrice);
+        uint256 indexDecimals = 10**RBF(rbf).priceFeedDecimals();
         uint256 withdrawAmount = _scaleDown(
-            (vaultAmount * uTokenPrice) / RBF(rbf).priceFeedDecimals()
+            (vaultAmount * uTokenPrice) / indexDecimals
         );
         return withdrawAmount;
     }

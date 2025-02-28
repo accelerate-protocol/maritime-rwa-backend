@@ -2,15 +2,12 @@
 pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-
 import "../interface/IRBFFactory.sol";
 import "../interface/IEscrowFactory.sol";
 import "../interface/IPriceFeedFactory.sol";
 import "../interface/IRBFRouter.sol";
 import "../common/Escrow.sol";
-import "../libraries/SignatureLib.sol";
 import "./RBF.sol";
-
 
 /**
  * @author  tmpAuthor
@@ -22,6 +19,8 @@ contract RBFRouter is IRBFRouter,Ownable {
     struct RBFInfo {
         uint256 createdAt;
         address rbf;
+        address rbfProxyAdmin;
+        address rbfImpl;
         address dividendTreasury;
         address priceFeed;
     }
@@ -32,7 +31,7 @@ contract RBFRouter is IRBFRouter,Ownable {
         string symbol;
         address assetToken;
         uint256 maxSupply;
-        uint256 managerFee;
+        uint256 manageFee;
         address depositTreasury;
         int256 initialPrice;
         address deployer;
@@ -47,7 +46,6 @@ contract RBFRouter is IRBFRouter,Ownable {
     IPriceFeedFactory public immutable priceFeedFactory;
     mapping(uint64 => RBFInfo) private rbfs;
     mapping(address => bool) public whiteListed;
-
 
     /**
      * @notice Constructor to initialize the router with necessary parameters.
@@ -89,8 +87,8 @@ contract RBFRouter is IRBFRouter,Ownable {
             deployData,
             (RBFDeployData)
         );
-        require(rbfDeployData.rbfId == rbfNonce, "RBFRouter: Invalid rbfId");
-        require(rbfDeployData.deployer == msg.sender, "RBFRouter: Invalid deployer");
+        require(rbfDeployData.rbfId == rbfNonce, "RBFRouter:Invalid rbfId");
+        require(rbfDeployData.deployer == msg.sender, "RBFRouter:Invalid deployer");
         rbfNonce++;
         address dividendTreasury = escrowFactory.newEscrow(address(this));
         address pricerFeed = priceFeedFactory.newPriceFeed(
@@ -102,19 +100,21 @@ contract RBFRouter is IRBFRouter,Ownable {
             symbol:rbfDeployData.symbol,
             assetToken:rbfDeployData.assetToken,
             maxSupply:rbfDeployData.maxSupply,
+            manageFee:rbfDeployData.manageFee,
             depositTreasury:rbfDeployData.depositTreasury,
             dividendTreasury:dividendTreasury,
             priceFeed:pricerFeed,
             manager:rbfDeployData.manager
         });
-        (address rbf,,)= rbfFactory.newRBF(
+        (address rbf,address rbfProxyAdmin,address rbfImpl)= rbfFactory.newRBF(
             data,
             rbfDeployData.guardian
         );
-        RBF(rbf).setManagerFee(rbfDeployData.managerFee);
         rbfs[rbfDeployData.rbfId] = RBFInfo(
             block.timestamp,
-            address(rbf),
+            rbf,
+            rbfProxyAdmin,
+            rbfImpl,
             address(dividendTreasury),
             address(pricerFeed)
         );
@@ -129,6 +129,7 @@ contract RBFRouter is IRBFRouter,Ownable {
             rbf,
             dividendTreasury
         );
+
     }
 
 
@@ -136,19 +137,17 @@ contract RBFRouter is IRBFRouter,Ownable {
         bytes memory deployData,
         bytes[] memory signatures
     ) internal view {
-        bytes32 ethSignedMessageHash = SignatureLib.getEthSignedMessageHash(
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(
             keccak256(deployData)
         );
         uint256 validSignatures = 0;
         for (uint256 i = 0; i < signatures.length; i++) {
-            address signer = SignatureLib.recoverSigner(ethSignedMessageHash, signatures[i]);
-            require(whiteListed[signer], "Invalid signer");
+            address signer = recoverSigner(ethSignedMessageHash, signatures[i]);
+            require(whiteListed[signer], "RBFRouter:Invalid Signer");
             validSignatures++;
         }
-        require(validSignatures >= threshold, "Invalid threshold");
+        require(validSignatures >= threshold, "RBFRouter:Invalid Threshold");
     }
-
-
     
     function getEncodeData(
         RBFDeployData memory rbfDeployData
@@ -164,6 +163,38 @@ contract RBFRouter is IRBFRouter,Ownable {
      */
     function getRBFInfo(uint64 rbfId) public view returns (RBFInfo memory) {
         return rbfs[rbfId];
+    }
+
+    function recoverSigner(
+        bytes32 ethSignedMessageHash,
+        bytes memory signature
+    ) public pure returns (address) {
+        require(signature.length == 65, "RBFRouter:Invalid signature length");
+
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
+
+        // 分割 r, s, v
+        assembly {
+            r := mload(add(signature, 0x20))
+            s := mload(add(signature, 0x40))
+            v := byte(0, mload(add(signature, 0x60)))
+        }
+
+        return ecrecover(ethSignedMessageHash, v, r, s);
+    }
+
+    function getEthSignedMessageHash(
+        bytes32 messageHash
+    ) public pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    messageHash
+                )
+            );
     }
 
 }

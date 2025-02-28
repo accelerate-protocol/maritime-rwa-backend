@@ -34,5 +34,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log("VaultFactory:",VaultFactory.address);
 };
 
-export default func;
+
 func.tags = ['01_Factory_Deploy'];
+export default func;

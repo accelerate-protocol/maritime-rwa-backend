@@ -2,7 +2,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
-
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {deployments, getNamedAccounts} = hre;
     const {deploy,execute} = deployments;
@@ -34,6 +33,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
     console.log("tx:",tx.transactionHash)
 
+    
 
     tx=await execute(
         'EscrowFactory', 
@@ -49,15 +49,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         vaultRouter.address
     )
     console.log("tx:",tx.transactionHash)
-
-
-
-
-
-   
-
-
-
 
 };
 

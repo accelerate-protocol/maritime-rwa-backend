@@ -20,6 +20,8 @@ contract VaultRouter is Ownable,IVaultRouter {
     struct VaultInfo {
         uint256 createdAt;
         address vault;
+        address vaultProxyAdmin;
+        address vaultImpl;
         address dividendEscrow;
     }
     struct VaultData {
@@ -73,17 +75,19 @@ contract VaultRouter is Ownable,IVaultRouter {
             duration: vaultDeployData.duration,
             fundThreshold: vaultDeployData.fundThreshold,
             minDepositAmount: vaultDeployData.minDepositAmount,
-            managerFee: vaultDeployData.managerFee,
+            manageFee: vaultDeployData.manageFee,
             manager: vaultDeployData.manager,
             feeReceiver:vaultDeployData.feeReceiver,
             dividendEscrow: dividendEscrow,
             whitelists:vaultDeployData.whitelists
         });
 
-        (address vault,,) = vaultFactory.newVault(data,vaultDeployData.guardian);
+        (address vault,address vaultProxyAdmin,address vaultImpl) = vaultFactory.newVault(data,vaultDeployData.guardian);
          vaults[vaultId] = VaultInfo(
             block.timestamp,
             vault,
+            vaultProxyAdmin,
+            vaultImpl,
             dividendEscrow
         );
         Escrow(dividendEscrow).approveMax(vaultDeployData.assetToken, vault);
