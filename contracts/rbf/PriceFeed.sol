@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "../interface/AggregatorV3Interface.sol";
 
@@ -11,7 +10,7 @@ import "../interface/AggregatorV3Interface.sol";
  * @dev     Implements a simple price feed mechanism with role-based access control.
  * @notice  The contract follows the AggregatorV3Interface and allows authorized users to update price data.
  */
-contract PriceFeed is AggregatorV3Interface,Ownable,AccessControl {
+contract PriceFeed is AggregatorV3Interface,AccessControl {
 
     struct RoundData {
         int256 answer;          
@@ -22,7 +21,9 @@ contract PriceFeed is AggregatorV3Interface,Ownable,AccessControl {
     
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     bytes32 public constant FEEDER_ROLE = keccak256("FEEDER_ROLE");
+    // Mapping to store round data, where the key is the round ID and the value is a RoundData struct
     mapping(uint80 => RoundData) private rounds;
+    // Stores the latest round ID, which increments each time new data is added 
     uint80 private latestRoundId;
     
 
@@ -31,12 +32,13 @@ contract PriceFeed is AggregatorV3Interface,Ownable,AccessControl {
      * @param   manager  manager Address that will be assigned the MANAGER_ROLE.
      * @param   initialPrice  Initial price value to store in the first round.
      */
-    constructor(address manager,int256 initialPrice) Ownable(){
+    constructor(address admin,address manager,int256 initialPrice) {
         _addPrice(initialPrice, block.timestamp);
+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(MANAGER_ROLE, manager);
     }
 
-    
+
     /**
      * @notice  Grants the FEEDER_ROLE to an address, allowing it to update prices.
      * @dev     Only addresses with MANAGER_ROLE can call this function

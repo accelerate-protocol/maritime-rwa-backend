@@ -43,7 +43,6 @@ describe("RWA:", function () {
     investor4 = namedAccounts.investor4;
     investor5 = namedAccounts.investor5;
     whitelists = [investor1, investor2, investor3, investor4, investor5];
-
     rbfSigner = namedAccounts.rbfSigner;
     feeReceiver = namedAccounts.feeReceiver;
     depositTreasury = namedAccounts.depositTreasury;
@@ -66,15 +65,17 @@ describe("RWA:", function () {
     const rbfId = await rbfRouter.rbfNonce();
 
 
+    var maxSupply="10200000000"
+    var initialPrice="100000000"
     const rbfDeployData = {
       rbfId: rbfId,
       name: "RBF",
       symbol: "RBF",
       assetToken: usdt.address,
-      maxSupply: "10200000000",
-      manageFee: "50",
+      maxSupply: maxSupply,
+      manageFee: "0",
       depositTreasury: depositTreasury,
-      initialPrice: "100000000",
+      initialPrice: initialPrice,
       deployer: deployer,
       manager: manager,
       guardian: guardian,
@@ -88,10 +89,29 @@ describe("RWA:", function () {
     var receipt = await res.wait();
     const rbfData = await rbfRouter.getRBFInfo(rbfId);
     rbf = rbfData.rbf;
+
+    const deployedRbf = await hre.ethers.getContractAt(
+      "RBF", // 替换为你的合约名称
+      rbf
+    )
+    expect(await deployedRbf.owner()).to.be.equal(deployer);
+    expect(await deployedRbf.assetToken()).to.be.equal(usdt.address);
+    expect(await deployedRbf.maxSupply()).to.be.equal(maxSupply);
+    expect(await deployedRbf.depositTreasury()).to.be.equal(depositTreasury);
+    expect(await deployedRbf.dividendTreasury()).to.be.equal(rbfData.dividendTreasury);
+    expect(await deployedRbf.priceFeed()).to.be.equal(rbfData.priceFeed);
+    expect(await deployedRbf.manager()).to.be.equal(manager);
+    expect(await deployedRbf.manageFee()).to.be.equal("0");
+    expect(await deployedRbf.decimalsMultiplier()).to.be.equal(1);
+    expect(await deployedRbf.vault()).to.be.equal("0x0000000000000000000000000000000000000000");
+
     const vaultId = await vaultRouter.vaultNonce();
     const subStartTime = Math.floor(Date.now() / 1000);
     const subEndTime = subStartTime + 3600;
-
+    const duration="2592000"
+    const fundThreshold="3000"
+    const minDepositAmount="10000000"
+    const manageFee="50"
     const vaultDeployData = {
       vaultId: vaultId,
       name: "RbfVault",
@@ -100,10 +120,10 @@ describe("RWA:", function () {
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
-      duration: "2592000",
-      fundThreshold: "3000",
-      minDepositAmount: "10000000",
-      manageFee: "50",
+      duration: duration,
+      fundThreshold: fundThreshold,
+      minDepositAmount: minDepositAmount,
+      manageFee: manageFee,
       manager: manager,
       feeReceiver: feeReceiver,
       whitelists: whitelists,
@@ -113,6 +133,27 @@ describe("RWA:", function () {
     receipt = await res.wait();
     const vaultData = await vaultRouter.getVaultInfo(vaultId);
     vault = vaultData.vault;
+
+    const deployedVault = await hre.ethers.getContractAt(
+      "Vault", // 替换为你的合约名称
+      vault
+    )
+
+    expect(await deployedVault.rbf()).to.be.equal(rbf);
+    expect(await deployedVault.assetToken()).to.be.equal(usdt.address);
+    expect(await deployedVault.feeReceiver()).to.be.equal(feeReceiver);
+    expect(await deployedVault.dividendTreasury()).to.be.equal(vaultData.dividendTreasury);
+    expect(await deployedVault.maxSupply()).to.be.equal(await deployedRbf.maxSupply());
+
+    expect(await deployedVault.subStartTime()).to.be.equal(subStartTime);
+    expect(await deployedVault.subEndTime()).to.be.equal(subEndTime);
+    expect(await deployedVault.duration()).to.be.equal(duration);
+    expect(await deployedVault.fundThreshold()).to.be.equal(fundThreshold);
+    expect(await deployedVault.manageFee()).to.be.equal(manageFee);
+    expect(await deployedVault.minDepositAmount()).to.be.equal(minDepositAmount);
+    expect(await deployedVault.decimalsMultiplier()).to.be.equal(1);
+    expect(await deployedVault.manager()).to.be.equal(manager);
+
   });
 
   it("rbf error sign deploy:", async function () {
@@ -211,7 +252,7 @@ describe("RWA:", function () {
     );
 
     await expect(
-      priceFeedFactory.newPriceFeed(manager, "1000000")
+      priceFeedFactory.newPriceFeed(deployer,manager, "1000000")
     ).to.be.revertedWith("Auth/not-authorized");
   });
 
@@ -263,7 +304,7 @@ describe("RWA:", function () {
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
-      dividendEscrow: manager,
+      dividendTreasury: manager,
       whitelists: whitelists,
     };
     await expect(
@@ -374,7 +415,7 @@ describe("RWA:", function () {
       depositTreasurySigner
     );
     const rbfDividendTreasury = await rbfManager.dividendTreasury();
-    const vaultDividendTreasury = await vaultManager.dividendEscrow();
+    const vaultDividendTreasury = await vaultManager.dividendTreasury();
     var vaultDividendBalance:any;
     for (let i = 0; i < dividendCountArr.length; i++) {
       const dividendAmount = BigInt(Math.floor(dividendCountArr[i] * 1e6));
@@ -400,9 +441,6 @@ describe("RWA:", function () {
     console.log(investArr)
     console.log(incomeArr)
     expect(totalDividend).to.equal(totalNav);
-    
-
-
   });
 
   function distributeMoneyWithMinimum(

@@ -12,6 +12,7 @@ interface IPriceFeedFactory {
      */
     function newPriceFeed(
         address admin,
+        address manager,
         int256 initialPrice
     ) external returns (address);
     

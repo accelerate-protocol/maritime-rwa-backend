@@ -15,37 +15,45 @@ import "./RBF.sol";
  * @dev     Router contract for deploying RBF contracts and managing their settings.
  * @notice  This contract facilitates the creation and management of RBF contracts, handling escrow and price feed deployment.
  */
-contract RBFRouter is IRBFRouter,Ownable {
+contract RBFRouter is IRBFRouter, Ownable {
+    // Struct to store RBF contract information
     struct RBFInfo {
-        uint256 createdAt;
-        address rbf;
-        address rbfProxyAdmin;
-        address rbfImpl;
-        address dividendTreasury;
-        address priceFeed;
-    }
-    
-    struct RBFDeployData {
-        uint64 rbfId;
-        string name;
-        string symbol;
-        address assetToken;
-        uint256 maxSupply;
-        uint256 manageFee;
-        address depositTreasury;
-        int256 initialPrice;
-        address deployer;
-        address manager;
-        address guardian;
+        uint256 createdAt; // Timestamp when the RBF contract was created
+        address rbf; // Address of the deployed RBF contract
+        address rbfProxyAdmin; // Address of the RBF proxy admin
+        address rbfImpl; // Address of the RBF implementation contract
+        address dividendTreasury; // Address of the dividend treasury escrow contract
+        address priceFeed; // Address of the associated price feed contract
     }
 
+    // Struct to hold data for deploying an RBF contract
+    struct RBFDeployData {
+        uint64 rbfId; // Unique identifier for the RBF contract
+        string name; //Name of the RBF token
+        string symbol; //Symbol of the RBF token
+        address assetToken; //Address of the asset backing the RBF
+        uint256 maxSupply; //Maximum token supply
+        uint256 manageFee; //Management fee for the RBF
+        address depositTreasury; //Address of the deposit treasury
+        int256 initialPrice; //Initial price of the asset
+        address deployer; //Address of the deployer
+        address manager; //Address of the RBF and PriceFeed manager
+        address guardian; //Guardian address for security proxy update
+    }
+
+    // Minimum number of valid signatures required for deployment
     uint256 public threshold;
+    // Nonce for tracking RBF contract deployments
     uint64 public rbfNonce;
+    // Immutable factory contract addresses for RBF, escrow, and price feeds
     IRBFFactory public immutable rbfFactory;
     IEscrowFactory public immutable escrowFactory;
     IPriceFeedFactory public immutable priceFeedFactory;
+    // Mapping of RBF ID to its corresponding contract information
     mapping(uint64 => RBFInfo) private rbfs;
+    // Mapping to track whitelisted addresses authorized to sign transactions
     mapping(address => bool) public whiteListed;
+    address[] whiteLists;
 
     /**
      * @notice Constructor to initialize the router with necessary parameters.
@@ -63,13 +71,54 @@ contract RBFRouter is IRBFRouter,Ownable {
         address _escrowFactory,
         address _priceFeedFactory
     ) Ownable() {
+        require(_whiteLists.length > 0, "whiteLists must not be empty");
+        whiteLists = _whiteLists;
         for (uint256 i = 0; i < _whiteLists.length; i++) {
             whiteListed[_whiteLists[i]] = true;
         }
+        require(_threshold > 0, "threshold must >0");
         threshold = _threshold;
+        require(_rbfFactory != address(0), "rbfFactory must not be zero");
         rbfFactory = IRBFFactory(_rbfFactory);
+        require(_escrowFactory != address(0), "escrowFactory must not be zero");
         escrowFactory = IEscrowFactory(_escrowFactory);
+        require(
+            _priceFeedFactory != address(0),
+            "priceFeedFactory must not be zero"
+        );
         priceFeedFactory = IPriceFeedFactory(_priceFeedFactory);
+    }
+
+
+    /**
+     * @notice  Updates the whitelist of authorized signers and the signature threshold.
+     * @dev     Only the contract owner can call this function. It first clears the existing whitelist,
+     *          then sets the new whitelist addresses and updates the required signature threshold.
+     * @param   _whiteLists  Array of new addresses to be whitelisted.
+     * @param   _threshold  Minimum number of valid signatures required for verification.
+     */
+    function setWhiteListsAndThreshold(
+        address[] memory _whiteLists,
+        uint256 _threshold
+    ) public onlyOwner {
+        require(whiteLists.length > 0, "whiteLists must not be empty");
+        require(_threshold > 0, "threshold must not be zero");
+        // Remove existing whitelist addresses
+        uint oldLen=whiteLists.length;
+        for (uint i = 0; i < oldLen; i++) {
+            whiteListed[whiteLists[i]] = false;
+        }
+
+        // Update whitelist addresses
+        whiteLists = _whiteLists;
+        uint newLen=_whiteLists.length;
+        for (uint256 i = 0; i < newLen; i++) {
+            whiteListed[_whiteLists[i]] = true;
+        }
+        // Update the required signature threshold
+        threshold = _threshold;
+
+        emit SetWhiteListsAndThreshold(_whiteLists, _threshold);
     }
 
     /**
@@ -88,28 +137,30 @@ contract RBFRouter is IRBFRouter,Ownable {
             (RBFDeployData)
         );
         require(rbfDeployData.rbfId == rbfNonce, "RBFRouter:Invalid rbfId");
-        require(rbfDeployData.deployer == msg.sender, "RBFRouter:Invalid deployer");
+        require(
+            rbfDeployData.deployer == msg.sender,
+            "RBFRouter:Invalid deployer"
+        );
         rbfNonce++;
         address dividendTreasury = escrowFactory.newEscrow(address(this));
         address pricerFeed = priceFeedFactory.newPriceFeed(
             msg.sender,
+            rbfDeployData.manager,
             rbfDeployData.initialPrice
         );
-        RBFInitializeData memory data=RBFInitializeData({
-            name:rbfDeployData.name,
-            symbol:rbfDeployData.symbol,
-            assetToken:rbfDeployData.assetToken,
-            maxSupply:rbfDeployData.maxSupply,
-            manageFee:rbfDeployData.manageFee,
-            depositTreasury:rbfDeployData.depositTreasury,
-            dividendTreasury:dividendTreasury,
-            priceFeed:pricerFeed,
-            manager:rbfDeployData.manager
+        RBFInitializeData memory data = RBFInitializeData({
+            name: rbfDeployData.name,
+            symbol: rbfDeployData.symbol,
+            assetToken: rbfDeployData.assetToken,
+            maxSupply: rbfDeployData.maxSupply,
+            manageFee: rbfDeployData.manageFee,
+            depositTreasury: rbfDeployData.depositTreasury,
+            dividendTreasury: dividendTreasury,
+            priceFeed: pricerFeed,
+            manager: rbfDeployData.manager
         });
-        (address rbf,address rbfProxyAdmin,address rbfImpl)= rbfFactory.newRBF(
-            data,
-            rbfDeployData.guardian
-        );
+        (address rbf, address rbfProxyAdmin, address rbfImpl) = rbfFactory
+            .newRBF(data, rbfDeployData.guardian);
         rbfs[rbfDeployData.rbfId] = RBFInfo(
             block.timestamp,
             rbf,
@@ -119,7 +170,7 @@ contract RBFRouter is IRBFRouter,Ownable {
             address(pricerFeed)
         );
 
-        Escrow(dividendTreasury).approveMax(rbfDeployData.assetToken,rbf);
+        Escrow(dividendTreasury).approveMax(rbfDeployData.assetToken, rbf);
         Escrow(dividendTreasury).rely(address(rbf));
         Escrow(dividendTreasury).deny(address(this));
         RBF(rbf).transferOwnership(msg.sender);
@@ -129,9 +180,7 @@ contract RBFRouter is IRBFRouter,Ownable {
             rbf,
             dividendTreasury
         );
-
     }
-
 
     function _verifySign(
         bytes memory deployData,
@@ -148,13 +197,12 @@ contract RBFRouter is IRBFRouter,Ownable {
         }
         require(validSignatures >= threshold, "RBFRouter:Invalid Threshold");
     }
-    
+
     function getEncodeData(
         RBFDeployData memory rbfDeployData
     ) public pure returns (bytes memory) {
         return abi.encode(rbfDeployData);
     }
-
 
     /**
      * @notice  Retrieves information about a deployed RBF contract.
@@ -196,5 +244,4 @@ contract RBFRouter is IRBFRouter,Ownable {
                 )
             );
     }
-
 }

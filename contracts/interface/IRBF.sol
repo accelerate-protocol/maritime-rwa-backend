@@ -17,9 +17,11 @@ interface IRBF {
         uint256 actualAmount,
         uint256 mintAmount
     );
-    event dividendEvent(
+    event DividendEvent(
         address receiver,
         uint256 amount
     );
+
+    event SetVault(address vault);
 }
 

@@ -22,7 +22,7 @@ contract VaultRouter is Ownable,IVaultRouter {
         address vault;
         address vaultProxyAdmin;
         address vaultImpl;
-        address dividendEscrow;
+        address dividendTreasury;
     }
     struct VaultData {
         string name;
@@ -30,14 +30,19 @@ contract VaultRouter is Ownable,IVaultRouter {
         address assetToken;
         address rbuManager;
         address feeEscrow;
-        address dividendEscrow;
+        address dividendTreasury;
         address manager;
     }
 
+    // Immutable reference to the escrow factory contract.
     IEscrowFactory public immutable escrowFactory;
+    // Immutable reference to the vault factory contract.
     IVaultFactory public immutable vaultFactory;
+    // Counter for tracking the latest deployed vault ID.
     uint64 public vaultNonce;
+    // Mapping from vault ID to its VaultInfo struct.
     mapping(uint64 => VaultInfo) private vaults;
+    // Mapping to check if an RBF vault has already been deployed.
     mapping(address => bool) public rbfVaultExist;
 
     /**
@@ -63,7 +68,7 @@ contract VaultRouter is Ownable,IVaultRouter {
         require(RBF(vaultDeployData.rbf).owner() == msg.sender,"only rbf owner can deploy vault");
         require(!rbfVaultExist[vaultDeployData.rbf],"rbf vault already exist");
         rbfVaultExist[vaultDeployData.rbf]=true;
-        address dividendEscrow = escrowFactory.newEscrow(address(this));
+        address dividendTreasury = escrowFactory.newEscrow(address(this));
 
         VaultInitializeData memory data=VaultInitializeData({
             name: vaultDeployData.name,
@@ -78,7 +83,7 @@ contract VaultRouter is Ownable,IVaultRouter {
             manageFee: vaultDeployData.manageFee,
             manager: vaultDeployData.manager,
             feeReceiver:vaultDeployData.feeReceiver,
-            dividendEscrow: dividendEscrow,
+            dividendTreasury: dividendTreasury,
             whitelists:vaultDeployData.whitelists
         });
 
@@ -88,13 +93,13 @@ contract VaultRouter is Ownable,IVaultRouter {
             vault,
             vaultProxyAdmin,
             vaultImpl,
-            dividendEscrow
+            dividendTreasury
         );
-        Escrow(dividendEscrow).approveMax(vaultDeployData.assetToken, vault);
-        Escrow(dividendEscrow).rely(address(vault));
-        Escrow(dividendEscrow).deny(address(this));
+        Escrow(dividendTreasury).approveMax(vaultDeployData.assetToken, vault);
+        Escrow(dividendTreasury).rely(address(vault));
+        Escrow(dividendTreasury).deny(address(this));
         Vault(vault).transferOwnership(msg.sender);
-        emit DeployVaultEvent(vaultId, vault, dividendEscrow);
+        emit DeployVaultEvent(vaultId, vault, dividendTreasury);
     }
 
     /**

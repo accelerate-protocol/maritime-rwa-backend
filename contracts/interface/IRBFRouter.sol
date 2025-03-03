@@ -21,4 +21,9 @@ interface IRBFRouter {
         address rbf,
         address dividendTreasury
     );
+
+    event SetWhiteListsAndThreshold(
+        address[] whiteLists,
+        uint256 threshold
+    );
 }
