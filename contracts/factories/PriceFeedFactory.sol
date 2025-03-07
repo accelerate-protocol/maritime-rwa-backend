@@ -5,7 +5,6 @@ import "../interface/IPriceFeedFactory.sol";
 import "../common/Auth.sol";
 import "../rbf/PriceFeed.sol";
 
-
 /**
  * @author  tmpAuthor
  * @title   PriceFeedFactory
@@ -20,24 +19,20 @@ contract PriceFeedFactory is Auth, IPriceFeedFactory {
      */
     constructor(address deployer) Auth(deployer) {}
 
-    
     /**
      * @notice  Creates a new instance of the PriceFeed contract.
      * @dev     Only authorized users can call this function.
-     * @param   admin  The address of the admin for the new PriceFeed contract.
      * @param   manager  The address of the manager for the new PriceFeed contract.
-     * @param   initialPrice  The initial price value for the PriceFeed contract.
      * @return  address  The address of the newly created PriceFeed contract.
      */
     function newPriceFeed(
-        address admin,
-        address manager,
-        int256 initialPrice
+        address manager
     ) public auth override returns (address){
-        PriceFeed pricer = new PriceFeed(admin,manager, initialPrice);
+        PriceFeed pricer = new PriceFeed(manager);
         emit PriceFeedDeployed(address(pricer));
         return address(pricer);
     }
+
 }
 
 

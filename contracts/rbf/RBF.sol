@@ -7,6 +7,7 @@ import "../interface/IRBF.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 
@@ -14,11 +15,10 @@ struct RBFInitializeData {
     string name; // The name of the RBF contract
     string symbol; // The symbol of the RBF contract (usually a ticker like "RBF")
     address assetToken; // The address of the ERC20 token used in the RBF contract (e.g., USDC, ETH)
-    uint256 maxSupply; // The maximum supply of the RBF token, defining the total token limit in the contract
-    uint256 manageFee; // The fee charged by the manager, usually a percentage of the amount handled
     address depositTreasury; // The address that receives the deposits from the vault
     address dividendTreasury; // The address where dividends (profits) will be stored and distributed
     address priceFeed; // The address of the price feed (e.g., Chainlink) to get the asset price for RBF calculations
+    uint256 mintSlippageBps; // The slippage tolerance for minting RBF tokens
     address manager; // The address of the contract manager who can dividend in the RBF contract
 }
 
@@ -28,35 +28,42 @@ struct RBFInitializeData {
  * @dev     A contract for handling deposit and minting of RBF tokens, managing dividends, and controlling access by the manager.
  * @notice  This contract allows deposits in an underlying asset token and mints a corresponding amount of RBF tokens based on the deposit and the asset's price. It also supports dividend distribution and fee management by manager.
  */
-contract RBF is IRBF, OwnableUpgradeable, ERC20Upgradeable {
+contract RBF is
+    IRBF,
+    OwnableUpgradeable,
+    ERC20Upgradeable,
+    AccessControlUpgradeable
+{
     using SafeERC20 for IERC20;
     uint256 public constant BPS_DENOMINATOR = 10_000;
+    bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+    bytes32 public constant PRICE_MINT_AMOUNT_SETTER_ROLE =
+        keccak256("PRICE_MINT_AMOUNT_SETTER_ROLE");
     // The address of the asset token that this contract interacts with (e.g., an ERC-20 token).
     address public assetToken;
-    // The maximum supply of the asset token that can be issued by this contract.
-    uint256 public maxSupply;
     // The address of the treasury that holds deposited assets.
     address public depositTreasury;
-    // The address of the treasury responsible for distributing dividends to stakeholders.
+    // The address of the treasury responsible for distributing dividends to rbfholders.
     address public dividendTreasury;
-    // The price feed contract used to fetch price data for the asset.
+    // The price feed contract used to fetch price data for the asset.  
     AggregatorV3Interface public priceFeed;
     // The address of the manager who has administrative privileges over the contract.
     address public manager;
-    // The management fee (expressed in basis points or a fixed value) charged for handling the asset.
-    uint256 public manageFee;
-    //  A multiplier used to adjust token decimals for precision in calculations.
-    uint256 public decimalsMultiplier;
+    // The slippage tolerance for minting RBF tokens.
+    uint256 public mintSlippageBps;
     // The address of the vault  which can deposit assetToken.
     address public vault;
+    // The amount of assetToken deposited into the depositTreasury.
+    uint256 public depositAmount;
+    // The price of RBF tokens minted for each assetToken deposited.
+    uint256 public depositPirce;
+    // The amount of RBF tokens minted for assetToken deposited.
+    uint256 public depositMintAmount;
+    // Multiplier to adjust decimals between assetToken and RBF token
+    uint256 public decimalsMultiplier;
 
     modifier onlyVault() {
         require(msg.sender == vault, "RBF: you are not vault");
-        _;
-    }
-
-    modifier onlyManager() {
-        require(msg.sender == manager, "RBF: you are not manager");
         _;
     }
 
@@ -80,9 +87,6 @@ contract RBF is IRBF, OwnableUpgradeable, ERC20Upgradeable {
             "RBF: assetToken address cannot be zero address"
         );
         assetToken = data.assetToken;
-        require(data.maxSupply > 0, "RBF: maxSupply must be greater than 0");
-        maxSupply = data.maxSupply;
-        manageFee = data.manageFee;
         require(
             data.depositTreasury != address(0),
             "RBF: depositTreasury address cannot be zero address"
@@ -103,70 +107,71 @@ contract RBF is IRBF, OwnableUpgradeable, ERC20Upgradeable {
             "RBF: manager address can not be zero address"
         );
         manager = data.manager;
+        mintSlippageBps = data.mintSlippageBps;
+
         decimalsMultiplier =
             10 **
                 (decimals() -
                     IERC20MetadataUpgradeable(data.assetToken).decimals());
+
+        _grantRole(DEFAULT_ADMIN_ROLE, data.manager);
+        _grantRole(MANAGER_ROLE, data.manager);
+        _setRoleAdmin(PRICE_MINT_AMOUNT_SETTER_ROLE, MANAGER_ROLE);
     }
 
+    /*//////////////////////////////////////////////////////////////
+                  Deposit/Dividend Functions
+    //////////////////////////////////////////////////////////////*/
     /**
-     * @notice  Allows the vault to deposit the asset token and mint corresponding RBF tokens.
-     * @dev     Deposits the asset token, deducts the manager's fee, and mints RBF tokens based on the asset's price.
-     * @param   amount  The amount of asset token being deposited.
+     * @notice  Deposits assetToken into the RBF contract.
+     * @dev     This function is only callable by the Vault.
+     * @param   amount The amount of assetToken to deposit.
      */
-    function deposit(uint256 amount) public onlyVault {
+    function requestDeposit(uint256 amount) public onlyVault {
         require(
             IERC20(assetToken).balanceOf(msg.sender) >= amount,
             "RBF: Insufficient balance"
         );
-        uint256 amountFee = (amount * manageFee) / BPS_DENOMINATOR;
-        uint256 depositAmount = amount - amountFee;
-        SafeERC20.safeTransferFrom(
-            IERC20(assetToken),
-            msg.sender,
-            address(this),
-            amountFee
-        );
+        depositAmount += amount;
         SafeERC20.safeTransferFrom(
             IERC20(assetToken),
             msg.sender,
             depositTreasury,
-            depositAmount
+            amount
         );
-        uint256 rwaAmount = _getMintAmountForPrice(depositAmount);
-        require(
-            totalSupply() + rwaAmount <= maxSupply,
-            "RBF: maxSupply exceeded"
-        );
-        _mint(msg.sender, rwaAmount);
-        emit DepositEvent(
-            msg.sender,
-            amount,
-            amountFee,
-            depositAmount,
-            rwaAmount
-        );
+        emit DepositEvent(msg.sender,amount);
     }
 
     /**
-     * @notice  Allows the manager to set the vault contract address.
-     * @dev     This function assigns the vault address, which interacts with the RBF contract.
-     * @param   vaultAddr  The address of the vault to be set.
+     * @notice  Allows the manager to claim the deposit and mint RBF tokens.
+     * @dev     This function is only callable by the manager role.
      */
-    function setVault(address vaultAddr) public onlyManager {
+    function claimDeposit() public onlyRole(MANAGER_ROLE) {
+        require(depositAmount > 0, "RBF: depositAmount must be greater than 0");
+        require(depositPirce > 0, "RBF: depositPirce must be greater than 0");
         require(
-            vaultAddr != address(0),
-            "RBF: vaultAddr cannot be zero address"
+            depositMintAmount > 0,
+            "RBF: depositMintAmount must be greater than 0"
         );
-        vault = vaultAddr;
-        emit SetVault(vaultAddr);
+        uint256 scaledDeposit = _scaleUp(depositAmount);
+        uint256 minAmount = (scaledDeposit * (10 ** priceFeed.decimals())) /
+            depositPirce;
+        uint256 slippageFactor = (mintSlippageBps * minAmount) / BPS_DENOMINATOR;
+        uint256 lowerBound = minAmount - slippageFactor;
+        uint256 upperBound = minAmount + slippageFactor;
+        require(
+            depositMintAmount >= lowerBound && depositMintAmount <= upperBound,
+            "RBF: depositMintAmount is not in the range"
+        );
+        _mint(vault, depositMintAmount);
+        depositAmount = 0;
     }
 
     /**
      * @notice  Allows the manager to distribute dividends from the dividend treasury to the vault.
      * @dev     This function calculates the dividend share for the vault and transfers the dividend amount.
      */
-    function dividend() public onlyManager {
+    function dividend() public onlyRole(MANAGER_ROLE) {
         uint256 totalDividend = IERC20(assetToken).balanceOf(dividendTreasury);
         require(totalDividend > 0, "RBF: totalDividend must be greater than 0");
         uint256 totalSupply = totalSupply();
@@ -181,27 +186,52 @@ contract RBF is IRBF, OwnableUpgradeable, ERC20Upgradeable {
             vaultDividendTreasury != address(0),
             "RBF: vault dividendTreasury cant not be zero"
         );
-        _dividend(balanceOf(vault), totalSupply, totalDividend, vaultDividendTreasury);
+        _dividend(
+            balanceOf(vault),
+            totalSupply,
+            totalDividend,
+            vaultDividendTreasury
+        );
     }
 
     /**
-     * @notice  Allows the owner to withdraw fees accumulated by the contract.
-     * @dev     The contract owner can withdraw any asset token balance that has been collected as fees.
+     * @notice  Sets the deposit price and mint amount for RBF tokens.
+     * @dev     This function is only callable by the PRICE_MINT_AMOUNT_SETTER_ROLE.
+     * @param   _depositPirce    amount of assetToken deposited
+     * @param   _depositMintAmount amount of RBF tokens minted
      */
-    function withdrawFee() external onlyManager {
-        uint256 balance = IERC20(assetToken).balanceOf(address(this));
-        SafeERC20.safeTransfer(IERC20(assetToken), msg.sender, balance);
+    function setDepositPirceAndMintAmount(
+        uint256 _depositPirce,
+        uint256 _depositMintAmount
+    ) public onlyRole(PRICE_MINT_AMOUNT_SETTER_ROLE) {
+        depositPirce = _depositPirce;
+        depositMintAmount = _depositMintAmount;
+        emit DepositDataEvent(depositPirce, depositMintAmount);
     }
 
     /**
-     * @notice  Fetches the net asset value (NAV) of the user's RBF tokens based on the asset price.
+     * @notice  Allows the manager to set the vault contract address.
+     * @dev     This function assigns the vault address, which interacts with the RBF contract.
+     * @param   _vault  The address of the vault to be set.
+     */
+    function setVault(address _vault) public onlyRole(MANAGER_ROLE) {
+        require(
+            _vault != address(0),
+            "RBF: vaultAddr cannot be zero address"
+        );
+        vault = _vault;
+        emit SetVault(_vault);
+    }
+
+    /**
+     * @notice  Fetches the net asset value (NAV) of the vault's RBF tokens based on the asset price.
      * @dev     This function calculates the NAV of the RBF tokens held by vault by fetching the latest price.
      * @return  uint256  The NAV in terms of the asset token's value.
      */
     function getAssetsNav() public view returns (uint256) {
         int256 lastPrice = getLatestPrice();
         uint256 amount = balanceOf(vault);
-        uint256 indexDecimals = 10 ** priceFeedDecimals();
+        uint256 indexDecimals = 10 ** priceFeed.decimals();
         return (amount * uint256(lastPrice)) / indexDecimals;
     }
 
@@ -211,31 +241,22 @@ contract RBF is IRBF, OwnableUpgradeable, ERC20Upgradeable {
      * @return  int256  The latest price of the asset token.
      */
     function getLatestPrice() public view returns (int256) {
-        (uint80 roundId, int256 price, uint256 startedAt,uint256 updatedAt,uint80 answeredInRound) = priceFeed.latestRoundData();
-        require((roundId>0&&price>0&&startedAt>0&&updatedAt>0&&answeredInRound>0),"Invalid price data");
+        (
+            uint80 roundId,
+            int256 price,
+            uint256 startedAt,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        ) = priceFeed.latestRoundData();
+        require(
+            (roundId > 0 &&
+                price > 0 &&
+                startedAt > 0 &&
+                updatedAt > 0 &&
+                answeredInRound > 0),
+            "Invalid price data"
+        );
         return price;
-    }
-
-    /**
-     * @notice  Retrieves the price data for a specific round.
-     * @dev     This function queries the price feed contract to obtain the price corresponding to the provided round ID.
-     *          It checks that the price is greater than zero to ensure the data is valid.
-     * @param   round  The identifier of the round to fetch the price for.
-     * @return  int256  The price of the asset for the specified round.
-     */
-    function getRoundPrice(uint80 round) public view returns (int256) {
-        (uint80 roundId, int256 price, uint256 startedAt,uint256 updatedAt,uint80 answeredInRound) = priceFeed.getRoundData(round);
-        require((roundId>0&&price>0&&startedAt>0&&updatedAt>0&&answeredInRound>0),"Invalid price data");
-        return price;
-    }
-
-    /**
-     * @notice  Fetches the decimal precision of the price feed.
-     * @dev     This helps align the precision between asset price and RBF token calculations.
-     * @return  uint8  The number of decimals used by the price feed.
-     */
-    function priceFeedDecimals() public view returns (uint8) {
-        return priceFeed.decimals();
     }
 
     /**
@@ -265,17 +286,6 @@ contract RBF is IRBF, OwnableUpgradeable, ERC20Upgradeable {
             receiver,
             dividendAmount
         );
-        emit DividendEvent(receiver, dividendAmount);
-    }
-
-    function _getMintAmountForPrice(
-        uint256 depositAmount
-    ) internal view returns (uint256) {
-        uint256 tokenPrice = (uint256)(getLatestPrice());
-        uint256 indexDecimals = 10 ** priceFeedDecimals();
-        uint256 rwaAmount = (_scaleUp(depositAmount) * indexDecimals) /
-            tokenPrice;
-        return rwaAmount;
     }
 
     function _scaleUp(uint256 amount) internal view returns (uint256) {

@@ -7,10 +7,12 @@ struct VaultDeployData {
     string symbol;
     address assetToken;
     address rbf;
+    uint256 maxSupply;
     uint256 subStartTime;
     uint256 subEndTime;
     uint256 duration;
     uint256 fundThreshold;
+    uint256 financePrice;
     uint256 minDepositAmount;
     uint256 manageFee;
     address manager;

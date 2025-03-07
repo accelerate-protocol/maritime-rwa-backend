@@ -4,7 +4,6 @@ pragma solidity 0.8.26;
 import "../interface/IEscrowFactory.sol";
 import "../common/Auth.sol";
 import "../common/Escrow.sol";
-
 /**
  * @author  tmpAuthor
  * @title   EscrowFactory
@@ -19,7 +18,6 @@ contract EscrowFactory is Auth, IEscrowFactory {
      * @param deployer The address of the entity deploying the contract, serving as the initial administrator.
      */
     constructor(address deployer) Auth(deployer) {}
-
     
     /**
      * @notice  Creates a new instance of the Escrow contract.

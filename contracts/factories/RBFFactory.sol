@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.so
  * @dev     This contract is responsible for deploying and managing instances of the RBF contract.
  *
  * @notice  This contract serves as a Factory for the upgradable RBF token contract.
- *          Upon calling `newRBF` the `guardian` address (set in constructor) will
+ *          Upon calling `newRBF` the caller address will
  *          deploy the following:
  *          1) RBF - The implementation contract, ERC20Upgradeable contract with the constructor disabled
  *          2) ProxyAdmin - OZ ProxyAdmin contract, used to upgrade the proxy instance.
@@ -21,7 +21,7 @@ import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.so
  *          3) TransparentUpgradeableProxy - OZ TransparentUpgradeableProxy contract, used to proxy the implementation.
  *          Following the above mentioned deployment, the address of the RBFFactory contract will:
  *          i) Transfer ownership of the ProxyAdmin to that of the `guardian` address.
- *          ii) Transfer ownership of the rbfProxied to that of the `msg.sender` address.
+ *          ii) Transfer ownership of the rbfProxied to that of the msg.sender address.
  *
  */
 contract RBFFactory is Auth, IRBFFactory {

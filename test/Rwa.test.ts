@@ -1,7 +1,5 @@
 import hre from "hardhat";
 import { expect } from "chai";
-import ethers from "hardhat";
-import { any } from "hardhat/internal/core/params/argumentTypes";
 
 describe("RWA:", function () {
   const { deployments, getNamedAccounts, ethers } = hre;
@@ -16,6 +14,7 @@ describe("RWA:", function () {
   var investor3: any;
   var investor4: any;
   var investor5: any;
+  var drds:any;
   var whitelists: any;
   var depositTreasury: any;
   var EscrowFactory: any;
@@ -32,6 +31,7 @@ describe("RWA:", function () {
   var rbf: any;
   var vault: any;
 
+
   before(async () => {
     const namedAccounts = await getNamedAccounts();
     deployer = namedAccounts.deployer;
@@ -42,6 +42,7 @@ describe("RWA:", function () {
     investor3 = namedAccounts.investor3;
     investor4 = namedAccounts.investor4;
     investor5 = namedAccounts.investor5;
+    drds = namedAccounts.drds;
     whitelists = [investor1, investor2, investor3, investor4, investor5];
     rbfSigner = namedAccounts.rbfSigner;
     feeReceiver = namedAccounts.feeReceiver;
@@ -52,7 +53,7 @@ describe("RWA:", function () {
     VaultFactory = await deployments.get("VaultFactory");
     RBFRouter = await deployments.get("RBFRouter");
     VaultRouter = await deployments.get("VaultRouter");
-
+    await deployments.fixture(["MockUSDT"]);
     usdt = await deploy("MockUSDT", {
       from: deployer,
       args: ["USDC", "UDSC"],
@@ -63,19 +64,13 @@ describe("RWA:", function () {
       VaultRouter.address
     );
     const rbfId = await rbfRouter.rbfNonce();
-
-
-    var maxSupply="10200000000"
-    var initialPrice="100000000"
     const rbfDeployData = {
       rbfId: rbfId,
       name: "RBF",
       symbol: "RBF",
       assetToken: usdt.address,
-      maxSupply: maxSupply,
-      manageFee: "0",
       depositTreasury: depositTreasury,
-      initialPrice: initialPrice,
+      mintSlippageBps:"0",
       deployer: deployer,
       manager: manager,
       guardian: guardian,
@@ -85,26 +80,21 @@ describe("RWA:", function () {
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
     const signatures = [signature];
-    var res = await rbfRouter.deployRBF(deployData, signatures);
-    var receipt = await res.wait();
+    await expect(rbfRouter.deployRBF(deployData, signatures)).not.to.be.reverted;
     const rbfData = await rbfRouter.getRBFInfo(rbfId);
     rbf = rbfData.rbf;
-
     const deployedRbf = await hre.ethers.getContractAt(
       "RBF", // 替换为你的合约名称
       rbf
     )
     expect(await deployedRbf.owner()).to.be.equal(deployer);
     expect(await deployedRbf.assetToken()).to.be.equal(usdt.address);
-    expect(await deployedRbf.maxSupply()).to.be.equal(maxSupply);
     expect(await deployedRbf.depositTreasury()).to.be.equal(depositTreasury);
     expect(await deployedRbf.dividendTreasury()).to.be.equal(rbfData.dividendTreasury);
     expect(await deployedRbf.priceFeed()).to.be.equal(rbfData.priceFeed);
     expect(await deployedRbf.manager()).to.be.equal(manager);
-    expect(await deployedRbf.manageFee()).to.be.equal("0");
     expect(await deployedRbf.decimalsMultiplier()).to.be.equal(1);
-    expect(await deployedRbf.vault()).to.be.equal("0x0000000000000000000000000000000000000000");
-
+  
     const vaultId = await vaultRouter.vaultNonce();
     const subStartTime = Math.floor(Date.now() / 1000);
     const subEndTime = subStartTime + 3600;
@@ -112,16 +102,20 @@ describe("RWA:", function () {
     const fundThreshold="3000"
     const minDepositAmount="10000000"
     const manageFee="50"
+    const maxSupply="10000000000"
+    const financePrice="100000000"
     const vaultDeployData = {
       vaultId: vaultId,
       name: "RbfVault",
       symbol: "RbfVault",
       assetToken: usdt.address,
       rbf: rbfData.rbf,
+      maxSupply:maxSupply,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: duration,
       fundThreshold: fundThreshold,
+      financePrice:financePrice,
       minDepositAmount: minDepositAmount,
       manageFee: manageFee,
       manager: manager,
@@ -129,8 +123,7 @@ describe("RWA:", function () {
       whitelists: whitelists,
       guardian: guardian,
     };
-    res = await vaultRouter.deployVault(vaultDeployData);
-    receipt = await res.wait();
+    await expect(vaultRouter.deployVault(vaultDeployData)).not.to.be.reverted;
     const vaultData = await vaultRouter.getVaultInfo(vaultId);
     vault = vaultData.vault;
 
@@ -143,8 +136,7 @@ describe("RWA:", function () {
     expect(await deployedVault.assetToken()).to.be.equal(usdt.address);
     expect(await deployedVault.feeReceiver()).to.be.equal(feeReceiver);
     expect(await deployedVault.dividendTreasury()).to.be.equal(vaultData.dividendTreasury);
-    expect(await deployedVault.maxSupply()).to.be.equal(await deployedRbf.maxSupply());
-
+    expect(await deployedVault.maxSupply()).to.be.equal(maxSupply);
     expect(await deployedVault.subStartTime()).to.be.equal(subStartTime);
     expect(await deployedVault.subEndTime()).to.be.equal(subEndTime);
     expect(await deployedVault.duration()).to.be.equal(duration);
@@ -153,7 +145,6 @@ describe("RWA:", function () {
     expect(await deployedVault.minDepositAmount()).to.be.equal(minDepositAmount);
     expect(await deployedVault.decimalsMultiplier()).to.be.equal(1);
     expect(await deployedVault.manager()).to.be.equal(manager);
-
   });
 
   it("rbf error sign deploy:", async function () {
@@ -163,10 +154,8 @@ describe("RWA:", function () {
       name: "RBF",
       symbol: "RBF",
       assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
       depositTreasury: depositTreasury,
-      initialPrice: "1000000000",
+      mintSlippageBps:"0",
       deployer: deployer,
       manager: manager,
       guardian: guardian,
@@ -188,10 +177,8 @@ describe("RWA:", function () {
       name: "RBF",
       symbol: "RBF",
       assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
       depositTreasury: depositTreasury,
-      initialPrice: "1000000000",
+      mintSlippageBps:"0",
       deployer: deployer,
       manager: manager,
       guardian: guardian,
@@ -213,10 +200,8 @@ describe("RWA:", function () {
       name: "RBF",
       symbol: "RBF",
       assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
       depositTreasury: depositTreasury,
-      initialPrice: "1000000000",
+      mintSlippageBps:"0",
       deployer: investor1,
       manager: manager,
       guardian: guardian,
@@ -252,7 +237,7 @@ describe("RWA:", function () {
     );
 
     await expect(
-      priceFeedFactory.newPriceFeed(deployer,manager, "1000000")
+      priceFeedFactory.newPriceFeed(manager)
     ).to.be.revertedWith("Auth/not-authorized");
   });
 
@@ -271,6 +256,7 @@ describe("RWA:", function () {
       manageFee: "0",
       depositTreasury: depositTreasury,
       dividendTreasury: manager,
+      mintSlippageBps:"0",
       priceFeed: manager,
       manager: manager,
     };
@@ -296,10 +282,12 @@ describe("RWA:", function () {
       symbol: "VAULT",
       assetToken: usdt.address,
       rbf: rbf,
+      maxSupply:"10000000",
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
+      financePrice:"100000000",
       minDepositAmount: "10000000",
       manageFee: "50",
       manager: manager,
@@ -316,6 +304,7 @@ describe("RWA:", function () {
 
     const VAULT = await ethers.getContractAt("Vault", vault);
     const maxSupply = await VAULT.maxSupply();
+    const financePrice=await VAULT.financePrice();
     const minDepositAmount = await VAULT.minDepositAmount();
     const totalSupply = Number(maxSupply / BigInt(1e6));
     const minAmount = Number(minDepositAmount / BigInt(1e6));
@@ -360,12 +349,9 @@ describe("RWA:", function () {
         usdt.address,
         investSigner
       );
-      await USDT.mint(whitelists[i], totalInvestAmount);
-
-
-      await USDT.approve(vault, totalInvestAmount);
-
-      await vaultInvest.deposit(investAmount);
+      await expect(USDT.mint(whitelists[i], totalInvestAmount)).not.to.be.reverted;
+      await expect(USDT.approve(vault, totalInvestAmount)).not.to.be.reverted;
+      await expect(vaultInvest.deposit(investAmount)).not.to.be.reverted;
       const balance =await vaultInvest.balanceOf(whitelists[i]);
       expect(await vaultInvest.balanceOf(whitelists[i])).to.equal(investAmount);
     }
@@ -375,30 +361,58 @@ describe("RWA:", function () {
     console.log("total deposit balance",await VAULT.assetBalance())
     console.log("total manageFee Balance",await VAULT.manageFeeBalance())
     console.log("total Balance",await USDT.balanceOf(vault))
-
+    var expectedErrorMessage = `AccessControl: account ${deployer.toLowerCase()} is missing role ${ethers.keccak256(ethers.toUtf8Bytes("MANAGER_ROLE"))}`;
     await expect(
-      VAULT.execStrategy(maxSupply)
-    ).to.be.revertedWith("Vault: you are not manager");
-
+      VAULT.execStrategy()
+    ).to.be.revertedWith(expectedErrorMessage);
     await expect(
-      vaultManager.execStrategy(maxSupply)
+      vaultManager.execStrategy()
     ).to.be.revertedWith("RBF: you are not vault");
 
-    await rbfManager.setVault(vault)
-    await vaultManager.execStrategy(maxSupply)
+    await expect(rbfManager.setVault(vault)).not.to.be.reverted;
+    await expect(vaultManager.execStrategy()).not.to.be.reverted;
+    expect(await USDT.balanceOf(depositTreasury)).to.be.equal(maxSupply);
+    expect(await rbfManager.depositAmount()).to.be.equal(maxSupply);
 
-    expect(await rbfManager.balanceOf(vault)).to.be.equal(maxSupply)
-    expect(await USDT.balanceOf(depositTreasury)).to.be.equal(maxSupply)
+    expectedErrorMessage = `AccessControl: account ${manager.toLowerCase()} is missing role ${ethers.keccak256(ethers.toUtf8Bytes("PRICE_MINT_AMOUNT_SETTER_ROLE"))}`;
+    await expect(rbfManager.setDepositPirceAndMintAmount(financePrice,maxSupply)).to.be.revertedWith(expectedErrorMessage);
+
+    const rbfDeployer = await hre.ethers.getContractAt(
+      "RBF", // 替换为你的合约名称
+      rbf
+    )
+    expectedErrorMessage = `AccessControl: account ${deployer.toLowerCase()} is missing role ${ethers.keccak256(ethers.toUtf8Bytes("MANAGER_ROLE"))}`;
+    await expect(rbfDeployer.grantRole(ethers.keccak256(ethers.toUtf8Bytes("PRICE_MINT_AMOUNT_SETTER_ROLE")),manager)).to.be.revertedWith(expectedErrorMessage);
+    await expect(rbfManager.grantRole(ethers.keccak256(ethers.toUtf8Bytes("PRICE_MINT_AMOUNT_SETTER_ROLE")),drds)).not.to.be.reverted;
+
+    const drdsSigner = await ethers.getSigner(drds);
+    const rbfDrds =await hre.ethers.getContractAt(
+      "RBF", 
+      rbf,
+      drdsSigner
+    )
+
+    await expect(rbfDrds.setDepositPirceAndMintAmount(financePrice,maxSupply)).not.to.be.reverted;
+    expect(await rbfDrds.depositPirce()).to.be.equal(financePrice);
+    expect(await rbfDrds.depositMintAmount()).to.be.equal(maxSupply);
+
+    expect(await rbfManager.balanceOf(vault)).to.be.equal(0);
+    expectedErrorMessage = `AccessControl: account ${drds.toLowerCase()} is missing role ${ethers.keccak256(ethers.toUtf8Bytes("MANAGER_ROLE"))}`;
+    await expect(rbfDrds.claimDeposit()).to.be.revertedWith(expectedErrorMessage);
+    await expect(rbfManager.claimDeposit()).not.to.be.reverted;
+    expect(await rbfManager.balanceOf(vault)).to.be.equal(maxSupply);
+    await expect(rbfDrds.claimDeposit()).to.be.revertedWith(expectedErrorMessage);
+    await expect(rbfDrds.dividend()).to.be.revertedWith(expectedErrorMessage);
+    
 
     await expect(
       rbfManager.dividend()
     ).to.be.revertedWith("RBF: totalDividend must be greater than 0");
-
     const randomMultiplier = 1.1 + Math.random() * 0.4;
     console.log("派息系数:",randomMultiplier)
     const principalInterest = Math.floor(totalSupply * randomMultiplier);
     const waitMint = BigInt(Math.floor(principalInterest - totalSupply) * 1e6);
-    await USDT.mint(depositTreasury, waitMint)
+    await expect(USDT.mint(depositTreasury, waitMint)).not.to.be.reverted;
     const dividendCount = 4;
     const dividendCountArr = distributeMoneyWithMinimum(
           principalInterest,
@@ -420,11 +434,10 @@ describe("RWA:", function () {
     for (let i = 0; i < dividendCountArr.length; i++) {
       const dividendAmount = BigInt(Math.floor(dividendCountArr[i] * 1e6));
       console.log("第" + (i + 1) + "次派息:", dividendAmount);
-      await USDTdepositTreasury.transfer(rbfDividendTreasury, dividendAmount);
-      await rbfManager.dividend();
-      await vaultManager.dividend();
+      await expect(USDTdepositTreasury.transfer(rbfDividendTreasury, dividendAmount)).not.to.be.reverted;
+      await expect(rbfManager.dividend()).not.to.be.reverted;
+      await expect(vaultManager.dividend()).not.to.be.reverted;
     }
-
 
     var totalDividend=await USDT.balanceOf(
       vaultDividendTreasury
@@ -434,7 +447,6 @@ describe("RWA:", function () {
     for (let i = 0; i < whitelists.length; i++) {
       investorBalance=await USDT.balanceOf(whitelists[i]);
       incomeArr.push(investorBalance);
-      
       totalDividend=totalDividend+investorBalance;
     }
     console.log("总派息额",totalDividend)

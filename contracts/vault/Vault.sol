@@ -5,10 +5,10 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "../interface/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "../interface/IVault.sol";
-
 import "../rbf/RBF.sol";
 
 // Struct for initializing the Vault contract with multiple parameters
@@ -17,10 +17,12 @@ struct VaultInitializeData {
     string symbol; // Vault token symbol
     address assetToken;
     address rbf;
+    uint256 maxSupply;
     uint256 subStartTime;
     uint256 subEndTime;
     uint256 duration;
     uint256 fundThreshold;
+    uint256 financePrice;
     uint256 minDepositAmount;
     uint256 manageFee;
     address manager;
@@ -33,11 +35,17 @@ struct VaultInitializeData {
  * @author  tmpAuthor
  * @title   Vault
  * @dev     A contract for handling deposit and minting of vault tokens, managing dividends, and controlling access by the manager.
- * @notice  This contract allows deposits in an underlying asset token and mints a corresponding amount of Vault tokens based on the deposit and the rbf asset's price. It also supports dividend distribution and fee management by manager.
+ * @notice  This contract allows deposits in an underlying asset token and mints a corresponding amount of Vault tokens based on the deposit and the financePrice. It also supports dividend distribution and fee management by manager.
  */
-contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
+contract Vault is
+    IVault,
+    ERC20Upgradeable,
+    OwnableUpgradeable,
+    AccessControlUpgradeable
+{
+    bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     uint256 public constant BPS_DENOMINATOR = 10_000;
-    uint80 public constant INIT_PRICE_ROUND = 1;
+    uint256 public constant FINANCE_PRICE_DENOMINATOR = 10 ** 8;
     // Address of the RBF contract
     address public rbf;
     // Address of the asset token that users will deposit (e.g., USDC)
@@ -62,7 +70,7 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
     uint256 public minDepositAmount;
     // Multiplier to adjust decimals between assetToken and Vault token
     uint256 public decimalsMultiplier;
-    // Address of the vault manager (investment decision-maker)
+    // Address of the vault manager
     address public manager;
     // Total amount of assets deposited into the Vault
     uint256 public totalDeposit;
@@ -72,6 +80,8 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
     uint256 public manageFeeBalance;
     // End time of the Vault, set after fundraising
     uint256 public endTime;
+    // Finance price
+    uint256 public financePrice;
     // Mapping to check if an address is whitelisted
     mapping(address => bool) public whitelistMap;
     // List of whitelisted addresses allowed to interact with the Vault
@@ -79,11 +89,6 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
 
     modifier onlyWhiteList(address _address) {
         require(whitelistMap[_address], "Vault: you are not int whitelist");
-        _;
-    }
-
-    modifier onlyManager() {
-        require(msg.sender == manager, "Vault: you are not manager");
         _;
     }
 
@@ -103,8 +108,8 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
         assetToken = data.assetToken;
         require(data.rbf != address(0), "Vault: Invalid rbf address");
         rbf = data.rbf;
-        maxSupply = RBF(data.rbf).maxSupply();
-        require(maxSupply > 0, "Vault: Invalid maxSupply");
+        require(data.maxSupply > 0, "Vault: Invalid maxSupply");
+        maxSupply = data.maxSupply;
         require(data.subStartTime < data.subEndTime, "Vault: Invalid subTime");
         subStartTime = data.subStartTime;
         subEndTime = data.subEndTime;
@@ -115,6 +120,8 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
             "Vault: Invalid fundThreshold"
         );
         fundThreshold = data.fundThreshold;
+        require(data.financePrice > 0, "Vault: Invalid financePrice");
+        financePrice = data.financePrice;
         require(data.minDepositAmount > 0, "Vault: Invalid minDepositAmount");
         minDepositAmount = data.minDepositAmount;
         require(
@@ -146,40 +153,9 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
             10 **
                 (decimals() -
                     IERC20MetadataUpgradeable(data.assetToken).decimals());
-    }
 
-    // /**
-    //  * @notice  Sets the minimum deposit amount.
-    //  * @dev     Only callable by the contract owner.
-    //  * @param   minAmount The minimum amount that can be deposited.
-    //  */
-    // function setMinDepositAmount(uint256 minAmount) external onlyManager {
-    //     require(
-    //         minAmount > 0 && minAmount <= maxSupply,
-    //         "Invalid minDepositAmount"
-    //     );
-    //     minDepositAmount = minAmount;
-    // }
-
-    // /**
-    //  * @notice  Sets the manager fee percentage.
-    //  * @dev     Fee must be within the valid basis point range (0-10,000).
-    //  * @param   feeRate  The new manager fee percentage.
-    //  */
-    // function setManagerFee(uint256 feeRate) external onlyManager {
-    //     require(feeRate <= BPS_DENOMINATOR, "Invalid managerFee");
-    //     managerFee = feeRate;
-    // }
-
-    /**
-     * @notice  Assigns a manager for the vault.
-     * @dev     The manager is responsible for executing investment strategies.
-     * @param   managerAddr Address of the new manager.  .
-     */
-    function setManager(address managerAddr) external onlyOwner {
-        require(managerAddr != address(0), "Invalid address");
-        manager = managerAddr;
-        emit SetManager(managerAddr);
+        _grantRole(DEFAULT_ADMIN_ROLE, data.manager);
+        _grantRole(MANAGER_ROLE, data.manager);
     }
 
     /**
@@ -212,6 +188,7 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
             "Vault: maxSupply exceeded"
         );
         _mint(msg.sender, shares);
+        emit DepositEvent(msg.sender,assets,manageFeeAmount,shares);
         return shares;
     }
 
@@ -231,7 +208,7 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
     {
         require(block.timestamp >= subEndTime, "Vault: Invalid time");
         require(
-            (maxSupply * fundThreshold) / BPS_DENOMINATOR > totalDeposit,
+            (getMaxSupplyNav() * fundThreshold) / BPS_DENOMINATOR > totalDeposit,
             "Vault: not allowed withdraw"
         );
         uint256 shares = balanceOf(msg.sender);
@@ -245,7 +222,7 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
             msg.sender,
             assetAmount + feeAmount
         );
-        emit FundFailRedeem(shares,assetAmount,feeAmount);
+        emit FundFailRedeem(msg.sender,shares, assetAmount, feeAmount);
         return assetAmount + feeAmount;
     }
 
@@ -256,11 +233,11 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
      *      The entire balance of management fees is transferred to the designated
      *      fee receiver.
      */
-    function withdrawManageFee() public onlyManager {
+    function withdrawManageFee() public onlyRole(MANAGER_ROLE) {
         require(endTime != 0, "Vault: Invalid endTime");
         require(block.timestamp >= subEndTime, "Vault: Invalid time");
         require(
-            (maxSupply * fundThreshold) / BPS_DENOMINATOR <= totalDeposit,
+            (getMaxSupplyNav() * fundThreshold) / BPS_DENOMINATOR <= totalDeposit,
             "Vault: not allowed withdraw"
         );
         uint256 feeAmount = manageFeeBalance;
@@ -274,28 +251,25 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
      *      It also verifies that fundraising is either complete or has met the required
      *      threshold before proceeding. The function approves the asset transfer and
      *      deposits the assets into the RBF contract.
-     * @param assetAmount The amount of assets to invest in the RBF contract.
      */
-    function execStrategy(uint256 assetAmount) public onlyManager {
+    function execStrategy() public onlyRole(MANAGER_ROLE) {
+        require(assetBalance>0,"Vault: assetBalance is zero");
         require(
-            assetAmount <= IERC20(assetToken).balanceOf(address(this)),
-            "assetAmount error"
-        );
-        require(
-            totalDeposit == maxSupply ||
+            totalDeposit == getMaxSupplyNav() ||
                 (block.timestamp >= subEndTime &&
-                    (maxSupply * fundThreshold) / BPS_DENOMINATOR <=
+                    (getMaxSupplyNav() * fundThreshold) / BPS_DENOMINATOR <=
                     totalDeposit),
-            "fundraising fail"
+            "Vault: fundraising fail"
         );
         if (endTime <= 0) {
             endTime = block.timestamp + duration;
         }
-        require(assetAmount <= assetBalance, "Vault: assetAmount error");
-        assetBalance = assetBalance - assetAmount;
-        bool authRes = IERC20(assetToken).approve(rbf, assetAmount);
-        require(authRes, "assetToken approve error");
-        RBF(rbf).deposit(assetAmount);
+        uint256 depositAmount=assetBalance;
+        assetBalance=0;
+        bool authRes = IERC20(assetToken).approve(rbf, depositAmount);
+        require(authRes, "Vault: assetToken approve error");
+        RBF(rbf).requestDeposit(depositAmount);
+        emit ExecStrategyEvent(depositAmount);
     }
 
     /**
@@ -304,7 +278,9 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
      *      is not already whitelisted and that the whitelist does not exceed 100 entries.
      * @param whitelistAddr The address to be added to the whitelist.
      */
-    function addToWhitelist(address whitelistAddr) public onlyOwner {
+    function addToWhitelist(
+        address whitelistAddr
+    ) public onlyRole(MANAGER_ROLE) {
         require(
             !whitelistMap[whitelistAddr],
             "Vault: Address is already whitelisted"
@@ -320,13 +296,14 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
      *      is currently whitelisted before proceeding.
      * @param whitelistAddr The address to be removed from the whitelist.
      */
-    function removeFromWhitelist(address whitelistAddr) public onlyOwner {
+    function removeFromWhitelist(
+        address whitelistAddr
+    ) public onlyRole(MANAGER_ROLE) {
         require(
             whitelistMap[whitelistAddr],
             "Vault: Address is not in the whitelist"
         );
         whitelistMap[whitelistAddr] = false;
-
         for (uint256 i = 0; i < whitelists.length; i++) {
             if (whitelists[i] == whitelistAddr) {
                 whitelists[i] = whitelists[whitelists.length - 1];
@@ -341,11 +318,11 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
      * @dev The function calculates the dividend amount for each whitelisted user and transfers
      *      the corresponding amount. Only users with a nonzero balance receive dividends.
      */
-    function dividend() public onlyManager {
+    function dividend() public onlyRole(MANAGER_ROLE) {
         uint256 totalDividend = IERC20(assetToken).balanceOf(dividendTreasury);
-        require(totalDividend > 0, "No dividend to pay");
+        require(totalDividend > 0, "Vault: No dividend to pay");
         uint256 totalSupply = totalSupply();
-        require(totalSupply > 0, "No rbu to pay");
+        require(totalSupply > 0, "Vault: No rbu to pay");
         for (uint8 i = 0; i < whitelists.length; i++) {
             if (whitelistMap[whitelists[i]]) {
                 if (balanceOf(whitelists[i]) != 0) {
@@ -369,7 +346,7 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
     function price() public view returns (uint256) {
         uint256 totalSupply = totalSupply();
         uint256 nav = RBF(rbf).getAssetsNav();
-        return (nav * RBF(rbf).priceFeedDecimals()) / totalSupply;
+        return nav * (10**decimals())  / totalSupply;
     }
 
     /**
@@ -413,7 +390,7 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
         address to,
         uint256 amount
     ) public virtual override returns (bool) {
-        _checkTransferAuth(msg.sender, to);
+        _checkTransferAuth(from, to);
         address spender = _msgSender();
         _spendAllowance(from, spender, amount);
         _transfer(from, to, amount);
@@ -426,10 +403,10 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
         uint256 totalDividend,
         address receipter
     ) internal {
-        require(receipter != address(0), "receipter can not be zero");
+        require(receipter != address(0), "Vault: receipter can not be zero");
         uint256 dividendAmount = (vaultTokenAmount * totalDividend) /
             totalSupply;
-        require(dividendAmount > 0, "dividendAmount must bigger than zero");
+        require(dividendAmount > 0, "Vault: dividendAmount must bigger than zero");
         SafeERC20.safeTransferFrom(
             IERC20(assetToken),
             dividendTreasury,
@@ -441,33 +418,25 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
     function _checkTransferAuth(address from, address to) internal view {
         require(
             whitelistMap[from] && whitelistMap[to],
-            "transfer from and to must in whitelist"
+            "Vault: transfer from and to must in whitelist"
         );
     }
 
     function _getMintAmountForPrice(
         uint256 depositAmount
     ) internal view returns (uint256) {
-        int256 tokenPrice = RBF(rbf).getRoundPrice(INIT_PRICE_ROUND);
-        require(tokenPrice > 0, "Invalid price data");
-        uint256 uTokenPrice = uint256(tokenPrice);
-        uint256 indexDecimals = 10 ** RBF(rbf).priceFeedDecimals();
-
-        uint256 rwaAmount = (_scaleUp(depositAmount) * indexDecimals) /
-            uTokenPrice;
+        require(financePrice > 0, "Vault: financePrice must bigger than zero");
+        uint256 rwaAmount = (_scaleUp(depositAmount) *
+            FINANCE_PRICE_DENOMINATOR) / financePrice;
         return rwaAmount;
     }
 
     function _getWithdrawAmountForVault(
         uint256 vaultAmount
     ) internal view returns (uint256) {
-        int256 tokenPrice = RBF(rbf).getRoundPrice(INIT_PRICE_ROUND);
-        require(tokenPrice > 0, "Invalid price data");
-        uint256 uTokenPrice = uint256(tokenPrice);
-        uint256 indexDecimals = 10 ** RBF(rbf).priceFeedDecimals();
-        uint256 withdrawAmount = _scaleDown(
-            (vaultAmount * uTokenPrice) / indexDecimals
-        );
+        require(financePrice > 0, "Vault: financePrice must bigger than zero");
+        uint256 withdrawAmount = (_scaleDown(vaultAmount) * financePrice) /
+            FINANCE_PRICE_DENOMINATOR;
         return withdrawAmount;
     }
 
@@ -477,5 +446,10 @@ contract Vault is IVault, ERC20Upgradeable, OwnableUpgradeable {
 
     function _scaleDown(uint256 amount) internal view returns (uint256) {
         return amount / decimalsMultiplier;
+    }
+
+    function getMaxSupplyNav() internal view returns (uint256) {
+        uint256 nav = maxSupply*financePrice / FINANCE_PRICE_DENOMINATOR;
+        return nav;
     }
 }

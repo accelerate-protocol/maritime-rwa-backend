@@ -32,10 +32,8 @@ contract RBFRouter is IRBFRouter, Ownable {
         string name; //Name of the RBF token
         string symbol; //Symbol of the RBF token
         address assetToken; //Address of the asset backing the RBF
-        uint256 maxSupply; //Maximum token supply
-        uint256 manageFee; //Management fee for the RBF
         address depositTreasury; //Address of the deposit treasury
-        int256 initialPrice; //Initial price of the asset
+        uint256 mintSlippageBps; // Mint slippage tolerance for RBF
         address deployer; //Address of the deployer
         address manager; //Address of the RBF and PriceFeed manager
         address guardian; //Guardian address for security proxy update
@@ -144,19 +142,16 @@ contract RBFRouter is IRBFRouter, Ownable {
         rbfNonce++;
         address dividendTreasury = escrowFactory.newEscrow(address(this));
         address pricerFeed = priceFeedFactory.newPriceFeed(
-            msg.sender,
-            rbfDeployData.manager,
-            rbfDeployData.initialPrice
+            rbfDeployData.manager
         );
         RBFInitializeData memory data = RBFInitializeData({
             name: rbfDeployData.name,
             symbol: rbfDeployData.symbol,
             assetToken: rbfDeployData.assetToken,
-            maxSupply: rbfDeployData.maxSupply,
-            manageFee: rbfDeployData.manageFee,
             depositTreasury: rbfDeployData.depositTreasury,
             dividendTreasury: dividendTreasury,
             priceFeed: pricerFeed,
+            mintSlippageBps: rbfDeployData.mintSlippageBps,
             manager: rbfDeployData.manager
         });
         (address rbf, address rbfProxyAdmin, address rbfImpl) = rbfFactory

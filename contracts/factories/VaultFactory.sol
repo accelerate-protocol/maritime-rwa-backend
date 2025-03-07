@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.so
  * @title   VaultFactory
  * @dev     This contract is responsible for deploying and managing instances of the Vault contract.
  * @notice  This contract serves as a Factory for the upgradable Vault token contract.
- *          Upon calling `newVault` the `guardian` address (set in constructor) will
+ *          Upon calling `newVault` the caller address will
  *          deploy the following:
  *          1) Vault - The implementation contract, ERC20Upgradeable contract with the constructor disabled
  *          2) ProxyAdmin - OZ ProxyAdmin contract, used to upgrade the proxy instance.

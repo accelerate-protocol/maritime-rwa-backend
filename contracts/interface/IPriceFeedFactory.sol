@@ -6,14 +6,11 @@ interface IPriceFeedFactory {
     /**
      * @notice  Creates a new instance of the PriceFeed contract.
      * @dev     Only authorized users can call this function.
-     * @param   admin  The address of the admin for the new PriceFeed contract.
-     * @param   initialPrice  The initial price value for the PriceFeed contract.
+     * @param   manager  The address of the manager for the new PriceFeed contract.
      * @return  address  The address of the newly created PriceFeed contract.
      */
     function newPriceFeed(
-        address admin,
-        address manager,
-        int256 initialPrice
+        address manager
     ) external returns (address);
     
     /**
