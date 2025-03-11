@@ -130,6 +130,7 @@ contract RBFRouter is IRBFRouter, Ownable {
         bytes[] memory signatures
     ) public {
         _verifySign(deployData, signatures);
+
         RBFDeployData memory rbfDeployData = abi.decode(
             deployData,
             (RBFDeployData)
@@ -164,7 +165,6 @@ contract RBFRouter is IRBFRouter, Ownable {
             address(dividendTreasury),
             address(pricerFeed)
         );
-
         Escrow(dividendTreasury).approveMax(rbfDeployData.assetToken, rbf);
         Escrow(dividendTreasury).rely(address(rbf));
         Escrow(dividendTreasury).deny(address(this));
@@ -191,12 +191,6 @@ contract RBFRouter is IRBFRouter, Ownable {
             validSignatures++;
         }
         require(validSignatures >= threshold, "RBFRouter:Invalid Threshold");
-    }
-
-    function getEncodeData(
-        RBFDeployData memory rbfDeployData
-    ) public pure returns (bytes memory) {
-        return abi.encode(rbfDeployData);
     }
 
     /**

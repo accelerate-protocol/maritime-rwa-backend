@@ -42,7 +42,7 @@ contract RBF is
     // The address of the asset token that this contract interacts with (e.g., an ERC-20 token).
     address public assetToken;
     // The address of the treasury that holds deposited assets.
-    address public depositTreasury;
+    address public depositTreasury; 
     // The address of the treasury responsible for distributing dividends to rbfholders.
     address public dividendTreasury;
     // The price feed contract used to fetch price data for the asset.  
@@ -50,7 +50,7 @@ contract RBF is
     // The address of the manager who has administrative privileges over the contract.
     address public manager;
     // The slippage tolerance for minting RBF tokens.
-    uint256 public mintSlippageBps;
+    uint256 public mintSlippageBps;  
     // The address of the vault  which can deposit assetToken.
     address public vault;
     // The amount of assetToken deposited into the depositTreasury.
@@ -61,6 +61,8 @@ contract RBF is
     uint256 public depositMintAmount;
     // Multiplier to adjust decimals between assetToken and RBF token
     uint256 public decimalsMultiplier;
+    // The URI of the rbf token. 
+    string public tokenURI;
 
     modifier onlyVault() {
         require(msg.sender == vault, "RBF: you are not vault");
@@ -222,6 +224,32 @@ contract RBF is
         vault = _vault;
         emit SetVault(_vault);
     }
+
+
+
+
+    /**
+     * @notice  Sets the mint slippage percentage in basis points (bps)
+     * @dev     Only accounts with the MANAGER_ROLE can call this function
+     * @param   _mintSlippageBps The new mint slippage value in basis points (bps)
+     */
+    function setMintSlippageBps(uint256 _mintSlippageBps) public onlyRole(MANAGER_ROLE) {
+        mintSlippageBps=_mintSlippageBps;
+        emit SetMintSlippageBps(mintSlippageBps);
+    }
+
+
+    /**
+     * @notice  Sets the token metadata URI
+     * @dev     This function can only be called by an address with the `MANAGER_ROLE` role.
+     * @param   _tokenURI The new token URI (e.g., IPFS or a centralized server).
+     */
+    function setTokenURI(string memory _tokenURI) public onlyRole(MANAGER_ROLE) {
+        tokenURI=_tokenURI;
+        emit SetTokenURI(tokenURI);
+    }
+
+
 
     /**
      * @notice  Fetches the net asset value (NAV) of the vault's RBF tokens based on the asset price.
