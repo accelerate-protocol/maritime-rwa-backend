@@ -1,11 +1,19 @@
 // SPDX-License-Identifier: MIT
+/**
+    ___                         __                         __
+   /   |  _____  _____  ___    / /  ___    _____  ____ _  / /_  ___
+  / /| | / ___/ / ___/ / _ \  / /  / _ \  / ___/ / __ `/ / __/ / _ \
+ / ___ |/ /__  / /__  /  __/ / /  /  __/ / /    / /_/ / / /_  /  __/
+/_/  |_|\___/  \___/  \___/ /_/   \___/ /_/     \__,_/  \__/  \___/
+
+*/
 pragma solidity 0.8.26;
 
 import "../interface/IEscrowFactory.sol";
 import "../common/Auth.sol";
 import "../common/Escrow.sol";
 /**
- * @author  tmpAuthor
+ * @author  Accelerate Finance
  * @title   EscrowFactory
  * @dev     This contract is responsible for creating new instances of the Escrow contract.
  * @notice  Allows authorized users to deploy new Escrow contracts.

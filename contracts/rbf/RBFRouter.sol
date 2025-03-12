@@ -1,4 +1,12 @@
 // SPDX-License-Identifier: MIT
+/**
+    ___                         __                         __
+   /   |  _____  _____  ___    / /  ___    _____  ____ _  / /_  ___
+  / /| | / ___/ / ___/ / _ \  / /  / _ \  / ___/ / __ `/ / __/ / _ \
+ / ___ |/ /__  / /__  /  __/ / /  /  __/ / /    / /_/ / / /_  /  __/
+/_/  |_|\___/  \___/  \___/ /_/   \___/ /_/     \__,_/  \__/  \___/
+
+*/
 pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -10,7 +18,7 @@ import "../common/Escrow.sol";
 import "./RBF.sol";
 
 /**
- * @author  tmpAuthor
+ * @author  Accelerate Finance
  * @title   RBFRouter
  * @dev     Router contract for deploying RBF contracts and managing their settings.
  * @notice  This contract facilitates the creation and management of RBF contracts, handling escrow and price feed deployment.

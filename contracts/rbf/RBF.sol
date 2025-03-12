@@ -1,15 +1,23 @@
 // SPDX-License-Identifier: MIT
+/**
+    ___                         __                         __
+   /   |  _____  _____  ___    / /  ___    _____  ____ _  / /_  ___
+  / /| | / ___/ / ___/ / _ \  / /  / _ \  / ___/ / __ `/ / __/ / _ \
+ / ___ |/ /__  / /__  /  __/ / /  /  __/ / /    / /_/ / / /_  /  __/
+/_/  |_|\___/  \___/  \___/ /_/   \___/ /_/     \__,_/  \__/  \___/
+
+*/
 pragma solidity 0.8.26;
 
-import "../vault/Vault.sol";
-import "../interface/AggregatorV3Interface.sol";
-import "../interface/IRBF.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import "../vault/Vault.sol";
+import "../interface/AggregatorV3Interface.sol";
+import "../interface/IRBF.sol";
 
 struct RBFInitializeData {
     string name; // The name of the RBF contract
@@ -23,7 +31,7 @@ struct RBFInitializeData {
 }
 
 /**
- * @author  tmpAuthor
+ * @author  Accelerate Finance
  * @title   RBF
  * @dev     A contract for handling deposit and minting of RBF tokens, managing dividends, and controlling access by the manager.
  * @notice  This contract allows deposits in an underlying asset token and mints a corresponding amount of RBF tokens based on the deposit and the asset's price. It also supports dividend distribution and fee management by manager.
@@ -224,9 +232,6 @@ contract RBF is
         vault = _vault;
         emit SetVault(_vault);
     }
-
-
-
 
     /**
      * @notice  Sets the mint slippage percentage in basis points (bps)

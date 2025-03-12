@@ -1,13 +1,20 @@
 // SPDX-License-Identifier: MIT
+/**
+    ___                         __                         __
+   /   |  _____  _____  ___    / /  ___    _____  ____ _  / /_  ___
+  / /| | / ___/ / ___/ / _ \  / /  / _ \  / ___/ / __ `/ / __/ / _ \
+ / ___ |/ /__  / /__  /  __/ / /  /  __/ / /    / /_/ / / /_  /  __/
+/_/  |_|\___/  \___/  \___/ /_/   \___/ /_/     \__,_/  \__/  \___/
+
+*/
 pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "../interface/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import "../interface/AggregatorV3Interface.sol";
 import "../interface/IVault.sol";
 import "../rbf/RBF.sol";
 
@@ -32,7 +39,7 @@ struct VaultInitializeData {
 }
 
 /**
- * @author  tmpAuthor
+ * @author  Accelerate Finance
  * @title   Vault
  * @dev     A contract for handling deposit and minting of vault tokens, managing dividends, and controlling access by the manager.
  * @notice  This contract allows deposits in an underlying asset token and mints a corresponding amount of Vault tokens based on the deposit and the financePrice. It also supports dividend distribution and fee management by manager.
@@ -125,7 +132,7 @@ contract Vault is
         require(data.minDepositAmount > 0, "Vault: Invalid minDepositAmount");
         minDepositAmount = data.minDepositAmount;
         require(
-            data.manageFee > 0 && data.manageFee <= BPS_DENOMINATOR,
+            data.manageFee <= BPS_DENOMINATOR,
             "Vault: Invalid managerFee"
         );
         manageFee = data.manageFee;
@@ -371,9 +378,8 @@ contract Vault is
         uint256 amount
     ) public virtual override returns (bool) {
         _checkTransferAuth(msg.sender, to);
-        address owner = _msgSender();
-        _transfer(owner, to, amount);
-        return true;
+        bool success = super.transfer(to, amount);
+        return success;
     }
 
     /**
@@ -391,11 +397,10 @@ contract Vault is
         uint256 amount
     ) public virtual override returns (bool) {
         _checkTransferAuth(from, to);
-        address spender = _msgSender();
-        _spendAllowance(from, spender, amount);
-        _transfer(from, to, amount);
-        return true;
+        bool success = super.transferFrom(from, to, amount);
+        return success;
     }
+
 
     function _dividend(
         uint256 vaultTokenAmount,
