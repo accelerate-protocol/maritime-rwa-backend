@@ -2,6 +2,7 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-ethers";
 import "hardhat-deploy";
+import { ethers } from "ethers";
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -34,12 +35,18 @@ const config: HardhatUserConfig = {
     investor3: 8,
     investor4: 9,
     investor5: 10,
-    drds:11
+    drds:11,
+    common: 12,
+    rbfSigner2: 13,
   },
 
   networks: {
     hardhat: {
       allowUnlimitedContractSize: true,
+      accounts: {
+        count: 110,  // 设置测试账户数量
+        accountsBalance: ethers.parseEther("1000000").toString()  // 每个账户的初始余额
+      }
     }
   },
 };

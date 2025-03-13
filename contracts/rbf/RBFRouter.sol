@@ -51,7 +51,7 @@ contract RBFRouter is IRBFRouter, Ownable {
     mapping(uint64 => RBFInfo) private rbfs;
     // Mapping to track whitelisted addresses authorized to sign transactions
     mapping(address => bool) public whiteListed;
-    address[] whiteLists;
+    address[] public whiteLists;
 
     /**
      * @notice Constructor to initialize the router with necessary parameters.
@@ -95,12 +95,13 @@ contract RBFRouter is IRBFRouter, Ownable {
      * @param   _whiteLists  Array of new addresses to be whitelisted.
      * @param   _threshold  Minimum number of valid signatures required for verification.
      */
+     //tc-74:设置阈值和白名单成功且生效
     function setWhiteListsAndThreshold(
         address[] memory _whiteLists,
         uint256 _threshold
     ) public onlyOwner {
-        require(whiteLists.length > 0, "whiteLists must not be empty");
-        require(_threshold > 0, "threshold must not be zero");
+        require(_whiteLists.length > 0, "whiteLists must not be empty");//tc-75
+        require(_threshold > 0, "threshold must not be zero");//tc-76
         // Remove existing whitelist addresses
         uint oldLen=whiteLists.length;
         for (uint i = 0; i < oldLen; i++) {
@@ -125,6 +126,10 @@ contract RBFRouter is IRBFRouter, Ownable {
      * @param   deployData  Encoded data containing deployment parameters.
      * @param   signatures  Array of signatures for verification.
      */
+     //tc-1:当前未给RBFRouter授权，应该不能部署RBF
+     //tc-4:给RBFRouter仅授权EscrowFactory调用权限后，部署RBF，应该部署失败
+     //tc-7:给RBFRouter仅授权EscrowFactory、PriceFeedFactory调用权限后，部署RBF，应该部署失败
+     //tc-10:给RBFRouter授权RBFFactory、EscrowFactory、PriceFeedFactory调用权限后，且各参数满足要求，部署RBF，应该部署成功
     function deployRBF(
         bytes memory deployData,
         bytes[] memory signatures
@@ -134,10 +139,10 @@ contract RBFRouter is IRBFRouter, Ownable {
             deployData,
             (RBFDeployData)
         );
-        require(rbfDeployData.rbfId == rbfNonce, "RBFRouter:Invalid rbfId");
+        require(rbfDeployData.rbfId == rbfNonce, "RBFRouter:Invalid rbfId"); //tc-13
         require(
             rbfDeployData.deployer == msg.sender,
-            "RBFRouter:Invalid deployer"
+            "RBFRouter:Invalid deployer" //tc-12
         );
         rbfNonce++;
         address dividendTreasury = escrowFactory.newEscrow(address(this));
@@ -187,10 +192,10 @@ contract RBFRouter is IRBFRouter, Ownable {
         uint256 validSignatures = 0;
         for (uint256 i = 0; i < signatures.length; i++) {
             address signer = recoverSigner(ethSignedMessageHash, signatures[i]);
-            require(whiteListed[signer], "RBFRouter:Invalid Signer");
+            require(whiteListed[signer], "RBFRouter:Invalid Signer"); //tc-11
             validSignatures++;
         }
-        require(validSignatures >= threshold, "RBFRouter:Invalid Threshold");
+        require(validSignatures >= threshold, "RBFRouter:Invalid Threshold");//tc-19
     }
 
     function getEncodeData(

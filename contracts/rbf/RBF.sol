@@ -84,27 +84,27 @@ contract RBF is
 
         require(
             data.assetToken != address(0),
-            "RBF: assetToken address cannot be zero address"
+            "RBF: assetToken address cannot be zero address" //tc-14:assetToken address is zero address
         );
         assetToken = data.assetToken;
         require(
             data.depositTreasury != address(0),
-            "RBF: depositTreasury address cannot be zero address"
+            "RBF: depositTreasury address cannot be zero address" //tc-15:depositTreasury address is zero address
         );
         depositTreasury = data.depositTreasury;
         require(
             data.dividendTreasury != address(0),
-            "RBF: dividendTreasury address cannot be zero address"
+            "RBF: dividendTreasury address cannot be zero address" //tc-16:dividendTreasury address is zero address
         );
         dividendTreasury = data.dividendTreasury;
         require(
             data.priceFeed != address(0),
-            "RBF: priceFeedAddr can not be zero address"
+            "RBF: priceFeedAddr can not be zero address" //tc-17:priceFeed address is zero address
         );
         priceFeed = AggregatorV3Interface(data.priceFeed);
         require(
             data.manager != address(0),
-            "RBF: manager address can not be zero address"
+            "RBF: manager address can not be zero address" //tc-18:manager address is zero address
         );
         manager = data.manager;
         mintSlippageBps = data.mintSlippageBps;
@@ -127,7 +127,7 @@ contract RBF is
      * @dev     This function is only callable by the Vault.
      * @param   amount The amount of assetToken to deposit.
      */
-    function requestDeposit(uint256 amount) public onlyVault {
+    function requestDeposit(uint256 amount) public onlyVault { //tc-66:不是Vault执行requestDeposit；是Vault执行requestDeposit
         require(
             IERC20(assetToken).balanceOf(msg.sender) >= amount,
             "RBF: Insufficient balance"
@@ -146,12 +146,12 @@ contract RBF is
      * @notice  Allows the manager to claim the deposit and mint RBF tokens.
      * @dev     This function is only callable by the manager role.
      */
-    function claimDeposit() public onlyRole(MANAGER_ROLE) {
-        require(depositAmount > 0, "RBF: depositAmount must be greater than 0");
-        require(depositPirce > 0, "RBF: depositPirce must be greater than 0");
+    function claimDeposit() public onlyRole(MANAGER_ROLE) { //tc-66:不是MANAGER_ROLE角色的账户执行claimDeposit;是MANAGER_ROLE角色的账户执行claimDeposit
+        require(depositAmount > 0, "RBF: depositAmount must be greater than 0"); //tc-70:depositAmount为0，执行claimDeposit，执行失败
+        require(depositPirce > 0, "RBF: depositPirce must be greater than 0"); //tc-66:depositPirce为0，执行claimDeposit，执行失败;
         require(
             depositMintAmount > 0,
-            "RBF: depositMintAmount must be greater than 0"
+            "RBF: depositMintAmount must be greater than 0" //tc-66:depositMintAmount为0，执行claimDeposit，执行失败
         );
         uint256 scaledDeposit = _scaleUp(depositAmount);
         uint256 minAmount = (scaledDeposit * (10 ** priceFeed.decimals())) /
@@ -161,7 +161,7 @@ contract RBF is
         uint256 upperBound = minAmount + slippageFactor;
         require(
             depositMintAmount >= lowerBound && depositMintAmount <= upperBound,
-            "RBF: depositMintAmount is not in the range"
+            "RBF: depositMintAmount is not in the range" //tc-71:depositMintAmount不在范围内，执行claimDeposit，执行失败
         );
         _mint(vault, depositMintAmount);
         depositAmount = 0;
@@ -171,11 +171,11 @@ contract RBF is
      * @notice  Allows the manager to distribute dividends from the dividend treasury to the vault.
      * @dev     This function calculates the dividend share for the vault and transfers the dividend amount.
      */
-    function dividend() public onlyRole(MANAGER_ROLE) {
+    function dividend() public onlyRole(MANAGER_ROLE) {//tc-66:不是MANAGER_ROLE角色的账户执行dividend;是MANAGER_ROLE角色的账户执行dividend
         uint256 totalDividend = IERC20(assetToken).balanceOf(dividendTreasury);
-        require(totalDividend > 0, "RBF: totalDividend must be greater than 0");
+        require(totalDividend > 0, "RBF: totalDividend must be greater than 0"); //tc-66:totalDividend为0，执行dividend，执行失败
         uint256 totalSupply = totalSupply();
-        require(totalSupply > 0, "RBF: totalSupply must be greater than 0");
+        require(totalSupply > 0, "RBF: totalSupply must be greater than 0");//
         require(vault != address(0), "RBF: vault can not be zero address");
         require(
             balanceOf(vault) > 0,
@@ -214,7 +214,7 @@ contract RBF is
      * @dev     This function assigns the vault address, which interacts with the RBF contract.
      * @param   _vault  The address of the vault to be set.
      */
-    function setVault(address _vault) public onlyRole(MANAGER_ROLE) {
+    function setVault(address _vault) public onlyRole(MANAGER_ROLE) { //tc-66:不是MANAGER_ROLE角色的账户执行setVault;是MANAGER_ROLE角色的账户执行setVault
         require(
             _vault != address(0),
             "RBF: vaultAddr cannot be zero address"

@@ -24,6 +24,8 @@ import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.so
  *          ii) Transfer ownership of the rbfProxied to that of the msg.sender address.
  *
  */
+ //tc-8:给RBFRouter授权RBFFactory调用权限：使用一个没有权限的用户授权，应该失败
+ //tc-9:给RBFRouter授权RBFFactory调用权限：使用一个有权限的用户授权，应该成功
 contract RBFFactory is Auth, IRBFFactory {
     event RBFDeployed(
         address proxy,
@@ -49,6 +51,8 @@ contract RBFFactory is Auth, IRBFFactory {
      * @return  address   The address of the newly created proxy admin contract.
      * @return  address   The address of the newly created RBF implementation contract.
      */
+     //tc-36:没有权限的人调用RBFFactory的newRBF方法，应该调用不成功
+     //tc-37:有权限的人调用RBFFactory的newRBF方法，应该调用成功
     function newRBF(
         RBFInitializeData memory data,
         address guardian

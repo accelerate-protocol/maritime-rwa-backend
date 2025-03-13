@@ -22,6 +22,8 @@ import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.so
  *          i) Transfer ownership of the ProxyAdmin to that of the `guardian` address.
  *          ii) Transfer ownership of the vaultProxied to that of the `msg.sender` address.
  */
+ //tc-25:给VaultRouter授权VaultFactory调用权限：使用没有权限的人给VaultRouter授权，应该失败
+ //tc-26:给VaultRouter授权VaultFactory调用权限：使用有权限的人给VaultRouter授权，应该成功
 contract VaultFactory is Auth, IVaultFactory {
     event VaultDeployed(
         address proxy,
@@ -47,6 +49,8 @@ contract VaultFactory is Auth, IVaultFactory {
      * @return  address   The address of the newly created proxy admin contract.
      * @return  address   The address of the newly created Vault implementation contract.
      */
+     //tc-38:没有权限的人调用VaultFactory的newVault方法，应该调用不成功
+     //tc-39:有权限的人调用VaultFactory的newVault方法，应该调用成功
     function newVault(
         VaultInitializeData memory data,
         address guardian

@@ -60,6 +60,9 @@ contract VaultRouter is Ownable,IVaultRouter {
      * @param vaultDeployData Struct containing vault initialization parameters.
      * @notice Only the owner of the associated RBF contract can deploy a vault.
      */
+     //tc-21:当前未给VaultRouter授权，应该不能部署Vault
+     //tc-24:给VaultRouter授权EscrowFactory调用权限：使用有权限的人给VaultRouter授权，应该成功
+     //tc-27:当前给VaultRouter授权EscrowFactory、VaultFactory操作权限，其他参数满足要求，应该部署Vault成功
     function deployVault(VaultDeployData memory vaultDeployData) public {
         require(vaultDeployData.vaultId == vaultNonce, "Invalid vaultId");
         uint64 vaultId=vaultDeployData.vaultId;
