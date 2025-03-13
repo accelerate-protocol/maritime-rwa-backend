@@ -90,12 +90,12 @@ contract Vault is
     // Finance price
     uint256 public financePrice;
     // Mapping to check if an address is whitelisted
-    mapping(address => bool) public whitelistMap;
+    mapping(address => bool) public whiteListMap;
     // List of whitelisted addresses allowed to interact with the Vault
-    address[] public whitelists;
+    address[] public whiteLists;
 
     modifier onlyWhiteList(address _address) {
-        require(whitelistMap[_address], "Vault: you are not int whitelist");
+        require(whiteListMap[_address], "Vault: you are not int whitelist");
         _;
     }
 
@@ -129,7 +129,7 @@ contract Vault is
         fundThreshold = data.fundThreshold;
         require(data.financePrice > 0, "Vault: Invalid financePrice");
         financePrice = data.financePrice;
-        require(data.minDepositAmount > 0, "Vault: Invalid minDepositAmount");
+        require(data.minDepositAmount > 0 && data.minDepositAmount<= (data.financePrice*data.maxSupply/FINANCE_PRICE_DENOMINATOR), "Vault: Invalid minDepositAmount");
         minDepositAmount = data.minDepositAmount;
         require(
             data.manageFee <= BPS_DENOMINATOR,
@@ -152,9 +152,9 @@ contract Vault is
             (data.whitelists.length > 0) && (data.whitelists.length <= 100),
             "Vault: Invalid whitelists length"
         );
-        whitelists = data.whitelists;
+        whiteLists = data.whitelists;
         for (uint256 i = 0; i < data.whitelists.length; i++) {
-            whitelistMap[data.whitelists[i]] = true;
+            whiteListMap[data.whitelists[i]] = true;
         }
         decimalsMultiplier =
             10 **
@@ -289,12 +289,12 @@ contract Vault is
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
-            !whitelistMap[whitelistAddr],
+            !whiteListMap[whitelistAddr],
             "Vault: Address is already whitelisted"
         );
-        require(whitelists.length < 100, "Vault: Whitelist is full");
-        whitelistMap[whitelistAddr] = true;
-        whitelists.push(whitelistAddr);
+        require(whiteLists.length < 100, "Vault: Whitelist is full");
+        whiteListMap[whitelistAddr] = true;
+        whiteLists.push(whitelistAddr);
     }
 
     /**
@@ -307,14 +307,14 @@ contract Vault is
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
-            whitelistMap[whitelistAddr],
+            whiteListMap[whitelistAddr],
             "Vault: Address is not in the whitelist"
         );
-        whitelistMap[whitelistAddr] = false;
-        for (uint256 i = 0; i < whitelists.length; i++) {
-            if (whitelists[i] == whitelistAddr) {
-                whitelists[i] = whitelists[whitelists.length - 1];
-                whitelists.pop();
+        whiteListMap[whitelistAddr] = false;
+        for (uint256 i = 0; i < whiteLists.length; i++) {
+            if (whiteLists[i] == whitelistAddr) {
+                whiteLists[i] = whiteLists[whiteLists.length - 1];
+                whiteLists.pop();
                 break;
             }
         }
@@ -330,14 +330,14 @@ contract Vault is
         require(totalDividend > 0, "Vault: No dividend to pay");
         uint256 totalSupply = totalSupply();
         require(totalSupply > 0, "Vault: No rbu to pay");
-        for (uint8 i = 0; i < whitelists.length; i++) {
-            if (whitelistMap[whitelists[i]]) {
-                if (balanceOf(whitelists[i]) != 0) {
+        for (uint8 i = 0; i < whiteLists.length; i++) {
+            if (whiteListMap[whiteLists[i]]) {
+                if (balanceOf(whiteLists[i]) != 0) {
                     _dividend(
-                        balanceOf(whitelists[i]),
+                        balanceOf(whiteLists[i]),
                         totalSupply,
                         totalDividend,
-                        whitelists[i]
+                        whiteLists[i]
                     );
                 }
             }
@@ -363,6 +363,16 @@ contract Vault is
      */
     function decimals() public view virtual override returns (uint8) {
         return 6;
+    }
+
+
+     /**
+     * @notice  Returns the length of the whiteLists array.
+     * @dev     This function is used to get the length of the whiteLists array.
+     * @return  uint256  The length of the whiteLists array.
+     */
+    function getWhiteListsLen() public view returns (uint256) {
+        return whiteLists.length;
     }
 
     /**
@@ -422,7 +432,7 @@ contract Vault is
 
     function _checkTransferAuth(address from, address to) internal view {
         require(
-            whitelistMap[from] && whitelistMap[to],
+            whiteListMap[from] && whiteListMap[to],
             "Vault: transfer from and to must in whitelist"
         );
     }

@@ -59,7 +59,7 @@ contract RBFRouter is IRBFRouter, Ownable {
     mapping(uint64 => RBFInfo) private rbfs;
     // Mapping to track whitelisted addresses authorized to sign transactions
     mapping(address => bool) public whiteListed;
-    address[] whiteLists;
+    address[] public whiteLists;
 
     /**
      * @notice Constructor to initialize the router with necessary parameters.
@@ -107,7 +107,7 @@ contract RBFRouter is IRBFRouter, Ownable {
         address[] memory _whiteLists,
         uint256 _threshold
     ) public onlyOwner {
-        require(whiteLists.length > 0, "whiteLists must not be empty");
+        require(_whiteLists.length > 0, "whiteLists must not be empty");
         require(_threshold > 0, "threshold must not be zero");
         // Remove existing whitelist addresses
         uint oldLen=whiteLists.length;
@@ -210,10 +210,20 @@ contract RBFRouter is IRBFRouter, Ownable {
         return rbfs[rbfId];
     }
 
+    /**
+     * @notice  Returns the length of the whiteLists array.
+     * @dev     This function is used to get the length of the whiteLists array.
+     * @return  uint256  The length of the whiteLists array.
+     */
+    function getWhiteListsLen() public view returns (uint256) {
+        return whiteLists.length;
+    }
+
+
     function recoverSigner(
         bytes32 ethSignedMessageHash,
         bytes memory signature
-    ) public pure returns (address) {
+    ) internal pure returns (address) {
         require(signature.length == 65, "RBFRouter:Invalid signature length");
 
         bytes32 r;
@@ -232,7 +242,7 @@ contract RBFRouter is IRBFRouter, Ownable {
 
     function getEthSignedMessageHash(
         bytes32 messageHash
-    ) public pure returns (bytes32) {
+    ) internal pure returns (bytes32) {
         return
             keccak256(
                 abi.encodePacked(
