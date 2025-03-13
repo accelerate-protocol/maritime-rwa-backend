@@ -289,6 +289,10 @@ contract Vault is
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
+            block.timestamp <= subEndTime,
+            "Vault: Invalid time"
+        );
+        require(
             !whiteListMap[whitelistAddr],
             "Vault: Address is already whitelisted"
         );
@@ -307,9 +311,14 @@ contract Vault is
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
+            block.timestamp <= subEndTime,
+            "Vault: Invalid time"
+        );
+        require(
             whiteListMap[whitelistAddr],
             "Vault: Address is not in the whitelist"
         );
+        require(balanceOf(whitelistAddr)<=0, "Vault: Address has balance");
         whiteListMap[whitelistAddr] = false;
         for (uint256 i = 0; i < whiteLists.length; i++) {
             if (whiteLists[i] == whitelistAddr) {
