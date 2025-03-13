@@ -1,8 +1,15 @@
 // SPDX-License-Identifier: MIT
+/**
+    ___                         __                         __
+   /   |  _____  _____  ___    / /  ___    _____  ____ _  / /_  ___
+  / /| | / ___/ / ___/ / _ \  / /  / _ \  / ___/ / __ `/ / __/ / _ \
+ / ___ |/ /__  / /__  /  __/ / /  /  __/ / /    / /_/ / / /_  /  __/
+/_/  |_|\___/  \___/  \___/ /_/   \___/ /_/     \__,_/  \__/  \___/
+
+*/
 pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../common/Escrow.sol";
 import "./Vault.sol";
 import "../interface/IEscrowFactory.sol";
@@ -11,7 +18,7 @@ import "../interface/IVaultRouter.sol";
 import "../rbf/RBF.sol";
 
 /**
- * @author  tmpAuthor
+ * @author  Accelerate Finance
  * @title   VaultRouter
  * @dev     Manages the deployment of vaults and associated escrow contracts.
  * @notice  This contract allows users to deploy new vaults and retrieve vault information.

@@ -1,4 +1,12 @@
 // SPDX-License-Identifier: MIT
+/**
+    ___                         __                         __
+   /   |  _____  _____  ___    / /  ___    _____  ____ _  / /_  ___
+  / /| | / ___/ / ___/ / _ \  / /  / _ \  / ___/ / __ `/ / __/ / _ \
+ / ___ |/ /__  / /__  /  __/ / /  /  __/ / /    / /_/ / / /_  /  __/
+/_/  |_|\___/  \___/  \___/ /_/   \___/ /_/     \__,_/  \__/  \___/
+
+*/
 pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -10,7 +18,7 @@ import "../common/Escrow.sol";
 import "./RBF.sol";
 
 /**
- * @author  tmpAuthor
+ * @author  Accelerate Finance
  * @title   RBFRouter
  * @dev     Router contract for deploying RBF contracts and managing their settings.
  * @notice  This contract facilitates the creation and management of RBF contracts, handling escrow and price feed deployment.
@@ -51,7 +59,7 @@ contract RBFRouter is IRBFRouter, Ownable {
     mapping(uint64 => RBFInfo) private rbfs;
     // Mapping to track whitelisted addresses authorized to sign transactions
     mapping(address => bool) public whiteListed;
-    address[] public whiteLists;
+    address[] public public whiteLists;
 
     /**
      * @notice Constructor to initialize the router with necessary parameters.
@@ -135,6 +143,7 @@ contract RBFRouter is IRBFRouter, Ownable {
         bytes[] memory signatures
     ) public {
         _verifySign(deployData, signatures);
+
         RBFDeployData memory rbfDeployData = abi.decode(
             deployData,
             (RBFDeployData)
@@ -169,7 +178,6 @@ contract RBFRouter is IRBFRouter, Ownable {
             address(dividendTreasury),
             address(pricerFeed)
         );
-
         Escrow(dividendTreasury).approveMax(rbfDeployData.assetToken, rbf);
         Escrow(dividendTreasury).rely(address(rbf));
         Escrow(dividendTreasury).deny(address(this));
@@ -195,7 +203,7 @@ contract RBFRouter is IRBFRouter, Ownable {
             require(whiteListed[signer], "RBFRouter:Invalid Signer"); //tc-11
             validSignatures++;
         }
-        require(validSignatures >= threshold, "RBFRouter:Invalid Threshold");//tc-19
+        require(validSignatures >= threshold, "RBFRouter:Invalid Threshold");
     }
 
     function getEncodeData(
@@ -213,10 +221,20 @@ contract RBFRouter is IRBFRouter, Ownable {
         return rbfs[rbfId];
     }
 
+    /**
+     * @notice  Returns the length of the whiteLists array.
+     * @dev     This function is used to get the length of the whiteLists array.
+     * @return  uint256  The length of the whiteLists array.
+     */
+    function getWhiteListsLen() public view returns (uint256) {
+        return whiteLists.length;
+    }
+
+
     function recoverSigner(
         bytes32 ethSignedMessageHash,
         bytes memory signature
-    ) public pure returns (address) {
+    ) internal pure returns (address) {
         require(signature.length == 65, "RBFRouter:Invalid signature length");
 
         bytes32 r;
@@ -235,7 +253,7 @@ contract RBFRouter is IRBFRouter, Ownable {
 
     function getEthSignedMessageHash(
         bytes32 messageHash
-    ) public pure returns (bytes32) {
+    ) internal pure returns (bytes32) {
         return
             keccak256(
                 abi.encodePacked(

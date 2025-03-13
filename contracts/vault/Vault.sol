@@ -1,13 +1,20 @@
 // SPDX-License-Identifier: MIT
+/**
+    ___                         __                         __
+   /   |  _____  _____  ___    / /  ___    _____  ____ _  / /_  ___
+  / /| | / ___/ / ___/ / _ \  / /  / _ \  / ___/ / __ `/ / __/ / _ \
+ / ___ |/ /__  / /__  /  __/ / /  /  __/ / /    / /_/ / / /_  /  __/
+/_/  |_|\___/  \___/  \___/ /_/   \___/ /_/     \__,_/  \__/  \___/
+
+*/
 pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "../interface/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import "../interface/AggregatorV3Interface.sol";
 import "../interface/IVault.sol";
 import "../rbf/RBF.sol";
 
@@ -32,7 +39,7 @@ struct VaultInitializeData {
 }
 
 /**
- * @author  tmpAuthor
+ * @author  Accelerate Finance
  * @title   Vault
  * @dev     A contract for handling deposit and minting of vault tokens, managing dividends, and controlling access by the manager.
  * @notice  This contract allows deposits in an underlying asset token and mints a corresponding amount of Vault tokens based on the deposit and the financePrice. It also supports dividend distribution and fee management by manager.
@@ -83,12 +90,12 @@ contract Vault is
     // Finance price
     uint256 public financePrice;
     // Mapping to check if an address is whitelisted
-    mapping(address => bool) public whitelistMap;
+    mapping(address => bool) public whiteListMap;
     // List of whitelisted addresses allowed to interact with the Vault
-    address[] public whitelists;
+    address[] public whiteLists;
 
     modifier onlyWhiteList(address _address) {
-        require(whitelistMap[_address], "Vault: you are not int whitelist");
+        require(whiteListMap[_address], "Vault: you are not int whitelist");
         _;
     }
 
@@ -122,7 +129,7 @@ contract Vault is
         fundThreshold = data.fundThreshold;
         require(data.financePrice > 0, "Vault: Invalid financePrice"); //yes tc-57:financePrice is equal to 0
         financePrice = data.financePrice;
-        require(data.minDepositAmount > 0, "Vault: Invalid minDepositAmount"); //yes tc-62:minDepositAmount is greater than maxSupply、tc-59:minDepositAmount is equal to 0
+        require(data.minDepositAmount > 0 && data.minDepositAmount<= (data.financePrice*data.maxSupply/FINANCE_PRICE_DENOMINATOR), "Vault: Invalid minDepositAmount");
         minDepositAmount = data.minDepositAmount;
         require(
             data.manageFee > 0 && data.manageFee <= BPS_DENOMINATOR, //yes tc-61:manageFee is greater than 100%、tc-60:manageFee is equal to 0、tc-65:manageFee is equal to 100%
@@ -145,9 +152,9 @@ contract Vault is
             (data.whitelists.length > 0) && (data.whitelists.length <= 100), //yes tc-65（101）、tc-63（0）、tc-64（100）
             "Vault: Invalid whitelists length"
         );
-        whitelists = data.whitelists;
+        whiteLists = data.whitelists;
         for (uint256 i = 0; i < data.whitelists.length; i++) {
-            whitelistMap[data.whitelists[i]] = true;
+            whiteListMap[data.whitelists[i]] = true;
         }
         decimalsMultiplier =
             10 **
@@ -304,11 +311,11 @@ contract Vault is
             whitelistMap[whitelistAddr],
             "Vault: Address is not in the whitelist" //tc-66:要删除的账户不在白名单中，删除失败
         );
-        whitelistMap[whitelistAddr] = false;
-        for (uint256 i = 0; i < whitelists.length; i++) {
-            if (whitelists[i] == whitelistAddr) {
-                whitelists[i] = whitelists[whitelists.length - 1];
-                whitelists.pop();
+        whiteListMap[whitelistAddr] = false;
+        for (uint256 i = 0; i < whiteLists.length; i++) {
+            if (whiteLists[i] == whitelistAddr) {
+                whiteLists[i] = whiteLists[whiteLists.length - 1];
+                whiteLists.pop();
                 break;
             }
         } //tc-66:要删除的账户不在白名单中，删除成功
@@ -324,14 +331,14 @@ contract Vault is
         require(totalDividend > 0, "Vault: No dividend to pay"); //tc-70:No dividend to pay
         uint256 totalSupply = totalSupply();
         require(totalSupply > 0, "Vault: No rbu to pay");
-        for (uint8 i = 0; i < whitelists.length; i++) {
-            if (whitelistMap[whitelists[i]]) {
-                if (balanceOf(whitelists[i]) != 0) {
+        for (uint8 i = 0; i < whiteLists.length; i++) {
+            if (whiteListMap[whiteLists[i]]) {
+                if (balanceOf(whiteLists[i]) != 0) {
                     _dividend(
-                        balanceOf(whitelists[i]),
+                        balanceOf(whiteLists[i]),
                         totalSupply,
                         totalDividend,
-                        whitelists[i]
+                        whiteLists[i]
                     );
                 }
             }
@@ -359,6 +366,16 @@ contract Vault is
         return 6;
     }
 
+
+     /**
+     * @notice  Returns the length of the whiteLists array.
+     * @dev     This function is used to get the length of the whiteLists array.
+     * @return  uint256  The length of the whiteLists array.
+     */
+    function getWhiteListsLen() public view returns (uint256) {
+        return whiteLists.length;
+    }
+
     /**
      * @notice Transfers tokens from the caller to another address.
      * @dev The function checks if the transfer is authorized before executing it.
@@ -374,9 +391,8 @@ contract Vault is
         uint256 amount
     ) public virtual override returns (bool) {
         _checkTransferAuth(msg.sender, to);
-        address owner = _msgSender();
-        _transfer(owner, to, amount);
-        return true;
+        bool success = super.transfer(to, amount);
+        return success;
     }
 
     /**
@@ -395,11 +411,10 @@ contract Vault is
         uint256 amount
     ) public virtual override returns (bool) {
         _checkTransferAuth(from, to);
-        address spender = _msgSender();
-        _spendAllowance(from, spender, amount);
-        _transfer(from, to, amount);
-        return true;
+        bool success = super.transferFrom(from, to, amount);
+        return success;
     }
+
 
     function _dividend(
         uint256 vaultTokenAmount,
@@ -421,7 +436,7 @@ contract Vault is
 
     function _checkTransferAuth(address from, address to) internal view {
         require(
-            whitelistMap[from] && whitelistMap[to],
+            whiteListMap[from] && whiteListMap[to],
             "Vault: transfer from and to must in whitelist"
         );
     }

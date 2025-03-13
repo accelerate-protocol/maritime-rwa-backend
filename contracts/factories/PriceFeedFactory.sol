@@ -1,4 +1,12 @@
 // SPDX-License-Identifier: MIT
+/**
+    ___                         __                         __
+   /   |  _____  _____  ___    / /  ___    _____  ____ _  / /_  ___
+  / /| | / ___/ / ___/ / _ \  / /  / _ \  / ___/ / __ `/ / __/ / _ \
+ / ___ |/ /__  / /__  /  __/ / /  /  __/ / /    / /_/ / / /_  /  __/
+/_/  |_|\___/  \___/  \___/ /_/   \___/ /_/     \__,_/  \__/  \___/
+
+*/
 pragma solidity 0.8.26;
 
 import "../interface/IPriceFeedFactory.sol";
@@ -6,7 +14,7 @@ import "../common/Auth.sol";
 import "../rbf/PriceFeed.sol";
 
 /**
- * @author  tmpAuthor
+ * @author  Accelerate Finance
  * @title   PriceFeedFactory
  * @dev     This contract is responsible for creating new instances of the PriceFeedFactory contract.
  * @notice  Allows authorized users to deploy new PriceFeedFactory contracts.

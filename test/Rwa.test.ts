@@ -83,18 +83,13 @@ describe("RWA:", function () {
       VaultRouter.address
     );
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBF",
-      symbol: "RBF",
-      assetToken: usdt.address,
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,"RBF","RBF",usdt.address,depositTreasury,0, deployer,manager,guardian]
+      ]
+    );
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -123,7 +118,7 @@ describe("RWA:", function () {
     const fundThreshold="3000"
     const minDepositAmount="10000000"
     const manageFee="50"
-    const maxSupply="10000000000"
+    const maxSupply="10200000000"
     const financePrice="100000000"
     const vaultDeployData = {
       vaultId: vaultId,
@@ -170,18 +165,14 @@ describe("RWA:", function () {
 
   it("rbf error sign deploy:", async function () {
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBF",
-      symbol: "RBF",
-      assetToken: usdt.address,
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,"RBF","RBF",usdt.address,depositTreasury,0, deployer,manager,guardian]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(deployer);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -193,18 +184,13 @@ describe("RWA:", function () {
 
   it("rbf error rbfId deploy:", async function () {
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId - 1n,
-      name: "RBF",
-      symbol: "RBF",
-      assetToken: usdt.address,
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId - 1n,"RBF","RBF",usdt.address,depositTreasury,0, deployer,manager,guardian]
+      ]
+    );
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -216,18 +202,13 @@ describe("RWA:", function () {
 
   it("rbf error deployer deploy:", async function () {
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBF",
-      symbol: "RBF",
-      assetToken: usdt.address,
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      deployer: investor1,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,"RBF","RBF",usdt.address,depositTreasury,0, investor1,manager,guardian]
+      ]
+    );
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
