@@ -158,7 +158,7 @@ contract RBF is
      */
     function claimDeposit() public onlyRole(MANAGER_ROLE) { //tc-66:不是MANAGER_ROLE角色的账户执行claimDeposit;是MANAGER_ROLE角色的账户执行claimDeposit
         require(depositAmount > 0, "RBF: depositAmount must be greater than 0"); //tc-70:depositAmount为0，执行claimDeposit，执行失败
-        require(depositPirce > 0, "RBF: depositPirce must be greater than 0"); //tc-66:depositPirce为0，执行claimDeposit，执行失败;
+        require(depositPrice > 0, "RBF: depositPirce must be greater than 0"); //tc-66:depositPirce为0，执行claimDeposit，执行失败;
         require(
             depositMintAmount > 0,
             "RBF: depositMintAmount must be greater than 0" //tc-66:depositMintAmount为0，执行claimDeposit，执行失败

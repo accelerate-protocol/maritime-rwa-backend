@@ -393,6 +393,7 @@ describe("RWA:", function () {
       rbf,
       drdsSigner
     )
+    rbfDrds.setDepositPriceAndMintAmount(financePrice,maxSupply);
 
     await expect(rbfDrds.setDepositPriceAndMintAmount(financePrice,maxSupply)).not.to.be.reverted;
     expect(await rbfDrds.depositPrice()).to.be.equal(financePrice);

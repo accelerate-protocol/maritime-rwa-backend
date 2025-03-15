@@ -286,18 +286,20 @@ contract Vault is
      *      is not already whitelisted and that the whitelist does not exceed 100 entries.
      * @param whitelistAddr The address to be added to the whitelist.
      */
+     //tc-77:在认购期，且未完成融资添加白名单（不在白名单列表中），添加成功
+     //tc-77:提前投资完成但为到达认购结束时间，添加账户到白名单，添加成功
     function addToWhitelist(
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
             block.timestamp <= subEndTime,
-            "Vault: Invalid time"
+            "Vault: Invalid time" //tc-77:认购结束后，添加白名单失败
         );
         require(
             !whiteListMap[whitelistAddr],
-            "Vault: Address is already whitelisted" //tc-67://用户已经在白名单，继续往白名单列表中添加
+            "Vault: Address is already whitelisted" //tc-77：要添加的账户已经在白名单，添加失败
         );
-        require(whiteLists.length < 100, "Vault: Whitelist is full"); //tc67://白名单已满，继续添加白名单，执行失败
+        require(whiteLists.length < 100, "Vault: Whitelist is full"); //tc-67:添加白名单账户超过100个
         whiteListMap[whitelistAddr] = true;
         whiteLists.push(whitelistAddr);
     }
@@ -308,18 +310,20 @@ contract Vault is
      *      is currently whitelisted before proceeding.
      * @param whitelistAddr The address to be removed from the whitelist.
      */
+     //tc-77:在认购期且未完成认购，删除白名单成员，删除成功
+     //tc-77:在认购期，但是当前提前完成了融资，删除白名单成员，删除失败
     function removeFromWhitelist(
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
-            block.timestamp <= subEndTime,
+            block.timestamp <= subEndTime,  //tc-77:认购结束后删除白名单账户，删除失败
             "Vault: Invalid time"
         );
         require(
             whiteListMap[whitelistAddr],
-            "Vault: Address is not in the whitelist" //tc-66:要删除的账户不在白名单中，删除失败
+            "Vault: Address is not in the whitelist" //tc-77:删除不在白名单中的成员，删除失败
         );
-        require(balanceOf(whitelistAddr)<=0, "Vault: Address has balance");
+        require(balanceOf(whitelistAddr)<=0, "Vault: Address has balance"); //tc-77:账户认购后有投资金额，不能从白名单中删除该账户；//tc-77:将账户投资的钱转给其他成员，则账户没有投资金额，则删除成功
         whiteListMap[whitelistAddr] = false;
         for (uint256 i = 0; i < whiteLists.length; i++) {
             if (whiteLists[i] == whitelistAddr) {
@@ -327,7 +331,7 @@ contract Vault is
                 whiteLists.pop();
                 break;
             }
-        } //tc-66:要删除的账户不在白名单中，删除成功
+        } 
     }
 
     /**
