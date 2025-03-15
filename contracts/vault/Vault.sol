@@ -290,12 +290,12 @@ contract Vault is
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
-            !whitelistMap[whitelistAddr],
+            !whiteListMap[whitelistAddr],
             "Vault: Address is already whitelisted" //tc-67://用户已经在白名单，继续往白名单列表中添加
         );
-        require(whitelists.length < 100, "Vault: Whitelist is full"); //tc67://白名单已满，继续添加白名单，执行失败
-        whitelistMap[whitelistAddr] = true;
-        whitelists.push(whitelistAddr);
+        require(whiteLists.length < 100, "Vault: Whitelist is full"); //tc67://白名单已满，继续添加白名单，执行失败
+        whiteListMap[whitelistAddr] = true;
+        whiteLists.push(whitelistAddr);
     }
 
     /**
@@ -308,7 +308,7 @@ contract Vault is
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
-            whitelistMap[whitelistAddr],
+            whiteListMap[whitelistAddr],
             "Vault: Address is not in the whitelist" //tc-66:要删除的账户不在白名单中，删除失败
         );
         whiteListMap[whitelistAddr] = false;
@@ -404,7 +404,10 @@ contract Vault is
      * @param amount The amount of tokens to transfer.
      * @return A boolean value indicating whether the transfer was successful.
      */
-     //白名单中的账户向非白名单的账户转账，执行失败
+     //tc-72:白名单中的账户向非白名单的账户转账，执行失败
+     //tc-72:非白名单中的账户向白名单的账户转账，执行失败
+     //tc-72:白名单的账户向白名单中的账户转账（授权前）执行失败
+     //tc-72:白名单的账户向白名单中的账户转账（授权后）执行成功
     function transferFrom(
         address from,
         address to,

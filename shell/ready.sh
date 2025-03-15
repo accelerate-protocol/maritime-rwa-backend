@@ -17,5 +17,5 @@ cd "${PROJECT_ROOT}"
 npx hardhat node > "${PROJECT_ROOT}/hardhat.log" 2>&1 &
 
 # 等待链环境启动
-sleep 20
+sleep 30
 

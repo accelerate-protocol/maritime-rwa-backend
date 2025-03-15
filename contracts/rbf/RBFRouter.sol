@@ -59,7 +59,7 @@ contract RBFRouter is IRBFRouter, Ownable {
     mapping(uint64 => RBFInfo) private rbfs;
     // Mapping to track whitelisted addresses authorized to sign transactions
     mapping(address => bool) public whiteListed;
-    address[] public public whiteLists;
+    address[] public whiteLists;
 
     /**
      * @notice Constructor to initialize the router with necessary parameters.
@@ -204,12 +204,6 @@ contract RBFRouter is IRBFRouter, Ownable {
             validSignatures++;
         }
         require(validSignatures >= threshold, "RBFRouter:Invalid Threshold");
-    }
-
-    function getEncodeData(
-        RBFDeployData memory rbfDeployData
-    ) public pure returns (bytes memory) {
-        return abi.encode(rbfDeployData);
     }
 
     /**

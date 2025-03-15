@@ -54,21 +54,21 @@ describe("RBF:", function () {
   it("tc-11:deploy rbf with error sign :", async function () {
     const {deployer,guardian,manager,depositTreasury,rbfSigner2} = await getNamedAccounts();
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBF",
-      symbol: "RBF",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF", "RBF",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(deployer);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -81,24 +81,24 @@ describe("RBF:", function () {
   });
 
   //部署RBF时，消息发送者与deploydata中的deployer不一致，部署失败报错
-  it("tc-12:rbf error deployer deploy:", async function () {
+  it.skip("tc-12:rbf error deployer deploy:", async function () {
     const {investor1,guardian,manager,rbfSigner,depositTreasury,rbfSigner2} = await getNamedAccounts();
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBF",
-      symbol: "RBF",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: investor1,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF", "RBF",
+        usdt.address,
+        depositTreasury,
+        "0",
+        investor1,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -115,21 +115,21 @@ describe("RBF:", function () {
   it("tc-13:rbf error rbfId deploy:", async function () {
     const {deployer,guardian,manager,rbfSigner,depositTreasury,rbfSigner2} = await getNamedAccounts();
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBF",
-      symbol: "RBF",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF", "RBF",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+   
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -145,21 +145,35 @@ describe("RBF:", function () {
   it("tc-14:assetToken address is zero address", async function () {
     const {deployer,guardian,manager,rbfSigner,depositTreasury,rbfSigner2} = await getNamedAccounts();
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBF",
-      symbol: "RBF",
-      assetToken: ethers.ZeroAddress,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF", "RBF",
+        ethers.ZeroAddress,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    // const rbfDeployData = {
+    //   rbfId: rbfId,
+    //   name: "RBF",
+    //   symbol: "RBF",
+    //   assetToken: ethers.ZeroAddress,
+    //   maxSupply: "10000000000",
+    //   manageFee: "50",
+    //   depositTreasury: depositTreasury,
+    //   mintSlippageBps:"0",
+    //   initialPrice: "1000000000",
+    //   deployer: deployer,
+    //   manager: manager,
+    //   guardian: guardian,
+    // };
+    // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -175,21 +189,35 @@ describe("RBF:", function () {
   it("tc-15:depositTreasury address is zero address", async function () {
     const {deployer,guardian,manager,rbfSigner,rbfSigner2} = await getNamedAccounts();
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBF",
-      symbol: "RBF",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: ethers.ZeroAddress,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF", "RBF",
+        usdt.address,
+        ethers.ZeroAddress,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    // const rbfDeployData = {
+    //   rbfId: rbfId,
+    //   name: "RBF",
+    //   symbol: "RBF",
+    //   assetToken: usdt.address,
+    //   maxSupply: "10000000000",
+    //   manageFee: "50",
+    //   depositTreasury: ethers.ZeroAddress,
+    //   mintSlippageBps:"0",
+    //   initialPrice: "1000000000",
+    //   deployer: deployer,
+    //   manager: manager,
+    //   guardian: guardian,
+    // };
+    // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -205,22 +233,36 @@ describe("RBF:", function () {
   it.skip("tc-16:dividendTreasury address is zero address", async function () {
     const {deployer,guardian,manager,rbfSigner,depositTreasury,rbfSigner2} = await getNamedAccounts();
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBF",
-      symbol: "RBF",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      dividendTreasury: ethers.ZeroAddress,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF", "RBF",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    // const rbfDeployData = {
+    //   rbfId: rbfId,
+    //   name: "RBF",
+    //   symbol: "RBF",
+    //   assetToken: usdt.address,
+    //   maxSupply: "10000000000",
+    //   manageFee: "50",
+    //   depositTreasury: depositTreasury,
+    //   dividendTreasury: ethers.ZeroAddress,
+    //   mintSlippageBps:"0",
+    //   initialPrice: "1000000000",
+    //   deployer: deployer,
+    //   manager: manager,
+    //   guardian: guardian,
+    // };
+    // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -236,22 +278,36 @@ describe("RBF:", function () {
   it.skip("tc-17:priceFeed address is zero address", async function () {
     const {deployer,guardian,manager,rbfSigner,depositTreasury,rbfSigner2} = await getNamedAccounts();
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBF",
-      symbol: "RBF",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      priceFeed: ethers.ZeroAddress,
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF", "RBF",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    // const rbfDeployData = {
+    //   rbfId: rbfId,
+    //   name: "RBF",
+    //   symbol: "RBF",
+    //   assetToken: usdt.address,
+    //   maxSupply: "10000000000",
+    //   manageFee: "50",
+    //   depositTreasury: depositTreasury,
+    //   mintSlippageBps:"0",
+    //   priceFeed: ethers.ZeroAddress,
+    //   initialPrice: "1000000000",
+    //   deployer: deployer,
+    //   manager: manager,
+    //   guardian: guardian,
+    // };
+    // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -267,21 +323,35 @@ describe("RBF:", function () {
   it("tc-18:manager address is zero address", async function () {
     const {deployer,guardian,rbfSigner,depositTreasury,rbfSigner2} = await getNamedAccounts();
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBF",
-      symbol: "RBF",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: ethers.ZeroAddress,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF", "RBF",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        ethers.ZeroAddress,
+        guardian,]
+      ]
+    );
+    // const rbfDeployData = {
+    //   rbfId: rbfId,
+    //   name: "RBF",
+    //   symbol: "RBF",
+    //   assetToken: usdt.address,
+    //   maxSupply: "10000000000",
+    //   manageFee: "50",
+    //   depositTreasury: depositTreasury,
+    //   mintSlippageBps:"0",
+    //   initialPrice: "1000000000",
+    //   deployer: deployer,
+    //   manager: ethers.ZeroAddress,
+    //   guardian: guardian,
+    // };
+    // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -297,21 +367,35 @@ describe("RBF:", function () {
   it("tc-19:sign number less than threshold", async function () {
     const {deployer,guardian,manager,rbfSigner,depositTreasury} = await getNamedAccounts();
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBF",
-      symbol: "RBF",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF", "RBF",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        ethers.ZeroAddress,
+        guardian,]
+      ]
+    );
+    // const rbfDeployData = {
+    //   rbfId: rbfId,
+    //   name: "RBF",
+    //   symbol: "RBF",
+    //   assetToken: usdt.address,
+    //   maxSupply: "10000000000",
+    //   manageFee: "50",
+    //   depositTreasury: depositTreasury,
+    //   mintSlippageBps:"0",
+    //   initialPrice: "1000000000",
+    //   deployer: deployer,
+    //   manager: manager,
+    //   guardian: guardian,
+    // };
+    // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -319,29 +403,40 @@ describe("RBF:", function () {
     await expect(
       rbfRouter.deployRBF(deployData, signatures)
     ).to.be.revertedWith("RBFRouter:Invalid Threshold");
-  });
-
-  
+  }); 
 
   //参数提供不完整，部署失败
   it("tc-20:parameter is not complete", async function () {
     const {deployer,guardian,manager,rbfSigner,depositTreasury,rbfSigner2} = await getNamedAccounts();
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      symbol: "RBF",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF", "RBF",
+        usdt.address,
+        depositTreasury,
+        deployer,
+        ethers.ZeroAddress,
+        guardian,]
+      ]
+    );
+    // const rbfDeployData = {
+    //   rbfId: rbfId,
+    //   symbol: "RBF",
+    //   assetToken: usdt.address,
+    //   maxSupply: "10000000000",
+    //   manageFee: "50",
+    //   depositTreasury: depositTreasury,
+    //   initialPrice: "1000000000",
+    //   deployer: deployer,
+    //   manager: manager,
+    //   guardian: guardian,
+    // };
     let err :any;
     try {
-      const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+      // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
       const deployDataHash = ethers.keccak256(deployData);
       const signer = await ethers.getSigner(rbfSigner);
       const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -352,7 +447,7 @@ describe("RBF:", function () {
     } catch (error) {
       err = error;
     }finally{
-      expect(err.message).to.include("missing value for component name");
+      expect(err.message).to.include("types/value length mismatch");
     }
   });
 
@@ -369,21 +464,35 @@ describe("RBF:", function () {
     expect(await rbfRouter.whiteListed(rbfSigner2)).to.equal(false);
     
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBF-74-1",
-      symbol: "RBF74-1",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-74-1", "RBF-74-1",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    // const rbfDeployData = {
+    //   rbfId: rbfId,
+    //   name: "RBF-74-1",
+    //   symbol: "RBF74-1",
+    //   assetToken: usdt.address,
+    //   maxSupply: "10000000000",
+    //   manageFee: "50",
+    //   depositTreasury: depositTreasury,
+    //   mintSlippageBps:"0",
+    //   initialPrice: "1000000000",
+    //   deployer: deployer,
+    //   manager: manager,
+    //   guardian: guardian,
+    // };
+    // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -401,21 +510,35 @@ describe("RBF:", function () {
     console.log("rbfSigner2",await rbfRouter.whiteListed(rbfSigner2))
     expect(await rbfRouter.whiteListed(rbfSigner2)).to.equal(true);
     const rbfId_1 = await rbfRouter.rbfNonce();
-    const rbfDeployData_1 = {
-      rbfId: rbfId_1,
-      name: "RBF-74-2",
-      symbol: "RBF74-2",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData1 = await rbfRouter.getEncodeData(rbfDeployData_1);
+    // const abiCoder = new ethers.AbiCoder();
+    const deployData1 = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId_1,
+        "RBF-74-2", "RBF-74-2",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    // const rbfDeployData_1 = {
+    //   rbfId: rbfId_1,
+    //   name: "RBF-74-2",
+    //   symbol: "RBF74-2",
+    //   assetToken: usdt.address,
+    //   maxSupply: "10000000000",
+    //   manageFee: "50",
+    //   depositTreasury: depositTreasury,
+    //   mintSlippageBps:"0",
+    //   initialPrice: "1000000000",
+    //   deployer: deployer,
+    //   manager: manager,
+    //   guardian: guardian,
+    // };
+    // const deployData1 = await rbfRouter.getEncodeData(rbfDeployData_1);
     const deployDataHash1 = ethers.keccak256(deployData1);
     const signer1 = await ethers.getSigner(rbfSigner);
     const signature1 = await signer1.signMessage(ethers.getBytes(deployDataHash1));

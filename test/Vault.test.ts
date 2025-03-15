@@ -54,21 +54,20 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForVault_assetTokenIsZeroAddress",
-      symbol: "RBFForVault_assetTokenIsZeroAddress",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-28", "RBF-28",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -126,21 +125,20 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForVault_managerIsZeroAddress",
-      symbol: "RBFForVault_managerIsZeroAddress",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-29", "RBF-29",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -197,21 +195,20 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc30",
-      symbol: "RBFForTc30",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-30", "RBF-30",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -317,21 +314,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc41",
-      symbol: "RBFForTc41",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-41", "RBF-41",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+   
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -386,21 +383,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc42",
-      symbol: "RBFForTc42",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-42", "RBF-42",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -456,21 +453,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc43",
-      symbol: "RBFForTc43",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-43", "RBF-43",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -554,21 +551,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc44",
-      symbol: "RBFForTc44",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-44", "RBF-44",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -653,21 +650,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc46",
-      symbol: "RBFForTc46",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-46", "RBF-46",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -750,21 +747,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc47",
-      symbol: "RBFForTc47",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-47", "RBF-47",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -848,21 +845,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc48",
-      symbol: "RBFForTc48",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF", "RBF",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -947,21 +944,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc49",
-      symbol: "RBFForTc49",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-49", "RBF-49",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+   
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -1045,21 +1042,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc50",
-      symbol: "RBFForTc50",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-50", "RBF-50",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -1165,21 +1162,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc51",
-      symbol: "RBFForTc51",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-51", "RBF-51",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -1234,9 +1231,6 @@ describe("RBF:", function () {
       expect(err.message).to.include("Transaction reverted without a reason string");
     }
     
-    // await expect(vaultRouter.deployVault(vaultDeployData)).to.be.revertedWith(
-    //   "Vault: Invalid rbf address"
-    // );
   });
 
   //tc-52:maxSupply小于0
@@ -1246,20 +1240,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc52",
-      symbol: "RBFForTc52",
-      assetToken: usdt.address,
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-52", "RBF-52",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -1318,20 +1313,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc53",
-      symbol: "RBFForTc53",
-      assetToken: usdt.address,
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-53", "RBF-53",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -1396,21 +1392,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc54",
-      symbol: "RBFForTc54",
-      assetToken: usdt.address,
-      maxSupply: "10000000000",
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-54", "RBF-54",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -1466,20 +1462,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc55",
-      symbol: "RBFForTc55",
-      assetToken: usdt.address,
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-55", "RBF-55",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -1536,20 +1533,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc56",
-      symbol: "RBFForTc56",
-      assetToken: usdt.address,
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-56", "RBF-56",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -1606,20 +1604,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc57",
-      symbol: "RBFForTc57",
-      assetToken: usdt.address,
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-57", "RBF-57",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+   
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -1676,20 +1675,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc58",
-      symbol: "RBFForTc58",
-      assetToken: usdt.address,
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-58", "RBF-58",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -1746,20 +1746,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc59",
-      symbol: "RBFForTc59",
-      assetToken: usdt.address,
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-59", "RBF-59",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -1816,20 +1817,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc60",
-      symbol: "RBFForTc60",
-      assetToken: usdt.address,
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-60", "RBF-60",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -1886,20 +1888,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc65",
-      symbol: "RBFForTc65",
-      assetToken: usdt.address,
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-65", "RBF-65",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+   
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -1957,20 +1960,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc61",
-      symbol: "RBFForTc61",
-      assetToken: usdt.address,
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RB-61F", "RB-61F",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -2027,20 +2031,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc62",
-      symbol: "RBFForTc62",
-      assetToken: usdt.address,
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-62", "RBF-62",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -2096,20 +2101,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc63",
-      symbol: "RBFForTc63",
-      assetToken: usdt.address,
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-63", "RBF-63",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -2165,20 +2171,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc64",
-      symbol: "RBFForTc64",
-      assetToken: usdt.address,
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-64", "RBF-64",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -2239,20 +2246,21 @@ describe("RBF:", function () {
     // 获取 RBFRouter 合约实例
     const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
     const rbfId = await rbfRouter.rbfNonce();
-    const rbfDeployData = {
-      rbfId: rbfId,
-      name: "RBFForTc65",
-      symbol: "RBFForTc65",
-      assetToken: usdt.address,
-      manageFee: "50",
-      depositTreasury: depositTreasury,
-      mintSlippageBps:"0",
-      initialPrice: "1000000000",
-      deployer: deployer,
-      manager: manager,
-      guardian: guardian,
-    };
-    const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-65", "RBF-65",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
