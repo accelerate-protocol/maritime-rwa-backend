@@ -290,6 +290,10 @@ contract Vault is
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
+            block.timestamp <= subEndTime,
+            "Vault: Invalid time"
+        );
+        require(
             !whiteListMap[whitelistAddr],
             "Vault: Address is already whitelisted" //tc-67://用户已经在白名单，继续往白名单列表中添加
         );
@@ -308,9 +312,14 @@ contract Vault is
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
+            block.timestamp <= subEndTime,
+            "Vault: Invalid time"
+        );
+        require(
             whiteListMap[whitelistAddr],
             "Vault: Address is not in the whitelist" //tc-66:要删除的账户不在白名单中，删除失败
         );
+        require(balanceOf(whitelistAddr)<=0, "Vault: Address has balance");
         whiteListMap[whitelistAddr] = false;
         for (uint256 i = 0; i < whiteLists.length; i++) {
             if (whiteLists[i] == whitelistAddr) {

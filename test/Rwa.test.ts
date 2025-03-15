@@ -377,7 +377,7 @@ describe("RWA:", function () {
     expect(await rbfManager.depositAmount()).to.be.equal(maxSupply);
 
     expectedErrorMessage = `AccessControl: account ${manager.toLowerCase()} is missing role ${ethers.keccak256(ethers.toUtf8Bytes("PRICE_MINT_AMOUNT_SETTER_ROLE"))}`;
-    await expect(rbfManager.setDepositPirceAndMintAmount(financePrice,maxSupply)).to.be.revertedWith(expectedErrorMessage);
+    await expect(rbfManager.setDepositPriceAndMintAmount(financePrice,maxSupply)).to.be.revertedWith(expectedErrorMessage);
 
     const rbfDeployer = await hre.ethers.getContractAt(
       "RBF", // 替换为你的合约名称
@@ -394,8 +394,8 @@ describe("RWA:", function () {
       drdsSigner
     )
 
-    await expect(rbfDrds.setDepositPirceAndMintAmount(financePrice,maxSupply)).not.to.be.reverted;
-    expect(await rbfDrds.depositPirce()).to.be.equal(financePrice);
+    await expect(rbfDrds.setDepositPriceAndMintAmount(financePrice,maxSupply)).not.to.be.reverted;
+    expect(await rbfDrds.depositPrice()).to.be.equal(financePrice);
     expect(await rbfDrds.depositMintAmount()).to.be.equal(maxSupply);
 
     expect(await rbfManager.balanceOf(vault)).to.be.equal(0);

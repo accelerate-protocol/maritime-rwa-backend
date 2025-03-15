@@ -64,7 +64,7 @@ contract RBF is
     // The amount of assetToken deposited into the depositTreasury.
     uint256 public depositAmount;
     // The price of RBF tokens minted for each assetToken deposited.
-    uint256 public depositPirce;
+    uint256 public depositPrice;
     // The amount of RBF tokens minted for assetToken deposited.
     uint256 public depositMintAmount;
     // Multiplier to adjust decimals between assetToken and RBF token
@@ -165,7 +165,7 @@ contract RBF is
         );
         uint256 scaledDeposit = _scaleUp(depositAmount);
         uint256 minAmount = (scaledDeposit * (10 ** priceFeed.decimals())) /
-            depositPirce;
+            depositPrice;
         uint256 slippageFactor = (mintSlippageBps * minAmount) / BPS_DENOMINATOR;
         uint256 lowerBound = minAmount - slippageFactor;
         uint256 upperBound = minAmount + slippageFactor;
@@ -207,16 +207,17 @@ contract RBF is
     /**
      * @notice  Sets the deposit price and mint amount for RBF tokens.
      * @dev     This function is only callable by the PRICE_MINT_AMOUNT_SETTER_ROLE.
-     * @param   _depositPirce    amount of assetToken deposited
+     * @param   _depositPrice    amount of assetToken deposited
      * @param   _depositMintAmount amount of RBF tokens minted
      */
-    function setDepositPirceAndMintAmount(
-        uint256 _depositPirce,
+    function setDepositPriceAndMintAmount(
+        uint256 _depositPrice,
         uint256 _depositMintAmount
     ) public onlyRole(PRICE_MINT_AMOUNT_SETTER_ROLE) {
-        depositPirce = _depositPirce;
+        require(depositAmount > 0, "RBF: depositAmount must be greater than 0");
+        depositPrice = _depositPrice;
         depositMintAmount = _depositMintAmount;
-        emit DepositDataEvent(depositPirce, depositMintAmount);
+        emit DepositDataEvent(depositPrice, depositMintAmount);
     }
 
     /**
@@ -229,6 +230,7 @@ contract RBF is
             _vault != address(0),
             "RBF: vaultAddr cannot be zero address"
         );
+        require(vault==address(0),"RBF: vaultAddr already set");
         vault = _vault;
         emit SetVault(_vault);
     }
