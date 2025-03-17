@@ -73,7 +73,7 @@ contract RBF is
     string public tokenURI;
 
     modifier onlyVault() {
-        require(msg.sender == vault, "RBF: you are not vault");
+        require(msg.sender == vault, "RBF: you are not vault"); 
         _;
     }
 
@@ -185,16 +185,16 @@ contract RBF is
         uint256 totalDividend = IERC20(assetToken).balanceOf(dividendTreasury);
         require(totalDividend > 0, "RBF: totalDividend must be greater than 0"); //tc-66:totalDividend为0，执行dividend，执行失败
         uint256 totalSupply = totalSupply();
-        require(totalSupply > 0, "RBF: totalSupply must be greater than 0");//
-        require(vault != address(0), "RBF: vault can not be zero address");
+        require(totalSupply > 0, "RBF: totalSupply must be greater than 0");// tc-81
+        require(vault != address(0), "RBF: vault can not be zero address"); //无法覆盖
         require(
             balanceOf(vault) > 0,
             "RBF: vault balance must be greater than 0"
         );
-        address vaultDividendTreasury = Vault(vault).dividendTreasury();
+        address vaultDividendTreasury = Vault(vault).dividendTreasury(); 
         require(
             vaultDividendTreasury != address(0),
-            "RBF: vault dividendTreasury cant not be zero"
+            "RBF: vault dividendTreasury cant not be zero" //无法覆盖，dividendTreasury为零地址，在部署时会被拦掉
         );
         _dividend(
             balanceOf(vault),
@@ -210,11 +210,13 @@ contract RBF is
      * @param   _depositPrice    amount of assetToken deposited
      * @param   _depositMintAmount amount of RBF tokens minted
      */
+     //tc-66:是PRICE_MINT_AMOUNT_SETTER_ROLE的账户执行setDepositPriceAndMintAmount
+     //tc-66:是PRICE_MINT_AMOUNT_SETTER_ROLE的账户执行setDepositPriceAndMintAmount
     function setDepositPriceAndMintAmount(
         uint256 _depositPrice,
         uint256 _depositMintAmount
     ) public onlyRole(PRICE_MINT_AMOUNT_SETTER_ROLE) {
-        require(depositAmount > 0, "RBF: depositAmount must be greater than 0");
+        require(depositAmount > 0, "RBF: depositAmount must be greater than 0");//tc-70
         depositPrice = _depositPrice;
         depositMintAmount = _depositMintAmount;
         emit DepositDataEvent(depositPrice, depositMintAmount);
@@ -225,12 +227,13 @@ contract RBF is
      * @dev     This function assigns the vault address, which interacts with the RBF contract.
      * @param   _vault  The address of the vault to be set.
      */
-    function setVault(address _vault) public onlyRole(MANAGER_ROLE) { //tc-66:不是MANAGER_ROLE角色的账户执行setVault;是MANAGER_ROLE角色的账户执行setVault
+     //tc-66:不是MANAGER_ROLE角色的账户执行setVault;是MANAGER_ROLE角色的账户执行setVault
+    function setVault(address _vault) public onlyRole(MANAGER_ROLE) { 
         require(
             _vault != address(0),
-            "RBF: vaultAddr cannot be zero address"
+            "RBF: vaultAddr cannot be zero address" //tc-66
         );
-        require(vault==address(0),"RBF: vaultAddr already set");
+        require(vault==address(0),"RBF: vaultAddr already set");//tc-66
         vault = _vault;
         emit SetVault(_vault);
     }

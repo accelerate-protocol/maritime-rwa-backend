@@ -18,33 +18,13 @@ import "../interface/AggregatorV3Interface.sol";
 import "../interface/IVault.sol";
 import "../rbf/RBF.sol";
 
-// Struct for initializing the Vault contract with multiple parameters
-struct VaultInitializeData {
-    string name; // Vault token name
-    string symbol; // Vault token symbol
-    address assetToken;
-    address rbf;
-    uint256 maxSupply;
-    uint256 subStartTime;
-    uint256 subEndTime;
-    uint256 duration;
-    uint256 fundThreshold;
-    uint256 financePrice;
-    uint256 minDepositAmount;
-    uint256 manageFee;
-    address manager;
-    address feeReceiver;
-    address dividendTreasury;
-    address[] whitelists;
-}
-
 /**
  * @author  Accelerate Finance
  * @title   Vault
  * @dev     A contract for handling deposit and minting of vault tokens, managing dividends, and controlling access by the manager.
  * @notice  This contract allows deposits in an underlying asset token and mints a corresponding amount of Vault tokens based on the deposit and the financePrice. It also supports dividend distribution and fee management by manager.
  */
-contract Vault is
+contract VaultV2 is
     IVault,
     ERC20Upgradeable,
     OwnableUpgradeable,
@@ -490,5 +470,9 @@ contract Vault is
     function getMaxSupplyNav() internal view returns (uint256) {
         uint256 nav = maxSupply*financePrice / FINANCE_PRICE_DENOMINATOR;
         return nav;
+    }
+    // 添加新功能或修复 bug
+    function newFunction() public pure returns (string memory) {
+        return "This is VaultV2!";
     }
 }

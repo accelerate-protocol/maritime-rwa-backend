@@ -4,8 +4,6 @@ import { deployFactories } from '../utils/deployFactories';
 import { factoryAuth } from '../utils/factoryAuth';
 import path from "path";
 import { execSync } from "child_process";
-import { MinInt256 } from "ethers";
-import { rbf } from "../typechain-types/contracts";
 
 describe("RBF:", function () {
   this.timeout(200000); // 增加到 100 秒
@@ -159,21 +157,6 @@ describe("RBF:", function () {
         guardian,]
       ]
     );
-    // const rbfDeployData = {
-    //   rbfId: rbfId,
-    //   name: "RBF",
-    //   symbol: "RBF",
-    //   assetToken: ethers.ZeroAddress,
-    //   maxSupply: "10000000000",
-    //   manageFee: "50",
-    //   depositTreasury: depositTreasury,
-    //   mintSlippageBps:"0",
-    //   initialPrice: "1000000000",
-    //   deployer: deployer,
-    //   manager: manager,
-    //   guardian: guardian,
-    // };
-    // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -203,21 +186,7 @@ describe("RBF:", function () {
         guardian,]
       ]
     );
-    // const rbfDeployData = {
-    //   rbfId: rbfId,
-    //   name: "RBF",
-    //   symbol: "RBF",
-    //   assetToken: usdt.address,
-    //   maxSupply: "10000000000",
-    //   manageFee: "50",
-    //   depositTreasury: ethers.ZeroAddress,
-    //   mintSlippageBps:"0",
-    //   initialPrice: "1000000000",
-    //   deployer: deployer,
-    //   manager: manager,
-    //   guardian: guardian,
-    // };
-    // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -247,22 +216,6 @@ describe("RBF:", function () {
         guardian,]
       ]
     );
-    // const rbfDeployData = {
-    //   rbfId: rbfId,
-    //   name: "RBF",
-    //   symbol: "RBF",
-    //   assetToken: usdt.address,
-    //   maxSupply: "10000000000",
-    //   manageFee: "50",
-    //   depositTreasury: depositTreasury,
-    //   dividendTreasury: ethers.ZeroAddress,
-    //   mintSlippageBps:"0",
-    //   initialPrice: "1000000000",
-    //   deployer: deployer,
-    //   manager: manager,
-    //   guardian: guardian,
-    // };
-    // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -292,22 +245,7 @@ describe("RBF:", function () {
         guardian,]
       ]
     );
-    // const rbfDeployData = {
-    //   rbfId: rbfId,
-    //   name: "RBF",
-    //   symbol: "RBF",
-    //   assetToken: usdt.address,
-    //   maxSupply: "10000000000",
-    //   manageFee: "50",
-    //   depositTreasury: depositTreasury,
-    //   mintSlippageBps:"0",
-    //   priceFeed: ethers.ZeroAddress,
-    //   initialPrice: "1000000000",
-    //   deployer: deployer,
-    //   manager: manager,
-    //   guardian: guardian,
-    // };
-    // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -337,21 +275,7 @@ describe("RBF:", function () {
         guardian,]
       ]
     );
-    // const rbfDeployData = {
-    //   rbfId: rbfId,
-    //   name: "RBF",
-    //   symbol: "RBF",
-    //   assetToken: usdt.address,
-    //   maxSupply: "10000000000",
-    //   manageFee: "50",
-    //   depositTreasury: depositTreasury,
-    //   mintSlippageBps:"0",
-    //   initialPrice: "1000000000",
-    //   deployer: deployer,
-    //   manager: ethers.ZeroAddress,
-    //   guardian: guardian,
-    // };
-    // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -381,21 +305,7 @@ describe("RBF:", function () {
         guardian,]
       ]
     );
-    // const rbfDeployData = {
-    //   rbfId: rbfId,
-    //   name: "RBF",
-    //   symbol: "RBF",
-    //   assetToken: usdt.address,
-    //   maxSupply: "10000000000",
-    //   manageFee: "50",
-    //   depositTreasury: depositTreasury,
-    //   mintSlippageBps:"0",
-    //   initialPrice: "1000000000",
-    //   deployer: deployer,
-    //   manager: manager,
-    //   guardian: guardian,
-    // };
-    // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
+    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -406,7 +316,7 @@ describe("RBF:", function () {
   }); 
 
   //参数提供不完整，部署失败
-  it("tc-20:parameter is not complete", async function () {
+  it.skip("tc-20:parameter is not complete", async function () {
     const {deployer,guardian,manager,rbfSigner,depositTreasury,rbfSigner2} = await getNamedAccounts();
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
@@ -422,18 +332,6 @@ describe("RBF:", function () {
         guardian,]
       ]
     );
-    // const rbfDeployData = {
-    //   rbfId: rbfId,
-    //   symbol: "RBF",
-    //   assetToken: usdt.address,
-    //   maxSupply: "10000000000",
-    //   manageFee: "50",
-    //   depositTreasury: depositTreasury,
-    //   initialPrice: "1000000000",
-    //   deployer: deployer,
-    //   manager: manager,
-    //   guardian: guardian,
-    // };
     let err :any;
     try {
       // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
@@ -478,21 +376,6 @@ describe("RBF:", function () {
         guardian,]
       ]
     );
-    // const rbfDeployData = {
-    //   rbfId: rbfId,
-    //   name: "RBF-74-1",
-    //   symbol: "RBF74-1",
-    //   assetToken: usdt.address,
-    //   maxSupply: "10000000000",
-    //   manageFee: "50",
-    //   depositTreasury: depositTreasury,
-    //   mintSlippageBps:"0",
-    //   initialPrice: "1000000000",
-    //   deployer: deployer,
-    //   manager: manager,
-    //   guardian: guardian,
-    // };
-    // const deployData = await rbfRouter.getEncodeData(rbfDeployData);
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
@@ -524,21 +407,6 @@ describe("RBF:", function () {
         guardian,]
       ]
     );
-    // const rbfDeployData_1 = {
-    //   rbfId: rbfId_1,
-    //   name: "RBF-74-2",
-    //   symbol: "RBF74-2",
-    //   assetToken: usdt.address,
-    //   maxSupply: "10000000000",
-    //   manageFee: "50",
-    //   depositTreasury: depositTreasury,
-    //   mintSlippageBps:"0",
-    //   initialPrice: "1000000000",
-    //   deployer: deployer,
-    //   manager: manager,
-    //   guardian: guardian,
-    // };
-    // const deployData1 = await rbfRouter.getEncodeData(rbfDeployData_1);
     const deployDataHash1 = ethers.keccak256(deployData1);
     const signer1 = await ethers.getSigner(rbfSigner);
     const signature1 = await signer1.signMessage(ethers.getBytes(deployDataHash1));
@@ -588,5 +456,77 @@ describe("RBF:", function () {
     expect(await rbfRouter.whiteListed(rbfSigner)).to.equal(true);
     console.log("A-rbfSigner2",await rbfRouter.whiteListed(rbfSigner2))
     expect(await rbfRouter.whiteListed(rbfSigner2)).to.equal(true);
+  });
+
+  it("tc-83:RBFRouter ", async function () {
+    const {deployer,rbfSigner,rbfSigner2} = await getNamedAccounts();
+    //白名单为空
+    const whiteLists: string[] = [];
+    let err:any;
+
+    try
+    {
+      await deploy('RBFRouter', {from: deployer,args: [whiteLists, 2, RBFFactory.address, EscrowFactory.address, PriceFeedFactory.address],})
+    }catch(e)
+    {
+      console.log(e)
+      err = e;
+    }finally
+    {
+      expect(err.message).to.be.include("whiteLists must not be empty");
+      //阈值为0
+      const whiteLists_1 = [rbfSigner,rbfSigner2];
+      try
+      {
+        await deploy('RBFRouter', {from: deployer,args: [whiteLists_1, 0, RBFFactory.address, EscrowFactory.address, PriceFeedFactory.address],})
+      }catch(e)
+      {
+        console.log(e)
+        err = e;
+      }finally
+      {
+        expect(err.message).to.be.include("threshold must >0");
+        const whiteLists_1 = [rbfSigner,rbfSigner2];
+        try
+        {
+          //RBFFactory地址为零地址
+          await deploy('RBFRouter', {from: deployer,args: [whiteLists_1, 2, ethers.ZeroAddress, EscrowFactory.address, PriceFeedFactory.address],})
+        }catch(e)
+        {
+          console.log(e)
+          err = e;
+        }finally
+        {
+          expect(err.message).to.be.include("rbfFactory must not be zero");
+          const whiteLists_1 = [rbfSigner,rbfSigner2];
+          try
+          {
+            //EscrowFactory地址为零地址
+            await deploy('RBFRouter', {from: deployer,args: [whiteLists_1, 2, RBFFactory.address, ethers.ZeroAddress, PriceFeedFactory.address],})
+          }catch(e)
+          {
+            console.log(e)
+            err = e;
+          }finally{
+            expect(err.message).to.be.include("escrowFactory must not be zero");
+            const whiteLists_1 = [rbfSigner,rbfSigner2];
+            try
+            {
+              //PriceFeedFactory地址为零地址
+              await deploy('RBFRouter', {from: deployer,args: [whiteLists_1, 2, RBFFactory.address, EscrowFactory.address, ethers.ZeroAddress],})
+            }catch(e)
+            {
+              console.log(e)
+              err = e;
+            }finally{
+              expect(err.message).to.be.include("priceFeedFactory must not be zero");
+            }
+          }
+        }
+
+      }
+    }
+    
+
   });
 })

@@ -765,7 +765,9 @@ describe("FactoryAuth:", function () {
         financePrice: "100000000", // Add this
         dividendTreasury: manager,
     };
+    // (address proxy, address admin, address impl) = vaultFactory.newVault(data, guardian);
     // await vaultFactory.newVault(vaultDeployData,investor1)
+// 直接调用合约方法而不解构返回值
     await expect(vaultFactory.newVault(vaultDeployData,investor1)).to.be.revertedWith(
       "Auth/not-authorized"
     );
@@ -850,9 +852,13 @@ describe("FactoryAuth:", function () {
         financePrice: "100000000", // Add this
         dividendTreasury: manager,
     };
-    await expect(vaultFactory.newVault(vaultDeployData,deployer)).not.to.be.reverted;
-    
+    const tx = await vaultFactory.newVault(vaultDeployData, deployer);
+    console.log("tc-38",tx);
+    const txReceipt = await tx.wait();
+    if (!receipt) throw new Error("Transaction failed");
+    expect(receipt.status).to.equal(1);
   });
+
 
   //部署Vault，传入的rbf为零地址，应该不成功
   it("tc-73:rbf is zero address", async function () {

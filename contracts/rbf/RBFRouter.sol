@@ -77,20 +77,20 @@ contract RBFRouter is IRBFRouter, Ownable {
         address _escrowFactory,
         address _priceFeedFactory
     ) Ownable() {
-        require(_whiteLists.length > 0, "whiteLists must not be empty");
+        require(_whiteLists.length > 0, "whiteLists must not be empty");//75
         whiteLists = _whiteLists;
         for (uint256 i = 0; i < _whiteLists.length; i++) {
             whiteListed[_whiteLists[i]] = true;
         }
-        require(_threshold > 0, "threshold must >0");
+        require(_threshold > 0, "threshold must >0");//tc-76
         threshold = _threshold;
-        require(_rbfFactory != address(0), "rbfFactory must not be zero");
+        require(_rbfFactory != address(0), "rbfFactory must not be zero");//tc-83
         rbfFactory = IRBFFactory(_rbfFactory);
-        require(_escrowFactory != address(0), "escrowFactory must not be zero");
+        require(_escrowFactory != address(0), "escrowFactory must not be zero");//tc-83
         escrowFactory = IEscrowFactory(_escrowFactory);
         require(
             _priceFeedFactory != address(0),
-            "priceFeedFactory must not be zero"
+            "priceFeedFactory must not be zero"//tc-83
         );
         priceFeedFactory = IPriceFeedFactory(_priceFeedFactory);
     }
@@ -203,7 +203,7 @@ contract RBFRouter is IRBFRouter, Ownable {
             require(whiteListed[signer], "RBFRouter:Invalid Signer"); //tc-11
             validSignatures++;
         }
-        require(validSignatures >= threshold, "RBFRouter:Invalid Threshold");
+        require(validSignatures >= threshold, "RBFRouter:Invalid Threshold"); //tc-19
     }
 
     /**

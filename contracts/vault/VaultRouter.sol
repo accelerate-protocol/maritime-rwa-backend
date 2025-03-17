@@ -75,8 +75,8 @@ contract VaultRouter is Ownable,IVaultRouter {
         uint64 vaultId=vaultDeployData.vaultId;
         vaultNonce++;
 
-        require(RBF(vaultDeployData.rbf).owner() == msg.sender,"only rbf owner can deploy vault");
-        require(!rbfVaultExist[vaultDeployData.rbf],"rbf vault already exist");
+        require(RBF(vaultDeployData.rbf).owner() == msg.sender,"only rbf owner can deploy vault"); //tc-82
+        require(!rbfVaultExist[vaultDeployData.rbf],"rbf vault already exist");//tc-82
         rbfVaultExist[vaultDeployData.rbf]=true;
         address dividendTreasury = escrowFactory.newEscrow(address(this));
 
