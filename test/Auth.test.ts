@@ -1161,5 +1161,39 @@ describe("FactoryAuth:", function () {
       );
   });
 
+ 
+  function distributeMoneyWithMinimum(
+    total: number,
+    people: number,
+    minAmount: number
+  ): number[] {
+    if (total < people * minAmount) {
+      throw new Error("can not reach minimum amount");
+    }
+
+    const result: number[] = new Array(people).fill(minAmount);
+    let remaining = total - people * minAmount;
+
+    for (let i = 0; i < people - 1; i++) {
+      const max = remaining - (people - i - 1);
+      const amount = Math.floor(Math.random() * (max + 1));
+      result[i] += amount;
+      remaining -= amount;
+    }
+
+    result[people - 1] += remaining;
+    return result;
+  }
+  function generateWallets(count: number) {
+    const wallets = [];
+    for (let i = 0; i < count; i++) {
+      const wallet = ethers.Wallet.createRandom();
+      wallets.push(wallet);
+    }
+    return wallets;
+  }
+
+  
+
   
 });

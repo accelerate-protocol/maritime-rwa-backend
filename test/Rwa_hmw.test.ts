@@ -219,6 +219,9 @@ describe("RWA:", function () {
     //setVault之后执行策略，既是MANAGER_ROLE又是vault，然后执行策略
     await expect(vaultManager.execStrategy()).not.to.be.reverted;
 
+    //再次执行策略，执行失败
+    await expect(vaultManager.execStrategy()).to.be.revertedWith("Vault: assetBalance is zero");
+
     //不是PRICE_MINT_AMOUNT_SETTER_ROLE角色的账户执行setDepositPirceAndMintAmount，执行失败
     expectedErrorMessage = `AccessControl: account ${manager.toLowerCase()} is missing role ${ethers.keccak256(ethers.toUtf8Bytes("PRICE_MINT_AMOUNT_SETTER_ROLE"))}`;
     await expect(rbfManager.setDepositPriceAndMintAmount(financePrice,maxSupply)).to.be.revertedWith(expectedErrorMessage);
@@ -315,6 +318,9 @@ describe("RWA:", function () {
     //提前融资完成，在设置的结束认购时间前提取手续费，提取失败
     await expect(vaultManager.withdrawManageFee()).to.be.revertedWith("Vault: Invalid time");
   });
+
+
+ 
 
 
   it("tc-78", async function () {
@@ -588,18 +594,9 @@ describe("RWA:", function () {
     console.log(investArr)
     console.log(incomeArr)
     expect(totalDividend).to.equal(totalNav);
-    const manageBalance_befor = await USDT.balanceOf(feeReceiver)
-    //提前融资完成，提取管理费
-    //非管理员，提取管理费失败
-    expectedErrorMessage = `AccessControl: account ${investor1.toLowerCase()} is missing role ${ethers.keccak256(ethers.toUtf8Bytes("MANAGER_ROLE"))}`;
-    await expect(vaultInvest.withdrawManageFee()).to.be.revertedWith(expectedErrorMessage);
-    //管理员，提取管理费成功
-    await expect(vaultManager.withdrawManageFee()).not.to.be.reverted;
 
-    const manageBalance_after =await USDT.balanceOf(feeReceiver)
-    const manageFee = await VAULT.manageFee();
-    expect(manageBalance_after).to.be.equal(manageBalance_befor + maxSupply * manageFee / BigInt(10000));
-
+    //提前融资完成，在设置的结束认购时间前提取手续费，提取失败
+    await expect(vaultManager.withdrawManageFee()).to.be.revertedWith("Vault: Invalid time");
   });
 
   //极限测试：100个人认购，并给100个人派息
@@ -828,9 +825,9 @@ describe("RWA:", function () {
     );;
     console.log("金库剩余派息金额:",totalDividend.toString());
     var investorBalance=await USDT.balanceOf(vaultDividendTreasury);
-    for (let i = 0; i < whitelistLength; i++) {
+    for (let i = 0; i < whitelists.length; i++) {
       const whitelistAddr = await vaultWhiteLists(i);
-      investorBalance=await USDT.balanceOf(whitelistAddr);
+      investorBalance=await USDT.balanceOf(whitelists[i]);
       incomeArr.push(investorBalance);
       totalDividend=totalDividend+investorBalance;
     }
@@ -1977,8 +1974,7 @@ it("tc-68:execStrategy - assetBalance is zero", async function () {
     const VAULT = await ethers.getContractAt("Vault", vault);
     
     const maxSupply = await VAULT.maxSupply();
-    // const fundThreshold = await VAULT.fundThreshold();
-    // const target = maxSupply * fundThreshold / BigInt(10000);
+    
     const financePrice=await VAULT.financePrice();
     const minDepositAmount = await VAULT.minDepositAmount();
     const totalSupply = Number(maxSupply / BigInt(1e6));
@@ -2611,6 +2607,222 @@ it("tc-68:execStrategy - assetBalance is zero", async function () {
     console.log(incomeArr)
     expect(totalDividend).to.equal(totalNav);
   });
+
+  it.only("tc-90", async function () {
+
+    // const priceFeed = await deployments.get("PriceFeed");
+    // const priceFeedContract = await ethers.getContractAt("PriceFeed", priceFeed.address);
+    const {execute} = deployments;
+    const {deployer,guardian,manager,rbfSigner,depositTreasury,feeReceiver,investor1,investor2,investor3,investor4,investor5,rbfSigner2,common,drds} = await getNamedAccounts();
+    const RBFRouter = await deployments.get("RBFRouter");
+    // 获取 RBFRouter 合约实例
+    const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
+    const rbfId = await rbfRouter.rbfNonce();
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-90", "RBF-90",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    const deployDataHash = ethers.keccak256(deployData);
+    const signer = await ethers.getSigner(rbfSigner);
+    const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
+    const signer2 = await ethers.getSigner(rbfSigner2);
+    const signature2 = await signer2.signMessage(ethers.getBytes(deployDataHash));
+    const signatures = [signature,signature2];
+    
+    var res = await rbfRouter.deployRBF(deployData, signatures);
+    var receipt = await res.wait();
+    if (!receipt) throw new Error("Transaction failed");
+    expect(receipt.status).to.equal(1);
+
+    const whitelists = [investor1, investor2, investor3, investor4, investor5];
+    const rbfData = await rbfRouter.getRBFInfo(rbfId);
+    const rbf = rbfData.rbf;
+    // const priceFeedAddress = await rbf.priceFeed();
+    // const priceFeed = await ethers.getContractAt("PriceFeed", priceFeedAddress);
+    // await priceFeed.addPrice(BigInt("1200000000"),Math.floor(Date.now() / 1000));
+    
+    const VaultRouter = await deployments.get("VaultRouter");
+    const vaultRouter = await hre.ethers.getContractAt(
+            "VaultRouter",
+            VaultRouter.address
+          );
+    const vaultId = await vaultRouter.vaultNonce();
+    const subStartTime = Math.floor(Date.now() / 1000) 
+    const subEndTime = subStartTime + 3600;
+    const vaultDeployData = {
+        vaultId: vaultId,
+        name: "RbfVaultForTc90",
+        symbol: "RbfVaultForTc90",
+        assetToken: usdt.address,
+        rbf: rbfData.rbf,
+        subStartTime: subStartTime,
+        subEndTime: subEndTime,
+        duration: "2592000",
+        fundThreshold: "3000",
+        minDepositAmount: "10000000",
+        manageFee: "50",
+        manager: manager,
+        feeReceiver: feeReceiver,
+        dividendEscrow: manager, // 添加这一行
+        whitelists: whitelists,
+        guardian: guardian,
+        maxSupply: "10000000000",
+        financePrice: "100000000",
+    };
+    var res = await vaultRouter.deployVault(vaultDeployData);
+    var receipt = await res.wait();
+    if (!receipt) throw new Error("Transaction failed");
+    expect(receipt.status).to.equal(1);
+    const vaultData = await vaultRouter.getVaultInfo(vaultId);
+    const vault = vaultData.vault;
+    const VAULT = await ethers.getContractAt("Vault", vault);
+    
+    const maxSupply = await VAULT.maxSupply();
+    const financePrice=await VAULT.financePrice();
+    const minDepositAmount = await VAULT.minDepositAmount();
+    const totalSupply = Number(maxSupply / BigInt(1e6));
+    const minAmount = Number(minDepositAmount / BigInt(1e6));
+    
+    var USDT:any;
+    const deployerSigner = await ethers.getSigner(deployer);
+    const managerSigner = await ethers.getSigner(manager);
+    const vaultManager=await hre.ethers.getContractAt(
+      "Vault", // 替换为你的合约名称
+      vault,
+      managerSigner
+    )
+    
+    // const deployerAccount = await hre.ethers.getContractAt(
+    //   "RBF", // 替换为你的合约名称
+    //   rbf,
+    //   deployerSigner
+    // )
+    const rbfManager = await hre.ethers.getContractAt(
+      "RBF", // 替换为你的合约名称
+      rbf,
+      managerSigner
+    )
+
+  let investArr= new Array();
+  // let incomeArr = new Array();
+
+  const whitelistLength = await whitelists.length;
+  const distribution = distributeMoneyWithMinimum(
+    totalSupply,
+    whitelistLength,
+    minAmount
+  );
+
+  console.log("distribution.length",distribution.length)
+  expect(distribution.length).to.equal(whitelistLength);
+  for (let i = 0; i < whitelistLength; i++) {
+    const investSigner = await ethers.getSigner(whitelists[i]);
+    const vaultInvest = await hre.ethers.getContractAt(
+      "Vault", // 替换为你的合约名称
+      vault,
+      investSigner
+    )
+    const manageFee=await vaultInvest.manageFee();
+    const investAmount = BigInt(Math.floor(distribution[i] * 1e6));
+    const feeAmount = investAmount * BigInt(manageFee) / BigInt(10000);
+    const totalInvestAmount = investAmount + feeAmount;
+    investArr.push(totalInvestAmount)
+    console.log("investAmount:",investAmount.toString(),"feeAmount:",feeAmount.toString(),"totalInvestAmount:",totalInvestAmount.toString())
+
+    USDT = await ethers.getContractAt(
+      "MockUSDT",
+      usdt.address,
+      investSigner
+    );
+    await expect(USDT.mint(whitelists[i], totalInvestAmount)).not.to.be.reverted;
+    await expect(USDT.approve(vault, totalInvestAmount)).not.to.be.reverted;
+    await expect(vaultInvest.deposit(investAmount)).not.to.be.reverted;
+    expect(await vaultInvest.balanceOf(whitelists[i])).to.equal(investAmount);
+  }
+  expect(await VAULT.assetBalance()).to.equal(maxSupply)
+  console.log("total deposit balance",await VAULT.assetBalance())
+  console.log("total manageFee Balance",await VAULT.manageFeeBalance())
+  console.log("total Balance",await USDT.balanceOf(vault))
+  var expectedErrorMessage = `AccessControl: account ${deployer.toLowerCase()} is missing role ${ethers.keccak256(ethers.toUtf8Bytes("MANAGER_ROLE"))}`;
+  console.log("expectedErrorMessage",expectedErrorMessage)
+
+   //是MANAGER_ROLE角色的账户执行setVault
+   await expect(rbfManager.setVault(vault)).not.to.be.reverted;
+   //setVault之后执行策略，既是MANAGER_ROLE又是vault，然后执行策略
+   await expect(vaultManager.execStrategy()).not.to.be.reverted;
+ 
+   const rbfDeployer = await hre.ethers.getContractAt(
+     "RBF", // 替换为你的合约名称
+     rbf
+   )
+   //是MANAGER_ROLE角色的账户执行grantRole，执行成功
+   await expect(rbfManager.grantRole(ethers.keccak256(ethers.toUtf8Bytes("PRICE_MINT_AMOUNT_SETTER_ROLE")),drds)).not.to.be.reverted;
+ 
+   //是PRICE_MINT_AMOUNT_SETTER_ROLE角色的账户执行setDepositPirceAndMintAmount，执行成功
+   const drdsSigner = await ethers.getSigner(drds);
+   const rbfDrds =await hre.ethers.getContractAt(
+     "RBF", 
+     rbf,
+     drdsSigner
+   )
+ 
+ //depositMintAmount为0，执行claimDeposit，执行失败
+   await expect(rbfDrds.setDepositPriceAndMintAmount(financePrice,BigInt(0))).not.to.be.reverted;
+   
+   //depositMintAmount和depositPrice不为0，执行claimDeposit，执行成功
+   await expect(rbfDrds.setDepositPriceAndMintAmount(financePrice,maxSupply)).not.to.be.reverted;
+   expect(await rbfDrds.depositPrice()).to.be.equal(financePrice);
+   expect(await rbfDrds.depositMintAmount()).to.be.equal(maxSupply);
+ 
+   //此时查询RBF的金额为0
+   expect(await rbfManager.balanceOf(vault)).to.be.equal(0)
+   //是MANAGER_ROLE角色的账户执行claimDeposit，执行成功
+   await expect(rbfManager.claimDeposit()).not.to.be.reverted;
+   expect(await rbfManager.balanceOf(vault)).to.be.equal(maxSupply);
+ 
+   //此时查询vault的assetBalance为0
+   expect(await VAULT.assetBalance()).to.equal(BigInt(0));
+
+  //获取RBF的最新价格
+  const RBF = await ethers.getContractAt("RBF", rbf);
+  console.log("RBF",RBF)
+  const priceFeedAddress = await RBF.priceFeed();
+  const priceFeed = await ethers.getContractAt("PriceFeed", priceFeedAddress);
+
+  var expectedErrorMessage = `AccessControl: account ${manager.toLowerCase()} is missing role ${ethers.keccak256(ethers.toUtf8Bytes("FEEDER_ROLE"))}`;
+    // console.log("expectedErrorMessage",expectedErrorMessage)
+
+  const manager_Signer = await ethers.getSigner(manager);
+  //不是FEEDER_ROLE角色的账户执行addPrice，执行失败
+  await expect(priceFeed.connect(manager_Signer).addPrice(BigInt("1200000000"), Math.floor(Date.now() / 1000))).to.be.revertedWith(expectedErrorMessage);
+
+  //是FEEDER_ROLE角色的账户执行grantRole，执行成功
+  await expect(priceFeed.connect(manager_Signer).grantRole(ethers.keccak256(ethers.toUtf8Bytes("FEEDER_ROLE")),deployer)).not.to.be.reverted;
+  
+  const FeedSigner = await ethers.getSigner(deployer);
+
+
+  await priceFeed.connect(FeedSigner).addPrice(BigInt("1200000000"), Math.floor(Date.now() / 1000))
+  const lastPrice = await RBF.getLatestPrice();
+  console.log("lastPrice",lastPrice);
+  const nav = await rbfManager.getAssetsNav();
+  console.log("nav",nav);
+  const price = await VAULT.price();
+  console.log("price",price);
+  const Supply = await VAULT.totalSupply();
+  console.log("Supply",Supply);
+  expect(price).to.equal(nav * BigInt(10**6) / Supply); 
+});
 
   
 
