@@ -285,7 +285,7 @@ contract RBF is
         ) = priceFeed.latestRoundData();
         require(
             (roundId > 0 &&
-                price > 0 &&
+                price >= 0 &&
                 startedAt > 0 &&
                 updatedAt > 0 &&
                 answeredInRound > 0),
