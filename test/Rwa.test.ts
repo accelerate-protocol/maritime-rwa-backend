@@ -30,6 +30,7 @@ describe("RWA:", function () {
 
   var rbf: any;
   var vault: any;
+  var priceFeed: any;
 
 
   before(async () => {
@@ -78,6 +79,7 @@ describe("RWA:", function () {
     await expect(rbfRouter.deployRBF(deployData, signatures)).not.to.be.reverted;
     const rbfData = await rbfRouter.getRBFInfo(rbfId);
     rbf = rbfData.rbf;
+    priceFeed = rbfData.priceFeed;
     const deployedRbf = await hre.ethers.getContractAt(
       "RBF", // 替换为你的合约名称
       rbf
@@ -97,7 +99,7 @@ describe("RWA:", function () {
     const fundThreshold="3000"
     const minDepositAmount="10000000"
     const manageFee="50"
-    const maxSupply="10200000000"
+    const maxSupply="1020000000"
     const financePrice="100000000"
     const vaultDeployData = {
       vaultId: vaultId,
@@ -310,7 +312,13 @@ describe("RWA:", function () {
     )
     let investArr= new Array();
     let incomeArr = new Array();
+    const priceFeedManager = await hre.ethers.getContractAt(
+      "PriceFeed", // 替换为你的合约名称
+      priceFeed,
+      managerSigner
+    )
 
+    expect(await priceFeedManager.grantRole(ethers.keccak256(ethers.toUtf8Bytes("FEEDER_ROLE")),drds)).not.to.be.reverted;
     for (let i = 0; i < whitelists.length; i++) {
       const investSigner = await ethers.getSigner(whitelists[i]);
       vaultInvest = await hre.ethers.getContractAt(
@@ -372,8 +380,14 @@ describe("RWA:", function () {
       rbf,
       drdsSigner
     )
+    const priceFeedDrds = await hre.ethers.getContractAt(
+      "PriceFeed", // 替换为你的合约名称
+      priceFeed,
+      drdsSigner
+    )
 
     await expect(rbfDrds.setDepositPriceAndMintAmount(financePrice,maxSupply)).not.to.be.reverted;
+    await expect(priceFeedDrds.addPrice(financePrice,Math.floor(Date.now() / 1000))).not.to.be.reverted
     expect(await rbfDrds.depositPrice()).to.be.equal(financePrice);
     expect(await rbfDrds.depositMintAmount()).to.be.equal(maxSupply);
 
@@ -382,6 +396,11 @@ describe("RWA:", function () {
     await expect(rbfDrds.claimDeposit()).to.be.revertedWith(expectedErrorMessage);
     await expect(rbfManager.claimDeposit()).not.to.be.reverted;
     expect(await rbfManager.balanceOf(vault)).to.be.equal(maxSupply);
+    console.log("rbf总净值:",await rbfManager.getAssetsNav());
+    console.log("vault价值:",await vaultManager.price());
+    expect(await rbfManager.getAssetsNav()).to.be.equal((BigInt(maxSupply) * BigInt(financePrice)) / BigInt(1e6));
+    expect(await vaultManager.price()).to.be.equal(financePrice);
+
     await expect(rbfDrds.claimDeposit()).to.be.revertedWith(expectedErrorMessage);
     await expect(rbfDrds.dividend()).to.be.revertedWith(expectedErrorMessage);
     
@@ -419,7 +438,11 @@ describe("RWA:", function () {
       await expect(rbfManager.dividend()).not.to.be.reverted;
       await expect(vaultManager.dividend()).not.to.be.reverted;
     }
-
+    await expect(priceFeedDrds.addPrice(0,Math.floor(Date.now() / 1000))).not.to.be.reverted;
+    console.log("rbf总净值:",await rbfManager.getAssetsNav());
+    console.log("vault价值:",await vaultManager.price());
+    expect(await rbfManager.getAssetsNav()).to.be.equal(0);
+    expect(await vaultManager.price()).to.be.equal(financePrice);
     var totalDividend=await USDT.balanceOf(
       vaultDividendTreasury
     );;

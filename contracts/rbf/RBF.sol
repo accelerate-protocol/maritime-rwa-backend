@@ -266,7 +266,7 @@ contract RBF is
     function getAssetsNav() public view returns (uint256) {
         int256 lastPrice = getLatestPrice();
         uint256 amount = balanceOf(vault);
-        uint256 indexDecimals = 10 ** priceFeed.decimals();
+        uint256 indexDecimals = 10 ** decimals();
         return (amount * uint256(lastPrice)) / indexDecimals;
     }
 

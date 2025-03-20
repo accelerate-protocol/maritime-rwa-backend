@@ -362,7 +362,7 @@ contract Vault is
     function price() public view returns (uint256) {
         uint256 totalSupply = totalSupply();
         uint256 nav = RBF(rbf).getAssetsNav();
-        return nav * FINANCE_PRICE_DENOMINATOR * (10**decimals())  / totalSupply;
+        return nav * (10**decimals())  / totalSupply;
     }
 
     /**
