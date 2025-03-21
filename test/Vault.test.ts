@@ -2412,7 +2412,7 @@ describe("Vault:", function () {
 
   });
 
-  //白名单中的账户认购，在认购期内，以最小认购金额认
+  //升级vault
   it("tc-84:Upgrade Vault", async function () {
     const {deployer,guardian,manager,rbfSigner,depositTreasury,feeReceiver,investor1,investor2,investor3,investor4,investor5,rbfSigner2} = await getNamedAccounts();
     const RBFRouter = await deployments.get("RBFRouter");
@@ -2699,7 +2699,7 @@ describe("Vault:", function () {
   });
 
   //Vault白名单地址为零地址
-  it.only("tc-86", async function () {
+  it("tc-86", async function () {
     const {deployer,guardian,manager,rbfSigner,depositTreasury,feeReceiver,investor1,investor2,investor3,investor4,investor5,rbfSigner2,common,drds} = await getNamedAccounts();
     const RBFRouter = await deployments.get("RBFRouter");
     // 获取 RBFRouter 合约实例
@@ -2968,6 +2968,83 @@ describe("Vault:", function () {
     expect(totalDividend).to.equal(totalNav);
   });
 
+  it.only("tc-91:Upgrade RBF", async function () {
+    const {deployer,guardian,manager,rbfSigner,depositTreasury,feeReceiver,investor1,investor2,investor3,investor4,investor5,rbfSigner2} = await getNamedAccounts();
+    const RBFRouter = await deployments.get("RBFRouter");
+    // 获取 RBFRouter 合约实例
+    const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
+    const rbfId = await rbfRouter.rbfNonce();
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-84", "RBF-84",
+        usdt.address,
+        depositTreasury,
+        "0",
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    
+    const deployDataHash = ethers.keccak256(deployData);
+    const signer = await ethers.getSigner(rbfSigner);
+    const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
+    const signer2 = await ethers.getSigner(rbfSigner2);
+    const signature2 = await signer2.signMessage(ethers.getBytes(deployDataHash));
+    const signatures = [signature,signature2];
+    
+    var res = await rbfRouter.deployRBF(deployData, signatures);
+    var receipt = await res.wait();
+    if (!receipt) throw new Error("Transaction failed");
+    expect(receipt.status).to.equal(1);
+
+    const rbfData = await rbfRouter.getRBFInfo(rbfId);
+    const rbf = rbfData.rbf;
+    const rbfProxyAdmin = rbfData.rbfProxyAdmin;
+    const rbfImpl = rbfData.rbfImpl;
+    console.log("rbfProxyAdmin:",rbfProxyAdmin);
+    console.log("rbfImpl:",rbfImpl);
+
+    const RBFV2 = await ethers.getContractFactory("RBFV2");
+    const newImplementation = await RBFV2.deploy();
+    await newImplementation.waitForDeployment();
+    console.log("newImplementation",newImplementation);
+    
+    // 记录旧的实现地址
+    const oldImplementation = rbfImpl;
+    // 获取 ProxyAdmin 实例
+    const proxyAdmin = await ethers.getContractAt("ProxyAdmin", rbfProxyAdmin);
+
+    const guardianSigner = await ethers.getSigner(guardian);
+    
+    //不使用guardian升级，升级失败
+    await expect(proxyAdmin.upgrade(rbf, newImplementation)).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );
+
+    //使用guardian升级，升级成功
+    await proxyAdmin.connect(guardianSigner).upgrade(rbf, newImplementation);
+    
+    // 验证实现地址已更新
+    const currentImplementation = await proxyAdmin.getProxyImplementation(rbf);
+    expect(currentImplementation).to.equal(await newImplementation.getAddress());
+    expect(currentImplementation).to.not.equal(oldImplementation);
+
+    // 验证升级后新增的方法
+    const upgradedRBF = await ethers.getContractAt("RBFV2", rbf);
+    // 调用新版本合约中的print方法验证升级结果
+    expect(await upgradedRBF.newFunction()).to.equal("This is RBFV2!");
+
+    const oldRbf = await ethers.getContractAt("RBF", rbf);
+    //验证原有数据的完整性
+    expect(await upgradedRBF.name()).to.equal(await oldRbf.name());
+    expect(await upgradedRBF.symbol()).to.equal(await oldRbf.symbol());
+
+  });
+
 
 
   function generateWallets(count: number) {
@@ -3001,8 +3078,6 @@ describe("Vault:", function () {
     result[people - 1] += remaining;
     return result;
   }
-  
-// 删除重复的generateWallets函数定义
 
   
 })

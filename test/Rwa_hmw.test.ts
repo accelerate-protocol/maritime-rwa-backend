@@ -2872,7 +2872,24 @@ it("tc-68:execStrategy - assetBalance is zero", async function () {
      totalDividend=totalDividend+investorBalance;
    }
    console.log("总派息额",totalDividend)
-   await priceFeed.connect(FeedSigner).addPrice(BigInt("0"), Math.floor(Date.now() / 1000))
+
+   console.log("feedprice 小于0")
+   await priceFeed.connect(FeedSigner).addPrice(BigInt("-1"), Math.floor(Date.now() / 1000));
+   await expect(RBF.getLatestPrice()).to.be.revertedWith("Invalid price data");
+
+   console.log("feedprice 为浮点数-1位小数")
+   await priceFeed.connect(FeedSigner).addPrice(BigInt("10000000"), Math.floor(Date.now() / 1000));
+   const lastPrice_float = await RBF.getLatestPrice();
+   console.log("lastPrice_float",lastPrice_float);
+   expect(lastPrice_float).to.be.equal(BigInt(10000000));
+
+   console.log("feedprice 为浮点数-8位小数")
+   await priceFeed.connect(FeedSigner).addPrice(BigInt("1"), Math.floor(Date.now() / 1000));
+   const lastPrice_float_1 = await RBF.getLatestPrice();
+   console.log("lastPrice_float",lastPrice_float_1);
+   expect(lastPrice_float_1).to.be.equal(BigInt(1));
+
+   await priceFeed.connect(FeedSigner).addPrice(BigInt("0"), Math.floor(Date.now() / 1000));
    expect(totalDividend).to.equal(totalNav);
    const lastPrice_final = await RBF.getLatestPrice();
    console.log("lastPrice",lastPrice_final);

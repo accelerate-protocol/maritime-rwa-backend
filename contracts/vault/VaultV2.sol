@@ -25,7 +25,7 @@ import "../rbf/RBF.sol";
  * @notice  This contract allows deposits in an underlying asset token and mints a corresponding amount of Vault tokens based on the deposit and the financePrice. It also supports dividend distribution and fee management by manager.
  */
 contract VaultV2 is
-    IVault,
+     IVault,
     ERC20Upgradeable,
     OwnableUpgradeable,
     AccessControlUpgradeable
@@ -348,6 +348,7 @@ contract VaultV2 is
      *      and adjusting it according to the price feed's decimal format.
      * @return The price of one share in the vault.
      */
+     //tc-90
     function price() public view returns (uint256) {
         uint256 totalSupply = totalSupply();
         uint256 nav = RBF(rbf).getAssetsNav();
@@ -471,8 +472,14 @@ contract VaultV2 is
         uint256 nav = maxSupply*financePrice / FINANCE_PRICE_DENOMINATOR;
         return nav;
     }
+
     // 添加新功能或修复 bug
     function newFunction() public pure returns (string memory) {
         return "This is VaultV2!";
     }
+   
 }
+
+
+
+ 
