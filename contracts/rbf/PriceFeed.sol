@@ -46,7 +46,8 @@ contract PriceFeed is AggregatorV3Interface, AccessControl {
      * @param   price  The new price value to store.
      * @param   priceTime  Timestamp of the price update.
      */
-     //
+     //tc-90:不是FEEDER_ROLE角色的账户执行addPrice，执行失败
+     //tc-90:是FEEDER_ROLE角色的账户执行addPrice，执行成功
     function addPrice(
         int256 price,
         uint256 priceTime

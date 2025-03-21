@@ -278,7 +278,7 @@ describe("RWA:", function () {
     await expect(USDT.mint(depositTreasury, waitMint)).not.to.be.reverted;
     const dividendCountArr = distributeMoneyWithMinimum(
           principalInterest,
-          whitelists.length,
+          2,
           1
     );
     const totalNav= await USDT.balanceOf(depositTreasury);
@@ -2811,7 +2811,15 @@ it("tc-68:execStrategy - assetBalance is zero", async function () {
   
   const FeedSigner = await ethers.getSigner(deployer);
 
-
+  let err:any;
+  try {
+    await RBF.getLatestPrice();
+  } catch (error) {
+    err = error;
+    console.log("err",err);
+  }finally{
+    expect(err.message).to.be.include("Transaction reverted");
+  }
   await priceFeed.connect(FeedSigner).addPrice(BigInt("1200000000"), Math.floor(Date.now() / 1000))
   const lastPrice = await RBF.getLatestPrice();
   console.log("lastPrice",lastPrice);
@@ -2822,9 +2830,60 @@ it("tc-68:execStrategy - assetBalance is zero", async function () {
   const Supply = await VAULT.totalSupply();
   console.log("Supply",Supply);
   expect(price).to.equal(nav * BigInt(10**6) / Supply); 
-});
 
-  
+  //派息
+   const randomMultiplier = 1.1 + Math.random() * 0.4;
+   console.log("派息系数:",randomMultiplier)
+   const principalInterest = Math.floor(totalSupply * randomMultiplier);
+   const waitMint = BigInt(Math.floor(principalInterest - totalSupply) * 1e6);
+   await expect(USDT.mint(depositTreasury, waitMint)).not.to.be.reverted;
+   const dividendCountArr = distributeMoneyWithMinimum(
+         principalInterest,
+         1,
+         1
+   );
+   const totalNav= await USDT.balanceOf(depositTreasury);
+   console.log("总派息资产:",totalNav.toString())
+
+   const depositTreasurySigner = await ethers.getSigner(depositTreasury);
+   const USDTdepositTreasury = await ethers.getContractAt(
+     "MockUSDT",
+     usdt.address,
+     depositTreasurySigner
+   );
+   const rbfDividendTreasury = await rbfManager.dividendTreasury();
+   const vaultDividendTreasury = await vaultManager.dividendTreasury();
+   for (let i = 0; i < dividendCountArr.length; i++) {
+     const dividendAmount = BigInt(Math.floor(dividendCountArr[i] * 1e6));
+     console.log("第" + (i + 1) + "次派息:", dividendAmount);
+     await expect(USDTdepositTreasury.transfer(rbfDividendTreasury, dividendAmount)).not.to.be.reverted;
+     await expect(rbfManager.dividend()).not.to.be.reverted;
+     await expect(vaultManager.dividend()).not.to.be.reverted;
+   }
+
+   var totalDividend=await USDT.balanceOf(
+     vaultDividendTreasury
+   );;
+   console.log("金库剩余派息金额:",totalDividend.toString());
+   var investorBalance=await USDT.balanceOf(vaultDividendTreasury);
+   for (let i = 0; i < whitelists.length; i++) {
+     investorBalance=await USDT.balanceOf(whitelists[i]);
+    //  incomeArr.push(investorBalance);
+     totalDividend=totalDividend+investorBalance;
+   }
+   console.log("总派息额",totalDividend)
+   await priceFeed.connect(FeedSigner).addPrice(BigInt("0"), Math.floor(Date.now() / 1000))
+   expect(totalDividend).to.equal(totalNav);
+   const lastPrice_final = await RBF.getLatestPrice();
+   console.log("lastPrice",lastPrice_final);
+   const nav_final = await rbfManager.getAssetsNav();
+   console.log("nav",nav_final);
+   const price_final = await VAULT.price();
+   console.log("price",price_final);
+   const Supply_final = await VAULT.totalSupply();
+   console.log("Supply",Supply_final);
+   expect(price_final).to.equal(nav_final * BigInt(10**6) / Supply_final); 
+});
 
   function distributeMoneyWithMinimum(
     total: number,

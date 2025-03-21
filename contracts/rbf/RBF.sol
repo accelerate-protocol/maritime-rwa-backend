@@ -266,6 +266,7 @@ contract RBF is
      * @dev     This function calculates the NAV of the RBF tokens held by vault by fetching the latest price.
      * @return  uint256  The NAV in terms of the asset token's value.
      */
+     //tc-90
     function getAssetsNav() public view returns (uint256) {
         int256 lastPrice = getLatestPrice();
         uint256 amount = balanceOf(vault);
@@ -278,6 +279,7 @@ contract RBF is
      * @dev     This function interacts with the price feed contract to get the latest price of the asset token.
      * @return  int256  The latest price of the asset token.
      */
+     //tc-90
     function getLatestPrice() public view returns (int256) {
         (
             uint80 roundId,
@@ -292,7 +294,7 @@ contract RBF is
                 startedAt > 0 &&
                 updatedAt > 0 &&
                 answeredInRound > 0),
-            "Invalid price data"
+            "Invalid price data" //tc-90
         );
         return price;
     }

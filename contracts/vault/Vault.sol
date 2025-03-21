@@ -368,6 +368,7 @@ contract Vault is
      *      and adjusting it according to the price feed's decimal format.
      * @return The price of one share in the vault.
      */
+     //tc-90
     function price() public view returns (uint256) {
         uint256 totalSupply = totalSupply();
         uint256 nav = RBF(rbf).getAssetsNav();
