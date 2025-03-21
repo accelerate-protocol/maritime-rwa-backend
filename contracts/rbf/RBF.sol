@@ -270,7 +270,7 @@ contract RBF is
     function getAssetsNav() public view returns (uint256) {
         int256 lastPrice = getLatestPrice();
         uint256 amount = balanceOf(vault);
-        uint256 indexDecimals = 10 ** priceFeed.decimals();
+        uint256 indexDecimals = 10 ** decimals();
         return (amount * uint256(lastPrice)) / indexDecimals;
     }
 
@@ -290,7 +290,7 @@ contract RBF is
         ) = priceFeed.latestRoundData();
         require(
             (roundId > 0 &&
-                price > 0 &&
+                price >= 0 &&
                 startedAt > 0 &&
                 updatedAt > 0 &&
                 answeredInRound > 0),
