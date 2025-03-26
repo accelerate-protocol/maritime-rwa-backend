@@ -159,6 +159,7 @@ contract RBF is
             "RBF: depositMintAmount must be greater than 0"
         );
         _mint(vault, depositMintAmount);
+        emit ClaimDepositEvent(vault,depositAmount,depositMintAmount);
         depositAmount = 0;
     }
 

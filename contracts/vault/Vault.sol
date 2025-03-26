@@ -254,9 +254,13 @@ contract Vault is
             block.timestamp >= subStartTime && block.timestamp <= subEndTime,
             "Vault: Invalid time"
         );
+        require(
+            totalSupply() + amount <= maxSupply,
+            "Vault: maxSupply exceeded"
+        );
         require(offChainWLMap[receiver], "Vault:OffChain receiver are not in offChainWL");
         _mint(receiver, amount);
-         emit OffChainDepositEvent(msg.sender,receiver,amount);
+        emit OffChainDepositEvent(msg.sender,receiver,amount);
     }
 
 
