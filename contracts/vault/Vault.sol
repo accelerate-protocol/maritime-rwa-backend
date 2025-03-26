@@ -79,8 +79,6 @@ contract Vault is
     uint256 public decimalsMultiplier;
     // Address of the vault manager
     address public manager;
-    // Total amount of assets deposited into the Vault
-    uint256 public totalDeposit;
     // Total amount of assets in the Vault
     uint256 public assetBalance;
     // Accumulated management fees
@@ -89,13 +87,23 @@ contract Vault is
     uint256 public endTime;
     // Finance price
     uint256 public financePrice;
-    // Mapping to check if an address is whitelisted
-    mapping(address => bool) public whiteListMap;
-    // List of whitelisted addresses allowed to interact with the Vault
-    address[] public whiteLists;
+    // Mapping to check if an address is onChainWLMap
+    mapping(address => bool) public onChainWLMap;
+    // List of onChainWL addresses allowed to interact with the Vault onChain
+    address[] public onChainWL;
+     // Mapping to check if an address is offChainWLMap
+    mapping(address => bool) public offChainWLMap;
+    // List of offChainWL addresses allowed to interact with the Vault offChain
+    address[] public offChainWL;
 
-    modifier onlyWhiteList(address _address) {
-        require(whiteListMap[_address], "Vault: you are not int whitelist");
+
+    modifier onlyOnChainWL(address _address) {
+        require(onChainWLMap[_address], "Vault: you are not in onChainWL");
+        _;
+    }
+
+    modifier onlyOffChainWL(address _address) {
+        require(offChainWLMap[_address], "Vault: you are not in offChainWL");
         _;
     }
 
@@ -152,9 +160,9 @@ contract Vault is
             (data.whitelists.length > 0) && (data.whitelists.length <= 100),
             "Vault: Invalid whitelists length"
         );
-        whiteLists = data.whitelists;
+        onChainWL = data.whitelists;
         for (uint256 i = 0; i < data.whitelists.length; i++) {
-            whiteListMap[data.whitelists[i]] = true;
+            onChainWLMap[data.whitelists[i]] = true;
         }
         decimalsMultiplier =
             10 **
@@ -173,13 +181,12 @@ contract Vault is
      */
     function deposit(
         uint256 assets
-    ) public virtual onlyWhiteList(msg.sender) returns (uint256) {
+    ) public virtual onlyOnChainWL(msg.sender) returns (uint256) {
         require(assets >= minDepositAmount, "Vault: deposit less than min");
         require(
             block.timestamp >= subStartTime && block.timestamp <= subEndTime,
             "Vault: Invalid time"
         );
-        totalDeposit = totalDeposit + assets;
         uint256 manageFeeAmount = (assets * manageFee) / BPS_DENOMINATOR;
         manageFeeBalance = manageFeeBalance + manageFeeAmount;
         assetBalance = assetBalance + assets;
@@ -210,16 +217,17 @@ contract Vault is
     function redeem()
         public
         virtual
-        onlyWhiteList(msg.sender)
+        onlyOnChainWL(msg.sender)
         returns (uint256)
     {
         require(block.timestamp >= subEndTime, "Vault: Invalid time");
         require(
-            (getMaxSupplyNav() * fundThreshold) / BPS_DENOMINATOR > totalDeposit,
+            (maxSupply * fundThreshold) / BPS_DENOMINATOR > totalSupply(),
             "Vault: not allowed withdraw"
         );
         uint256 shares = balanceOf(msg.sender);
-        uint256 assetAmount = _getWithdrawAmountForVault(shares);
+        uint256 assetAmount = _getAssetAmountForVault(shares);
+        _spendAllowance(msg.sender, address(this), shares);
         _burn(msg.sender, shares);
         uint256 feeAmount = (assetAmount * manageFee) / BPS_DENOMINATOR;
         manageFeeBalance = manageFeeBalance - feeAmount;
@@ -233,6 +241,43 @@ contract Vault is
         return assetAmount + feeAmount;
     }
 
+
+    /**
+     * @notice  OffChain Deposits Mint into the vault during the subscription period 
+     * @dev     Ensures that deposits meet the minimum requirement and fall within the allowed period.
+     * @param   receiver  The address of the recipient of the minted shares.
+     * @param   amount    The amount of asset tokens to be deposited.
+     */
+    function offChainDepositMint(address receiver,uint256 amount) public onlyRole(MANAGER_ROLE) {
+        require(_getAssetAmountForVault(amount) >= minDepositAmount, "Vault: OffChain deposit less than min");
+        require(
+            block.timestamp >= subStartTime && block.timestamp <= subEndTime,
+            "Vault: Invalid time"
+        );
+        require(offChainWLMap[receiver], "Vault:OffChain receiver are not in offChainWL");
+        _mint(receiver, amount);
+         emit OffChainDepositEvent(msg.sender,receiver,amount);
+    }
+
+
+    /**
+     * @notice  redemption to be serviced off chain
+     * @dev Users can redeem only after the subscription period ends and if the
+     *      fund threshold is not met. The function burns the user's shares,
+     *      calculates the corresponding asset amount and transfer to user offChain.
+     */
+    function offChainRedeem() public onlyOffChainWL(msg.sender){
+        require(block.timestamp >= subEndTime, "Vault: Invalid time");
+        require(
+            (maxSupply * fundThreshold) / BPS_DENOMINATOR > totalSupply(),
+            "Vault: not allowed withdraw"
+        );
+        uint256 shares = balanceOf(msg.sender);
+        _spendAllowance(msg.sender, address(this), shares);
+        _burn(msg.sender, shares);
+        emit OffChainRedeemEvent(msg.sender,shares);
+    }
+
     /**
      * @notice Allows the manager to withdraw accumulated management fees.
      * @dev The function ensures that withdrawals are only possible after the
@@ -244,7 +289,7 @@ contract Vault is
         require(endTime != 0, "Vault: Invalid endTime");
         require(block.timestamp >= subEndTime, "Vault: Invalid time");
         require(
-            (getMaxSupplyNav() * fundThreshold) / BPS_DENOMINATOR <= totalDeposit,
+            (maxSupply * fundThreshold) / BPS_DENOMINATOR <= totalSupply(),
             "Vault: not allowed withdraw"
         );
         uint256 feeAmount = manageFeeBalance;
@@ -262,10 +307,10 @@ contract Vault is
     function execStrategy() public onlyRole(MANAGER_ROLE) {
         require(assetBalance>0,"Vault: assetBalance is zero");
         require(
-            totalDeposit == getMaxSupplyNav() ||
+            maxSupply == totalSupply() ||
                 (block.timestamp >= subEndTime &&
-                    (getMaxSupplyNav() * fundThreshold) / BPS_DENOMINATOR <=
-                    totalDeposit),
+                    (maxSupply * fundThreshold) / BPS_DENOMINATOR <=
+                    totalSupply()),
             "Vault: fundraising fail"
         );
         if (endTime <= 0) {
@@ -285,7 +330,7 @@ contract Vault is
      *      is not already whitelisted and that the whitelist does not exceed 100 entries.
      * @param whitelistAddr The address to be added to the whitelist.
      */
-    function addToWhitelist(
+    function addToOnChainWL(
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
@@ -293,12 +338,13 @@ contract Vault is
             "Vault: Invalid time"
         );
         require(
-            !whiteListMap[whitelistAddr],
-            "Vault: Address is already whitelisted"
+            !onChainWLMap[whitelistAddr],
+            "Vault: Address is already onChainWL"
         );
-        require(whiteLists.length < 100, "Vault: Whitelist is full");
-        whiteListMap[whitelistAddr] = true;
-        whiteLists.push(whitelistAddr);
+        require(!offChainWLMap[whitelistAddr], "Vault: Address is already offChainWL");
+        require(onChainWL.length < 100, "Vault: Whitelist is full");
+        onChainWLMap[whitelistAddr] = true;
+        onChainWL.push(whitelistAddr);
     }
 
     /**
@@ -307,7 +353,7 @@ contract Vault is
      *      is currently whitelisted before proceeding.
      * @param whitelistAddr The address to be removed from the whitelist.
      */
-    function removeFromWhitelist(
+    function removeFromOnChainWL(
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
@@ -315,15 +361,67 @@ contract Vault is
             "Vault: Invalid time"
         );
         require(
-            whiteListMap[whitelistAddr],
+            onChainWLMap[whitelistAddr],
             "Vault: Address is not in the whitelist"
         );
         require(balanceOf(whitelistAddr)<=0, "Vault: Address has balance");
-        whiteListMap[whitelistAddr] = false;
-        for (uint256 i = 0; i < whiteLists.length; i++) {
-            if (whiteLists[i] == whitelistAddr) {
-                whiteLists[i] = whiteLists[whiteLists.length - 1];
-                whiteLists.pop();
+        onChainWLMap[whitelistAddr] = false;
+        for (uint256 i = 0; i < onChainWL.length; i++) {
+            if (onChainWL[i] == whitelistAddr) {
+                onChainWL[i] = onChainWL[onChainWL.length - 1];
+                onChainWL.pop();
+                break;
+            }
+        }
+    }
+
+
+     /**
+      * @notice  Adds an address to the OffChain Whitelist, allowing it to participate in the vault offChain.
+      * @dev     This function is only callable by the manager of the vault.
+      * @param   whitelistAddr  The address to be added to the OffChain Whitelist.
+      */
+     function addToOffChainWL(
+        address whitelistAddr
+    ) public onlyRole(MANAGER_ROLE) {
+        require(
+            block.timestamp <= subEndTime,
+            "Vault: Invalid time"
+        );
+        require(
+            !onChainWLMap[whitelistAddr],
+            "Vault: Address is already onChainWL"
+        );
+        require(!offChainWLMap[whitelistAddr], "Vault: Address is already offChainWL");
+        require(offChainWL.length < 100, "Vault: Whitelist is full");
+        offChainWLMap[whitelistAddr] = true;
+        offChainWL.push(whitelistAddr);
+    }
+
+
+
+    /**
+     * @notice  Removes an address from the OffChain whitelist, preventing further participation in the vault.
+     * @dev     This function can only be called by the manager of the vault.
+     * @param   whitelistAddr   The address to be removed from the OffChain whitelist.
+     */
+    function removeFromOffChainWL(
+        address whitelistAddr
+    ) public onlyRole(MANAGER_ROLE) {
+        require(
+            block.timestamp <= subEndTime,
+            "Vault: Invalid time"
+        );
+        require(
+            offChainWLMap[whitelistAddr],
+            "Vault: Address is not in the offChain whitelist"
+        );
+        require(balanceOf(whitelistAddr)<=0, "Vault: Address has balance");
+        offChainWLMap[whitelistAddr] = false;
+        for (uint256 i = 0; i < offChainWL.length; i++) {
+            if (offChainWL[i] == whitelistAddr) {
+                offChainWL[i] = offChainWL[onChainWL.length - 1];
+                offChainWL.pop();
                 break;
             }
         }
@@ -339,14 +437,26 @@ contract Vault is
         require(totalDividend > 0, "Vault: No dividend to pay");
         uint256 totalSupply = totalSupply();
         require(totalSupply > 0, "Vault: No rbu to pay");
-        for (uint8 i = 0; i < whiteLists.length; i++) {
-            if (whiteListMap[whiteLists[i]]) {
-                if (balanceOf(whiteLists[i]) != 0) {
+        for (uint8 i = 0; i < onChainWL.length; i++) {
+            if (onChainWLMap[onChainWL[i]]) {
+                if (balanceOf(onChainWL[i]) != 0) {
                     _dividend(
-                        balanceOf(whiteLists[i]),
+                        balanceOf(onChainWL[i]),
                         totalSupply,
                         totalDividend,
-                        whiteLists[i]
+                        onChainWL[i]
+                    );
+                }
+            }
+        }
+        for (uint8 i=0; i<offChainWL.length; i++){
+            if (offChainWLMap[offChainWL[i]]){
+                if (balanceOf(offChainWL[i]) != 0) {
+                    _dividend(
+                        balanceOf(offChainWL[i]),
+                        totalSupply,
+                        totalDividend,
+                        offChainWL[i]
                     );
                 }
             }
@@ -376,12 +486,22 @@ contract Vault is
 
 
      /**
-     * @notice  Returns the length of the whiteLists array.
-     * @dev     This function is used to get the length of the whiteLists array.
-     * @return  uint256  The length of the whiteLists array.
+     * @notice  Returns the length of the onChainWL array.
+     * @dev     This function is used to get the length of the onChainWL array.
+     * @return  uint256  The length of the onChainWL array.
      */
-    function getWhiteListsLen() public view returns (uint256) {
-        return whiteLists.length;
+    function getOnChainWLLen() public view returns (uint256) {
+        return onChainWL.length;
+    }
+
+
+    /**
+     * @notice  Returns the length of the offChainWL array.
+     * @dev     This function is used to get the length of the offChainWL array.
+     * @return  uint256  The length of the offChainWL array.
+     */
+    function getOffChainWLLen() public view returns (uint256) {
+        return offChainWL.length;
     }
 
     /**
@@ -421,6 +541,7 @@ contract Vault is
     }
 
 
+
     function _dividend(
         uint256 vaultTokenAmount,
         uint256 totalSupply,
@@ -440,9 +561,15 @@ contract Vault is
     }
 
     function _checkTransferAuth(address from, address to) internal view {
+        require(endTime != 0, "Vault: Invalid endTime");
+        require(block.timestamp >= subEndTime, "Vault: Invalid time");
         require(
-            whiteListMap[from] && whiteListMap[to],
-            "Vault: transfer from and to must in whitelist"
+            (maxSupply * fundThreshold) / BPS_DENOMINATOR <= totalSupply(),
+            "Vault: not allowed transfer"
+        );
+        require(
+            (onChainWLMap[from]|| offChainWLMap[from]) && (onChainWLMap[to]|| offChainWLMap[to]),
+            "Vault: transfer from and to must in onChainWL or offChainWL"
         );
     }
 
@@ -454,14 +581,14 @@ contract Vault is
             FINANCE_PRICE_DENOMINATOR) / financePrice;
         return rwaAmount;
     }
-
-    function _getWithdrawAmountForVault(
+    
+    function _getAssetAmountForVault(
         uint256 vaultAmount
     ) internal view returns (uint256) {
         require(financePrice > 0, "Vault: financePrice must bigger than zero");
-        uint256 withdrawAmount = (_scaleDown(vaultAmount) * financePrice) /
+        uint256 assetAmount = (_scaleDown(vaultAmount) * financePrice) /
             FINANCE_PRICE_DENOMINATOR;
-        return withdrawAmount;
+        return assetAmount;
     }
 
     function _scaleUp(uint256 amount) internal view returns (uint256) {
@@ -472,8 +599,4 @@ contract Vault is
         return amount / decimalsMultiplier;
     }
 
-    function getMaxSupplyNav() internal view returns (uint256) {
-        uint256 nav = maxSupply*financePrice / FINANCE_PRICE_DENOMINATOR;
-        return nav;
-    }
 }

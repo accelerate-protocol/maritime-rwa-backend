@@ -13,6 +13,8 @@ interface IVault {
 
     event SetManager(address manager);
     event FundFailRedeem(address redeemer,uint256 shares,uint256 assetAmount,uint256 feeAmount);
+    event OffChainDepositEvent(address operator,address receiver,uint256 amount);
+    event OffChainRedeemEvent(address redeemer,uint256 shares);
     event DepositEvent(address depositor,uint256 assetAmount,uint256 manageFeeAmount,uint256 shares);
     event ExecStrategyEvent(uint256 depositAmount);
 
