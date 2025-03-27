@@ -594,9 +594,18 @@ describe("RWA:", function () {
     console.log(investArr)
     console.log(incomeArr)
     expect(totalDividend).to.equal(totalNav);
+    const manageBalance_befor = await USDT.balanceOf(feeReceiver)
+    //提前融资完成，提取管理费
+    //非管理员，提取管理费失败
+    expectedErrorMessage = `AccessControl: account ${investor1.toLowerCase()} is missing role ${ethers.keccak256(ethers.toUtf8Bytes("MANAGER_ROLE"))}`;
+    await expect(vaultInvest.withdrawManageFee()).to.be.revertedWith(expectedErrorMessage);
+    //管理员，提取管理费成功
+    await expect(vaultManager.withdrawManageFee()).not.to.be.reverted;
 
-    //提前融资完成，在设置的结束认购时间前提取手续费，提取失败
-    await expect(vaultManager.withdrawManageFee()).to.be.revertedWith("Vault: Invalid time");
+    const manageBalance_after =await USDT.balanceOf(feeReceiver)
+    const manageFee = await VAULT.manageFee();
+    expect(manageBalance_after).to.be.equal(manageBalance_befor + maxSupply * manageFee / BigInt(10000));
+
   });
 
   //极限测试：100个人认购，并给100个人派息
@@ -817,7 +826,16 @@ describe("RWA:", function () {
       console.log("第" + (i + 1) + "次派息:", dividendAmount);
       await expect(USDTdepositTreasury.transfer(rbfDividendTreasury, dividendAmount)).not.to.be.reverted;
       await expect(rbfManager.dividend()).not.to.be.reverted;
-      await expect(vaultManager.dividend()).not.to.be.reverted;
+
+      var tx = await vaultManager.dividend();
+      var receipt = await tx.wait();
+      console.log(receipt);
+      // var receipt = await res.wait();
+      if (!receipt) throw new Error("Transaction failed");
+      expect(receipt.status).to.equal(1);
+      // expect(receipt.status).to.equal(1);
+      
+      // await expect(vaultManager.dividend()).not.to.be.reverted;
     }
 
     var totalDividend=await USDT.balanceOf(
@@ -825,9 +843,9 @@ describe("RWA:", function () {
     );;
     console.log("金库剩余派息金额:",totalDividend.toString());
     var investorBalance=await USDT.balanceOf(vaultDividendTreasury);
-    for (let i = 0; i < whitelists.length; i++) {
+    for (let i = 0; i < whitelistLength; i++) {
       const whitelistAddr = await vaultWhiteLists(i);
-      investorBalance=await USDT.balanceOf(whitelists[i]);
+      investorBalance=await USDT.balanceOf(whitelistAddr);
       incomeArr.push(investorBalance);
       totalDividend=totalDividend+investorBalance;
     }
@@ -2608,7 +2626,7 @@ it("tc-68:execStrategy - assetBalance is zero", async function () {
     expect(totalDividend).to.equal(totalNav);
   });
 
-  it.only("tc-90", async function () {
+  it("tc-90", async function () {
 
     // const priceFeed = await deployments.get("PriceFeed");
     // const priceFeedContract = await ethers.getContractAt("PriceFeed", priceFeed.address);

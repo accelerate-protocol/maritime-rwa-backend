@@ -362,7 +362,7 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            690198 of 690198
-  Block #1:            0x29a065a0f52bcdda39498067b2607634662bcfca0abfcd04b584778c982a060a
+  Block #1:            0xa8790e4f4d54a8475f59afd3fb2dd1835e36a615e1e27f73efb1118bd04f6a3b
 
 [32meth_chainId[0m
 [32meth_getTransactionByHash[0m
@@ -380,7 +380,7 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1006643 of 1006643
-  Block #2:            0x5e11ed05ee68134f6d484d548dc22ff195d83b7a6dc76a15dadbf998e2799d0d
+  Block #2:            0xe969ae38319ee3ecb774a83c60aa13ef258ffd466c4cadb8c78d344de2f1d1c6
 
 [32meth_chainId[0m
 [32meth_getTransactionByHash[0m
@@ -398,7 +398,7 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            4294043 of 4294043
-  Block #3:            0x5d76e52117f4437f9ca54944476179d888592d73006dbf8a428c27f9903dc16c
+  Block #3:            0xce105d75e006fefb6c8e1c68f8d95391efbd821bcb93d0ff1b64b1beb6d9adca
 
 [32meth_chainId[0m
 [32meth_getTransactionByHash[0m
@@ -416,7 +416,7 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            1498411 of 1498411
-  Block #4:            0x6ec0e43b5cc4ed263873e43a4410902fe51fc2094d471edbcf087b31ca4e2e2d
+  Block #4:            0x9e4c7c94407ce08e5f510f0a8c16389b72588670091f1c09344db427d39cf2ca
 
 [32meth_chainId[0m
 [32meth_getTransactionByHash[0m
@@ -434,7 +434,7 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            4795024 of 4795024
-  Block #5:            0xf0ba0c8dba67aeb8ad8238b71ea2b1df4c08580045e92d65b13a8fc87eb6140f
+  Block #5:            0x1ff2eac24f0190c4be6e7802fbb8d9a10f5a5e80aa789fdc338a2f108da1b45e
 
 [32meth_chainId[0m
 [32meth_getTransactionByHash[0m
@@ -452,7 +452,7 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            942420 of 942420
-  Block #6:            0xa9ee436249fe7840e7d74d07c92d6abdd61a9a68710e7eab057bb28d3a6b194c
+  Block #6:            0x49be17b725c69e248a9834d23681057d730fe69b83269741eb2c5d9d9bf45e29
 
 [32meth_chainId[0m
 [32meth_getTransactionByHash[0m
@@ -468,7 +468,7 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            47143 of 1000000
-  Block #7:            0xf86d6ef6e3141f32d810f949f74d98ab1701708d6f98ab7ca9da677972a10eb3
+  Block #7:            0x9d52e76756af3e626af76d26b29799988d122cb77802111227ed51e6fe1cd3bb
 
 [32meth_chainId[0m
 [32meth_getTransactionByHash[0m
@@ -484,7 +484,7 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   Value:               0 ETH
   Gas used:            47143 of 1000000
-  Block #8:            0xdf9ae25f555fc0ba28594108f94b057892fb523119b6c666525b9b3bab180f59
+  Block #8:            0xe2fbda6123bd12a3a717c845569613fd1de7519227d0ff8d0ff16c05c1d7c498
 
 [32meth_chainId[0m
 [32meth_getTransactionByHash[0m
@@ -500,7 +500,7 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   Value:               0 ETH
   Gas used:            47174 of 1000000
-  Block #9:            0x1b2aa49fc5f8edbf68b0c9cdab8cfd56b09b3ca442861f26d742ba9ba4ff4383
+  Block #9:            0xbae9d0bcfddb5bb2336d8decebb0de26d7887da0d36844ebae379df65d898a2e
 
 [32meth_chainId[0m
 [32meth_getTransactionByHash[0m
@@ -516,7 +516,7 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
   Value:               0 ETH
   Gas used:            47143 of 1000000
-  Block #10:           0x6300d4c297203c4863e83bd5808d40aef58805f76ea3c0e39bce73036ad5e019
+  Block #10:           0x11d22f54f282cc4983cc3b27cc32a69007a6fbb938196abc66f8ca9c043b73d9
 
 [32meth_chainId[0m
 [32meth_getTransactionByHash[0m
@@ -532,7 +532,7 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
   To:                  0xdc64a140aa3e981100a9beca4e685f962f0cf6c9
   Value:               0 ETH
   Gas used:            47196 of 1000000
-  Block #11:           0x70fefeb159223b6fd774ae91d197988f3ed039609017c73121e3be98b098e9b4
+  Block #11:           0x446b0e2ce7fb3ff77f717c23170f109e7b3295754864c321bf31a5a849265bfb
 
 [32meth_chainId[0m
 [32meth_getTransactionByHash[0m
@@ -550,7 +550,7 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            732967 of 732967
-  Block #12:           0xcdc2dbcb5617dfda3ae7cc0d004bdf6dba0338b90a52d28736aa26854c3635bc
+  Block #12:           0xc5517ea83c5d83743e232e45a62eecf71447c9032284043a1df6d88c694c240d
 
 [32meth_chainId[0m
 [32meth_getTransactionByHash[0m
@@ -791,12 +791,12 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
   Contract call:       RBFRouter#deployRBF
-  Transaction:         0x02b107a7298b46f038ca76bd1610c96c978c4b78eb409bf702cb47897342fbb0
+  Transaction:         0x2108bba78efe9b1e41f5725649970ce4edea6f0ddc4a2618edb1b692f612be35
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9
   Value:               0 ETH
   Gas used:            5151346 of 30000000
-  Block #13:           0x4d47372ba092b919cf9692ff4cc3bcb3de79deb02262cc5960875570b7245708
+  Block #13:           0x98738347029cb1654ac332224feeb888a072a67b921c38988d88414b293b9bd1
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -917,20 +917,759 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
 [32mhardhat_metadata (108)[0m
 [32mhardhat_metadata (109)[0m
 [32mhardhat_metadata (110)[0m
+[32meth_call[0m
+  Contract call:       VaultRouter#vaultNonce
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fc8d32690cc91d4c39d9d3abcbd16989f875707
+
 [32meth_blockNumber[0m
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
-  Contract deployment: RBFV2
-  Contract address:    0x0dcd1bf9a1b36ce34237eeafef220932846bcd82
-  Transaction:         0x8337398672c400cdaf1b5b7ec787cf710711ed62b61123bab99a19d07d37ed5d
+  Contract call:       VaultRouter#deployVault
+  Transaction:         0xc03f9dd7243f6e1d3722f26aa5dee2ccbffc01b27d04dd8b8515a3565122aae1
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fc8d32690cc91d4c39d9d3abcbd16989f875707
   Value:               0 ETH
-  Gas used:            2779506 of 30000000
-  Block #14:           0x606fce0fe1a24638af0214f588901342cf3dcebfbf12f94efae9597e82657dd9
+  Gas used:            5266391 of 30000000
+  Block #14:           0x5f335b3a6398772785fe4642e20a10369bba15368c08b4f9bcc88c4866ccb878
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
 [32meth_blockNumber[0m
+[32meth_call[0m
+  Contract call:       VaultRouter#getVaultInfo
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fc8d32690cc91d4c39d9d3abcbd16989f875707
+
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32mhardhat_metadata (21)[0m
+[32mhardhat_metadata (22)[0m
+[32mhardhat_metadata (23)[0m
+[32mhardhat_metadata (24)[0m
+[32mhardhat_metadata (25)[0m
+[32mhardhat_metadata (26)[0m
+[32mhardhat_metadata (27)[0m
+[32mhardhat_metadata (28)[0m
+[32mhardhat_metadata (29)[0m
+[32mhardhat_metadata (30)[0m
+[32mhardhat_metadata (31)[0m
+[32mhardhat_metadata (32)[0m
+[32mhardhat_metadata (33)[0m
+[32mhardhat_metadata (34)[0m
+[32mhardhat_metadata (35)[0m
+[32mhardhat_metadata (36)[0m
+[32mhardhat_metadata (37)[0m
+[32mhardhat_metadata (38)[0m
+[32mhardhat_metadata (39)[0m
+[32mhardhat_metadata (40)[0m
+[32mhardhat_metadata (41)[0m
+[32mhardhat_metadata (42)[0m
+[32mhardhat_metadata (43)[0m
+[32mhardhat_metadata (44)[0m
+[32mhardhat_metadata (45)[0m
+[32mhardhat_metadata (46)[0m
+[32mhardhat_metadata (47)[0m
+[32mhardhat_metadata (48)[0m
+[32mhardhat_metadata (49)[0m
+[32mhardhat_metadata (50)[0m
+[32mhardhat_metadata (51)[0m
+[32mhardhat_metadata (52)[0m
+[32mhardhat_metadata (53)[0m
+[32mhardhat_metadata (54)[0m
+[32mhardhat_metadata (55)[0m
+[32mhardhat_metadata (56)[0m
+[32mhardhat_metadata (57)[0m
+[32mhardhat_metadata (58)[0m
+[32mhardhat_metadata (59)[0m
+[32mhardhat_metadata (60)[0m
+[32mhardhat_metadata (61)[0m
+[32mhardhat_metadata (62)[0m
+[32mhardhat_metadata (63)[0m
+[32mhardhat_metadata (64)[0m
+[32mhardhat_metadata (65)[0m
+[32mhardhat_metadata (66)[0m
+[32mhardhat_metadata (67)[0m
+[32mhardhat_metadata (68)[0m
+[32mhardhat_metadata (69)[0m
+[32mhardhat_metadata (70)[0m
+[32mhardhat_metadata (71)[0m
+[32mhardhat_metadata (72)[0m
+[32mhardhat_metadata (73)[0m
+[32mhardhat_metadata (74)[0m
+[32mhardhat_metadata (75)[0m
+[32mhardhat_metadata (76)[0m
+[32mhardhat_metadata (77)[0m
+[32mhardhat_metadata (78)[0m
+[32mhardhat_metadata (79)[0m
+[32mhardhat_metadata (80)[0m
+[32mhardhat_metadata (81)[0m
+[32mhardhat_metadata (82)[0m
+[32mhardhat_metadata (83)[0m
+[32mhardhat_metadata (84)[0m
+[32mhardhat_metadata (85)[0m
+[32mhardhat_metadata (86)[0m
+[32mhardhat_metadata (87)[0m
+[32mhardhat_metadata (88)[0m
+[32mhardhat_metadata (89)[0m
+[32mhardhat_metadata (90)[0m
+[32mhardhat_metadata (91)[0m
+[32mhardhat_metadata (92)[0m
+[32mhardhat_metadata (93)[0m
+[32mhardhat_metadata (94)[0m
+[32mhardhat_metadata (95)[0m
+[32mhardhat_metadata (96)[0m
+[32mhardhat_metadata (97)[0m
+[32mhardhat_metadata (98)[0m
+[32mhardhat_metadata (99)[0m
+[32mhardhat_metadata (100)[0m
+[32mhardhat_metadata (101)[0m
+[32mhardhat_metadata (102)[0m
+[32mhardhat_metadata (103)[0m
+[32mhardhat_metadata (104)[0m
+[32mhardhat_metadata (105)[0m
+[32mhardhat_metadata (106)[0m
+[32mhardhat_metadata (107)[0m
+[32mhardhat_metadata (108)[0m
+[32mhardhat_metadata (109)[0m
+[32mhardhat_metadata (110)[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0x976ea74026e726554db657fa54763abd0c3a0aa9
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockUSDT#mint
+  Transaction:         0x1f8cf405771c35b413a71029662d8c53d0609010a13e7cd2b630332e5a3bec46
+  From:                0x976ea74026e726554db657fa54763abd0c3a0aa9
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+  Value:               0 ETH
+  Gas used:            69526 of 30000000
+  Block #15:           0xdaf849ba14f0920c3e79084cb4e5668b1e5f067cba9f372007eb4b19000e3d5f
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockUSDT#approve
+  Transaction:         0xf14269583dc15989ed432389e41142dd71285c319a7160db0ce85abfc64fa7f8
+  From:                0x976ea74026e726554db657fa54763abd0c3a0aa9
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+  Value:               0 ETH
+  Gas used:            45985 of 30000000
+  Block #16:           0x005e0866badb0de4baf58bf1466a7b0ed82071e359ea1d219f95644b225b57f1
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  Transaction:         0x93a6de3240572f923f7260bba28af89358f57dc630b75057333eb522dd142f0a
+  From:                0x976ea74026e726554db657fa54763abd0c3a0aa9
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+  Value:               0 ETH
+  Gas used:            194414 of 30000000
+  Block #17:           0x4390534417d4193297f0d44d9b4420b1a231bee90e59086b7e23478858481578
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0x976ea74026e726554db657fa54763abd0c3a0aa9
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32mhardhat_metadata[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0x14dc79964da2c08b23698b3d3cc7ca32193d9955
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockUSDT#mint
+  Transaction:         0x38b10dc8fc9063ebdc9e7b970507cdf9e929bb173bdcf8f963c0a57a6de8331d
+  From:                0x14dc79964da2c08b23698b3d3cc7ca32193d9955
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+  Value:               0 ETH
+  Gas used:            52426 of 30000000
+  Block #18:           0x872be09368e2d04ff9cbb71bc95d7d44593cfc1cd248faa4f70001baa337b4c0
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockUSDT#approve
+  Transaction:         0xce7bab074cc63fd238ca8061aa6bb74164788fc94130bb24d76a5f400ffe02b9
+  From:                0x14dc79964da2c08b23698b3d3cc7ca32193d9955
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+  Value:               0 ETH
+  Gas used:            45985 of 30000000
+  Block #19:           0xba496e58ee4fd6546185224836e66b7192c05c6d89f0c1c4e393746088a1d3b9
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  Transaction:         0xc64851996bdc1e04deb04e196d789cf2e1921f226f0536a434ded7e6f779822b
+  From:                0x14dc79964da2c08b23698b3d3cc7ca32193d9955
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+  Value:               0 ETH
+  Gas used:            108914 of 30000000
+  Block #20:           0x4bf6968e480a87932c8e06fe486738f50fef8cfe6ca60de9c8cd6240e78ca1aa
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0x14dc79964da2c08b23698b3d3cc7ca32193d9955
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32mhardhat_metadata[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockUSDT#mint
+  Transaction:         0x6c619e064391196edf53f87e065afc80258cf89e8dcdae1c9523718e0894e5d6
+  From:                0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+  Value:               0 ETH
+  Gas used:            52426 of 30000000
+  Block #21:           0x3de504ac2c30b9f356e938ec2bc911315f5837faee693324699331f5f2a309fa
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockUSDT#approve
+  Transaction:         0xb564f65250ae5a2c547220bbe704c343943b85a499842b748edd15cadf66e9f8
+  From:                0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+  Value:               0 ETH
+  Gas used:            45985 of 30000000
+  Block #22:           0x435cd22ef72cc4595013d65ec7bb857ae3fc85b43ea4124fb7d0432d71073112
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  Transaction:         0x7de1cdb13e94b45a6d05e4e888953746d3092643341378a9e024872546677054
+  From:                0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+  Value:               0 ETH
+  Gas used:            108914 of 30000000
+  Block #23:           0x2c2b65d9c6432c97beebc993365d8684c29d334a2c75998f35a5039f55153b49
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32mhardhat_metadata[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xa0ee7a142d267c1f36714e4a8f75612f20a79720
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockUSDT#mint
+  Transaction:         0xc72b189fb0c6fa44a82e95cdf8713970bd8109a1a93a2cea76769425e87df2f6
+  From:                0xa0ee7a142d267c1f36714e4a8f75612f20a79720
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+  Value:               0 ETH
+  Gas used:            52426 of 30000000
+  Block #24:           0x338ccc372d60f774822d949d0b1bc3989de669199a1291cd0ef0e62ecae531b9
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockUSDT#approve
+  Transaction:         0x26561084baa7e60a3629609a60163b0b6d711f4ce27e57a2cf87a7362b9a07eb
+  From:                0xa0ee7a142d267c1f36714e4a8f75612f20a79720
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+  Value:               0 ETH
+  Gas used:            45985 of 30000000
+  Block #25:           0x8ee2c883114c0cf566163e6c9d6a5ad5c939e3bcfd4b8708f5d0cccbf8e03295
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  Transaction:         0x9c7a8768726126a51540861c3db4c9554ed794e7fdedc778399efea55e7b3846
+  From:                0xa0ee7a142d267c1f36714e4a8f75612f20a79720
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+  Value:               0 ETH
+  Gas used:            108914 of 30000000
+  Block #26:           0x43b0e09e2e75ebb0251f60deefb4c5a55351a2531c85ec24ba9b3f7d691536ec
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xa0ee7a142d267c1f36714e4a8f75612f20a79720
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32mhardhat_metadata[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockUSDT#mint
+  Transaction:         0x856518face57c218d91f995ee71be1e233bf6fafff0aac0a9cb69fc05d5e5bbd
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+  Value:               0 ETH
+  Gas used:            52414 of 30000000
+  Block #27:           0xd92cf583a232dd26120978035ee1c1baa77cee358ff364d2a9acf8f93a4779a4
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockUSDT#approve
+  Transaction:         0xc9afe1447f1f59755cb7c806e15ecf82d2b9ac99f5f62715c57a9043d7654042
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+  Value:               0 ETH
+  Gas used:            45985 of 30000000
+  Block #28:           0x3a1635529366ec6c32780fe1d17a7c78c57171d0407287e6ecbbe53d2459e9a9
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  Transaction:         0x1005397fe5ed35ffa7e8d7ffb7378bde85f65e0585c73ed43b15bbfcdefe3a1c
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+  Value:               0 ETH
+  Gas used:            108914 of 30000000
+  Block #29:           0x930ef20701a8adb3172bc0a3418ad0793bb702eb90ec85082b604fa73fc70d53
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_call[0m
+  Contract call:       MockUSDT#balanceOf
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  Transaction:         0xcf68b2da5b4c571b62c51235c4462ad1cdcadc3b702fcbcd22d52f5d6de45327
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+  Value:               0 ETH
+  Gas used:            54616 of 30000000
+  Block #30:           0x5eb69e3821d1dc57ed194bf6985f5ea69218aebb8f1bf7f98440eab36c15c306
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  Transaction:         0xeee0fc53f4f11376e09bc06ca3c28c18d112b82316d9a2bff49bfeb85f5adc5a
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+  Value:               0 ETH
+  Gas used:            148697 of 30000000
+  Block #31:           0x89e3702102a07609d2c0145c272272fb0f8c38da0d6c2c7d073a263e68419f2f
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32mhardhat_metadata (21)[0m
+[32mhardhat_metadata (22)[0m
+[32mhardhat_metadata (23)[0m
+[32mhardhat_metadata (24)[0m
+[32mhardhat_metadata (25)[0m
+[32mhardhat_metadata (26)[0m
+[32mhardhat_metadata (27)[0m
+[32mhardhat_metadata (28)[0m
+[32mhardhat_metadata (29)[0m
+[32mhardhat_metadata (30)[0m
+[32mhardhat_metadata (31)[0m
+[32mhardhat_metadata (32)[0m
+[32mhardhat_metadata (33)[0m
+[32mhardhat_metadata (34)[0m
+[32mhardhat_metadata (35)[0m
+[32mhardhat_metadata (36)[0m
+[32mhardhat_metadata (37)[0m
+[32mhardhat_metadata (38)[0m
+[32mhardhat_metadata (39)[0m
+[32mhardhat_metadata (40)[0m
+[32mhardhat_metadata (41)[0m
+[32mhardhat_metadata (42)[0m
+[32mhardhat_metadata (43)[0m
+[32mhardhat_metadata (44)[0m
+[32mhardhat_metadata (45)[0m
+[32mhardhat_metadata (46)[0m
+[32mhardhat_metadata (47)[0m
+[32mhardhat_metadata (48)[0m
+[32mhardhat_metadata (49)[0m
+[32mhardhat_metadata (50)[0m
+[32mhardhat_metadata (51)[0m
+[32mhardhat_metadata (52)[0m
+[32mhardhat_metadata (53)[0m
+[32mhardhat_metadata (54)[0m
+[32mhardhat_metadata (55)[0m
+[32mhardhat_metadata (56)[0m
+[32mhardhat_metadata (57)[0m
+[32mhardhat_metadata (58)[0m
+[32mhardhat_metadata (59)[0m
+[32mhardhat_metadata (60)[0m
+[32mhardhat_metadata (61)[0m
+[32mhardhat_metadata (62)[0m
+[32mhardhat_metadata (63)[0m
+[32mhardhat_metadata (64)[0m
+[32mhardhat_metadata (65)[0m
+[32mhardhat_metadata (66)[0m
+[32mhardhat_metadata (67)[0m
+[32mhardhat_metadata (68)[0m
+[32mhardhat_metadata (69)[0m
+[32mhardhat_metadata (70)[0m
+[32mhardhat_metadata (71)[0m
+[32mhardhat_metadata (72)[0m
+[32mhardhat_metadata (73)[0m
+[32mhardhat_metadata (74)[0m
+[32mhardhat_metadata (75)[0m
+[32mhardhat_metadata (76)[0m
+[32mhardhat_metadata (77)[0m
+[32mhardhat_metadata (78)[0m
+[32mhardhat_metadata (79)[0m
+[32mhardhat_metadata (80)[0m
+[32mhardhat_metadata (81)[0m
+[32mhardhat_metadata (82)[0m
+[32mhardhat_metadata (83)[0m
+[32mhardhat_metadata (84)[0m
+[32mhardhat_metadata (85)[0m
+[32mhardhat_metadata (86)[0m
+[32mhardhat_metadata (87)[0m
+[32mhardhat_metadata (88)[0m
+[32mhardhat_metadata (89)[0m
+[32mhardhat_metadata (90)[0m
+[32mhardhat_metadata (91)[0m
+[32mhardhat_metadata (92)[0m
+[32mhardhat_metadata (93)[0m
+[32mhardhat_metadata (94)[0m
+[32mhardhat_metadata (95)[0m
+[32mhardhat_metadata (96)[0m
+[32mhardhat_metadata (97)[0m
+[32mhardhat_metadata (98)[0m
+[32mhardhat_metadata (99)[0m
+[32mhardhat_metadata (100)[0m
+[32mhardhat_metadata (101)[0m
+[32mhardhat_metadata (102)[0m
+[32mhardhat_metadata (103)[0m
+[32mhardhat_metadata (104)[0m
+[32mhardhat_metadata (105)[0m
+[32mhardhat_metadata (106)[0m
+[32mhardhat_metadata (107)[0m
+[32mhardhat_metadata (108)[0m
+[32mhardhat_metadata (109)[0m
+[32mhardhat_metadata (110)[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  Transaction:         0xbe050c663d3b9448cd34d7a7511953cb6236cc1a5e5e31267cca4d5c208bbf68
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+  Value:               0 ETH
+  Gas used:            58414 of 30000000
+  Block #32:           0x37d5e2bbe8dbd7052aa00c86653951ecf351eb9935be321d8eaa845afb346f54
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32mhardhat_metadata[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  Transaction:         0xb573dfedc1247605c191dd4741f987a4a8ec455ae844913eff9c7746afc2fbee
+  From:                0x71be63f3384f5fb98995898a86b02fb2426c5788
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+  Value:               0 ETH
+  Gas used:            59300 of 30000000
+  Block #33:           0x01a3e8bf046c1a5ed2411c7dc26172cf315f8253604e3a3b99e4371b5e766215
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  Transaction:         0x494904b586a0c7fe81f5e12b9be958a923b0ba506813c762fcfd97e3adc311eb
+  From:                0x71be63f3384f5fb98995898a86b02fb2426c5788
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+  Value:               0 ETH
+  Gas used:            59348 of 30000000
+  Block #34:           0x947bb822406b830d87118ac4b9ab7f2aef8941c595af23e1e3eab612ff28d5cd
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0x71be63f3384f5fb98995898a86b02fb2426c5788
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0x71be63f3384f5fb98995898a86b02fb2426c5788
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  Transaction:         0x2e3f916d92678ed2853372fc190bd104e251ffe8f9425efe4fc288808f28a5c6
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+  Value:               0 ETH
+  Gas used:            93590 of 30000000
+  Block #35:           0x49b54eed379720c68834b3e672af4e4f549f8a8d332e11701a8aad6b2a12c812
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_accounts[0m
+[32mhardhat_metadata[0m
+[32mhardhat_metadata (2)[0m
+[32mhardhat_metadata (3)[0m
+[32mhardhat_metadata (4)[0m
+[32mhardhat_metadata (5)[0m
+[32mhardhat_metadata (6)[0m
+[32mhardhat_metadata (7)[0m
+[32mhardhat_metadata (8)[0m
+[32mhardhat_metadata (9)[0m
+[32mhardhat_metadata (10)[0m
+[32mhardhat_metadata (11)[0m
+[32mhardhat_metadata (12)[0m
+[32mhardhat_metadata (13)[0m
+[32mhardhat_metadata (14)[0m
+[32mhardhat_metadata (15)[0m
+[32mhardhat_metadata (16)[0m
+[32mhardhat_metadata (17)[0m
+[32mhardhat_metadata (18)[0m
+[32mhardhat_metadata (19)[0m
+[32mhardhat_metadata (20)[0m
+[32mhardhat_metadata (21)[0m
+[32mhardhat_metadata (22)[0m
+[32mhardhat_metadata (23)[0m
+[32mhardhat_metadata (24)[0m
+[32mhardhat_metadata (25)[0m
+[32mhardhat_metadata (26)[0m
+[32mhardhat_metadata (27)[0m
+[32mhardhat_metadata (28)[0m
+[32mhardhat_metadata (29)[0m
+[32mhardhat_metadata (30)[0m
+[32mhardhat_metadata (31)[0m
+[32mhardhat_metadata (32)[0m
+[32mhardhat_metadata (33)[0m
+[32mhardhat_metadata (34)[0m
+[32mhardhat_metadata (35)[0m
+[32mhardhat_metadata (36)[0m
+[32mhardhat_metadata (37)[0m
+[32mhardhat_metadata (38)[0m
+[32mhardhat_metadata (39)[0m
+[32mhardhat_metadata (40)[0m
+[32mhardhat_metadata (41)[0m
+[32mhardhat_metadata (42)[0m
+[32mhardhat_metadata (43)[0m
+[32mhardhat_metadata (44)[0m
+[32mhardhat_metadata (45)[0m
+[32mhardhat_metadata (46)[0m
+[32mhardhat_metadata (47)[0m
+[32mhardhat_metadata (48)[0m
+[32mhardhat_metadata (49)[0m
+[32mhardhat_metadata (50)[0m
+[32mhardhat_metadata (51)[0m
+[32mhardhat_metadata (52)[0m
+[32mhardhat_metadata (53)[0m
+[32mhardhat_metadata (54)[0m
+[32mhardhat_metadata (55)[0m
+[32mhardhat_metadata (56)[0m
+[32mhardhat_metadata (57)[0m
+[32mhardhat_metadata (58)[0m
+[32mhardhat_metadata (59)[0m
+[32mhardhat_metadata (60)[0m
+[32mhardhat_metadata (61)[0m
+[32mhardhat_metadata (62)[0m
+[32mhardhat_metadata (63)[0m
+[32mhardhat_metadata (64)[0m
+[32mhardhat_metadata (65)[0m
+[32mhardhat_metadata (66)[0m
+[32mhardhat_metadata (67)[0m
+[32mhardhat_metadata (68)[0m
+[32mhardhat_metadata (69)[0m
+[32mhardhat_metadata (70)[0m
+[32mhardhat_metadata (71)[0m
+[32mhardhat_metadata (72)[0m
+[32mhardhat_metadata (73)[0m
+[32mhardhat_metadata (74)[0m
+[32mhardhat_metadata (75)[0m
+[32mhardhat_metadata (76)[0m
+[32mhardhat_metadata (77)[0m
+[32mhardhat_metadata (78)[0m
+[32mhardhat_metadata (79)[0m
+[32mhardhat_metadata (80)[0m
+[32mhardhat_metadata (81)[0m
+[32mhardhat_metadata (82)[0m
+[32mhardhat_metadata (83)[0m
+[32mhardhat_metadata (84)[0m
+[32mhardhat_metadata (85)[0m
+[32mhardhat_metadata (86)[0m
+[32mhardhat_metadata (87)[0m
+[32mhardhat_metadata (88)[0m
+[32mhardhat_metadata (89)[0m
+[32mhardhat_metadata (90)[0m
+[32mhardhat_metadata (91)[0m
+[32mhardhat_metadata (92)[0m
+[32mhardhat_metadata (93)[0m
+[32mhardhat_metadata (94)[0m
+[32mhardhat_metadata (95)[0m
+[32mhardhat_metadata (96)[0m
+[32mhardhat_metadata (97)[0m
+[32mhardhat_metadata (98)[0m
+[32mhardhat_metadata (99)[0m
+[32mhardhat_metadata (100)[0m
+[32mhardhat_metadata (101)[0m
+[32mhardhat_metadata (102)[0m
+[32mhardhat_metadata (103)[0m
+[32mhardhat_metadata (104)[0m
+[32mhardhat_metadata (105)[0m
+[32mhardhat_metadata (106)[0m
+[32mhardhat_metadata (107)[0m
+[32mhardhat_metadata (108)[0m
+[32mhardhat_metadata (109)[0m
+[32mhardhat_metadata (110)[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+
 [32meth_accounts[0m
 [32mhardhat_metadata[0m
 [32mhardhat_metadata (2)[0m
@@ -1046,260 +1785,237 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
 [32meth_blockNumber[0m
 [32meth_feeHistory[0m
 [31meth_sendTransaction[0m
-  Contract call:       ProxyAdmin#upgrade
-  Transaction:         0x2d2850087c25165f127a95094f793ff2fa564c6ea76b374472442020ac2401f5
-  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0xe451980132e65465d0a498c53f0b5227326dd73f
+  Contract call:       PriceFeed#addPrice
+  Transaction:         0x387b038b652ec6c6ed7fbe3be9c292afcf624bc2beb9aa5d270c93b6bbbc0c16
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0xcafac3dd18ac6c6e92c921884f9e4176737c052c
   Value:               0 ETH
-  Gas used:            24445 of 30000000
-  Block #15:           0xe4e96a940b3304061c5d460511f75c9f1da545d78b29094bb55ce60aee8f679c
+  Gas used:            47531 of 30000000
+  Block #36:           0xe37e821a366167e331dbdb4d1798469d7a42886127fdc77fcf25e364adc05c1f
 
-  Error: reverted with reason string 'Ownable: caller is not the owner'
+  Error: reverted with reason string 'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x80a586cc4ecf40a390b370be075aa38ab3cc512c5c1a7bc1007974dbdf2663c7'
 
 [32meth_blockNumber[0m
 [32meth_feeHistory[0m
 [32meth_sendTransaction[0m
-  Contract call:       ProxyAdmin#upgrade
-  Transaction:         0x2d2b8e4e46521a80798823b1bf5118d62e51b8598a84ee0860c69b3439a06dfa
-  From:                0x70997970c51812dc3a010c7d01b50e0d17dc79c8
-  To:                  0xe451980132e65465d0a498c53f0b5227326dd73f
+  Contract call:       PriceFeed#grantRole
+  Transaction:         0x024524052ecef6820cf8df5fab3276c240c8b4e5cf0170a69205dc8844510c6f
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0xcafac3dd18ac6c6e92c921884f9e4176737c052c
   Value:               0 ETH
-  Gas used:            39027 of 30000000
-  Block #16:           0xb6a78ed06127ded42649fdf772d1e486373df0abf19a07d3d7ad8c914449c95c
+  Gas used:            51130 of 30000000
+  Block #37:           0xc6ada0d29620f51d0ababae6ceff51afbeae14c7303c24842de3fa18412edd07
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32mhardhat_metadata[0m
+[31meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+
+  Error: reverted with reason string 'No price data available'
+
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       PriceFeed#addPrice
+  Transaction:         0xb2291d4e893b84ee21c09bed6ed879494b9993d38209700ba558b3fa8a2a2f45
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xcafac3dd18ac6c6e92c921884f9e4176737c052c
+  Value:               0 ETH
+  Gas used:            136523 of 30000000
+  Block #38:           0xbc87c6afa8f98d46cdc94d7e1f137415ea6c865900469d4cd1be7fe36789fb3b
 
 [32meth_getTransactionByHash[0m
 [32meth_call[0m
-  Contract call:       ProxyAdmin#getProxyImplementation
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0xe451980132e65465d0a498c53f0b5227326dd73f
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
 
-[32meth_accounts[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockUSDT#mint
+  Transaction:         0x950651a12ba2994118289a6c775bbd21840866f14d8b9fec897688d4708a342a
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+  Value:               0 ETH
+  Gas used:            35314 of 30000000
+  Block #39:           0xd381f730b3a8592370a22604fbdaa2c5b0614a8c254b1e08e50589da951e19fe
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_call[0m
+  Contract call:       MockUSDT#balanceOf
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+
 [32mhardhat_metadata[0m
-[32mhardhat_metadata (2)[0m
-[32mhardhat_metadata (3)[0m
-[32mhardhat_metadata (4)[0m
-[32mhardhat_metadata (5)[0m
-[32mhardhat_metadata (6)[0m
-[32mhardhat_metadata (7)[0m
-[32mhardhat_metadata (8)[0m
-[32mhardhat_metadata (9)[0m
-[32mhardhat_metadata (10)[0m
-[32mhardhat_metadata (11)[0m
-[32mhardhat_metadata (12)[0m
-[32mhardhat_metadata (13)[0m
-[32mhardhat_metadata (14)[0m
-[32mhardhat_metadata (15)[0m
-[32mhardhat_metadata (16)[0m
-[32mhardhat_metadata (17)[0m
-[32mhardhat_metadata (18)[0m
-[32mhardhat_metadata (19)[0m
-[32mhardhat_metadata (20)[0m
-[32mhardhat_metadata (21)[0m
-[32mhardhat_metadata (22)[0m
-[32mhardhat_metadata (23)[0m
-[32mhardhat_metadata (24)[0m
-[32mhardhat_metadata (25)[0m
-[32mhardhat_metadata (26)[0m
-[32mhardhat_metadata (27)[0m
-[32mhardhat_metadata (28)[0m
-[32mhardhat_metadata (29)[0m
-[32mhardhat_metadata (30)[0m
-[32mhardhat_metadata (31)[0m
-[32mhardhat_metadata (32)[0m
-[32mhardhat_metadata (33)[0m
-[32mhardhat_metadata (34)[0m
-[32mhardhat_metadata (35)[0m
-[32mhardhat_metadata (36)[0m
-[32mhardhat_metadata (37)[0m
-[32mhardhat_metadata (38)[0m
-[32mhardhat_metadata (39)[0m
-[32mhardhat_metadata (40)[0m
-[32mhardhat_metadata (41)[0m
-[32mhardhat_metadata (42)[0m
-[32mhardhat_metadata (43)[0m
-[32mhardhat_metadata (44)[0m
-[32mhardhat_metadata (45)[0m
-[32mhardhat_metadata (46)[0m
-[32mhardhat_metadata (47)[0m
-[32mhardhat_metadata (48)[0m
-[32mhardhat_metadata (49)[0m
-[32mhardhat_metadata (50)[0m
-[32mhardhat_metadata (51)[0m
-[32mhardhat_metadata (52)[0m
-[32mhardhat_metadata (53)[0m
-[32mhardhat_metadata (54)[0m
-[32mhardhat_metadata (55)[0m
-[32mhardhat_metadata (56)[0m
-[32mhardhat_metadata (57)[0m
-[32mhardhat_metadata (58)[0m
-[32mhardhat_metadata (59)[0m
-[32mhardhat_metadata (60)[0m
-[32mhardhat_metadata (61)[0m
-[32mhardhat_metadata (62)[0m
-[32mhardhat_metadata (63)[0m
-[32mhardhat_metadata (64)[0m
-[32mhardhat_metadata (65)[0m
-[32mhardhat_metadata (66)[0m
-[32mhardhat_metadata (67)[0m
-[32mhardhat_metadata (68)[0m
-[32mhardhat_metadata (69)[0m
-[32mhardhat_metadata (70)[0m
-[32mhardhat_metadata (71)[0m
-[32mhardhat_metadata (72)[0m
-[32mhardhat_metadata (73)[0m
-[32mhardhat_metadata (74)[0m
-[32mhardhat_metadata (75)[0m
-[32mhardhat_metadata (76)[0m
-[32mhardhat_metadata (77)[0m
-[32mhardhat_metadata (78)[0m
-[32mhardhat_metadata (79)[0m
-[32mhardhat_metadata (80)[0m
-[32mhardhat_metadata (81)[0m
-[32mhardhat_metadata (82)[0m
-[32mhardhat_metadata (83)[0m
-[32mhardhat_metadata (84)[0m
-[32mhardhat_metadata (85)[0m
-[32mhardhat_metadata (86)[0m
-[32mhardhat_metadata (87)[0m
-[32mhardhat_metadata (88)[0m
-[32mhardhat_metadata (89)[0m
-[32mhardhat_metadata (90)[0m
-[32mhardhat_metadata (91)[0m
-[32mhardhat_metadata (92)[0m
-[32mhardhat_metadata (93)[0m
-[32mhardhat_metadata (94)[0m
-[32mhardhat_metadata (95)[0m
-[32mhardhat_metadata (96)[0m
-[32mhardhat_metadata (97)[0m
-[32mhardhat_metadata (98)[0m
-[32mhardhat_metadata (99)[0m
-[32mhardhat_metadata (100)[0m
-[32mhardhat_metadata (101)[0m
-[32mhardhat_metadata (102)[0m
-[32mhardhat_metadata (103)[0m
-[32mhardhat_metadata (104)[0m
-[32mhardhat_metadata (105)[0m
-[32mhardhat_metadata (106)[0m
-[32mhardhat_metadata (107)[0m
-[32mhardhat_metadata (108)[0m
-[32mhardhat_metadata (109)[0m
-[32mhardhat_metadata (110)[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       MockUSDT#transfer
+  Transaction:         0x40d28a36893c6ce4028bd58a32f88370a99fa5a43e98baf3f603fe6727f1d8c6
+  From:                0x15d34aaf54267db7d7c367839aaf71a00a2c6a65
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+  Value:               0 ETH
+  Gas used:            46514 of 30000000
+  Block #40:           0x33f2bbceee8829f9ec57c4b5fcb8c6d75330cd93749a4d3de5a79dde07c9d59a
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  Transaction:         0x7ef7e0d310c2760960a607dc6e0d637bec572d86d820b5a02c7c87ee21493922
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+  Value:               0 ETH
+  Gas used:            86563 of 30000000
+  Block #41:           0xaa464776bf07f9527cf1078f1b73ee41562721a96ca36f4131b1753e78e79a0e
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  Transaction:         0xf3c85c2857d71813377030b6c9ad21bf74cc7215c73201e689ba27000d2b8772
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
+  Value:               0 ETH
+  Gas used:            218811 of 30000000
+  Block #42:           0xbf958adcae92b642d23a68477e4a6da746c883c5990dba1a751b18ed6b64980c
+
+[32meth_getTransactionByHash[0m
+[32meth_getTransactionReceipt[0m
+[32meth_call[0m
+  Contract call:       MockUSDT#balanceOf
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+
+[32meth_call[0m
+  Contract call:       MockUSDT#balanceOf
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+
+[32meth_call[0m
+  Contract call:       MockUSDT#balanceOf
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+
+[32meth_call[0m
+  Contract call:       MockUSDT#balanceOf
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+
+[32meth_call[0m
+  Contract call:       MockUSDT#balanceOf
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+
+[32meth_call[0m
+  Contract call:       MockUSDT#balanceOf
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+
+[32meth_call[0m
+  Contract call:       MockUSDT#balanceOf
+  From:                0xbcd4042de499d14e55001ccbb24a551f3b954096
+  To:                  0xb7f8bc63bbcad18155201308c8f3540b07f84f5e
+
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       PriceFeed#addPrice
+  Transaction:         0x00ee64d6a7555a29205e5e80d36cfc84f09d397a85becdfd0447a2e11945e8bb
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xcafac3dd18ac6c6e92c921884f9e4176737c052c
+  Value:               0 ETH
+  Gas used:            119771 of 30000000
+  Block #43:           0x293fba8dff5b471ee32523a02a1d2817f089298afd2f72d91bb8d02832f1475d
+
+[32meth_getTransactionByHash[0m
+[31meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+
+  Error: reverted with reason string 'Invalid price data'
+
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       PriceFeed#addPrice
+  Transaction:         0xad518d8a1b5d781c77dd351cca9eee647785b20186a72bf6e678673848fa006a
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xcafac3dd18ac6c6e92c921884f9e4176737c052c
+  Value:               0 ETH
+  Gas used:            119423 of 30000000
+  Block #44:           0x6e81351133e889faf320d2a8e023a07cfc32f17c367c4eefe5916c2543be773a
+
+[32meth_getTransactionByHash[0m
 [32meth_call[0m
   Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
 
-[32meth_accounts[0m
-[32mhardhat_metadata[0m
-[32mhardhat_metadata (2)[0m
-[32mhardhat_metadata (3)[0m
-[32mhardhat_metadata (4)[0m
-[32mhardhat_metadata (5)[0m
-[32mhardhat_metadata (6)[0m
-[32mhardhat_metadata (7)[0m
-[32mhardhat_metadata (8)[0m
-[32mhardhat_metadata (9)[0m
-[32mhardhat_metadata (10)[0m
-[32mhardhat_metadata (11)[0m
-[32mhardhat_metadata (12)[0m
-[32mhardhat_metadata (13)[0m
-[32mhardhat_metadata (14)[0m
-[32mhardhat_metadata (15)[0m
-[32mhardhat_metadata (16)[0m
-[32mhardhat_metadata (17)[0m
-[32mhardhat_metadata (18)[0m
-[32mhardhat_metadata (19)[0m
-[32mhardhat_metadata (20)[0m
-[32mhardhat_metadata (21)[0m
-[32mhardhat_metadata (22)[0m
-[32mhardhat_metadata (23)[0m
-[32mhardhat_metadata (24)[0m
-[32mhardhat_metadata (25)[0m
-[32mhardhat_metadata (26)[0m
-[32mhardhat_metadata (27)[0m
-[32mhardhat_metadata (28)[0m
-[32mhardhat_metadata (29)[0m
-[32mhardhat_metadata (30)[0m
-[32mhardhat_metadata (31)[0m
-[32mhardhat_metadata (32)[0m
-[32mhardhat_metadata (33)[0m
-[32mhardhat_metadata (34)[0m
-[32mhardhat_metadata (35)[0m
-[32mhardhat_metadata (36)[0m
-[32mhardhat_metadata (37)[0m
-[32mhardhat_metadata (38)[0m
-[32mhardhat_metadata (39)[0m
-[32mhardhat_metadata (40)[0m
-[32mhardhat_metadata (41)[0m
-[32mhardhat_metadata (42)[0m
-[32mhardhat_metadata (43)[0m
-[32mhardhat_metadata (44)[0m
-[32mhardhat_metadata (45)[0m
-[32mhardhat_metadata (46)[0m
-[32mhardhat_metadata (47)[0m
-[32mhardhat_metadata (48)[0m
-[32mhardhat_metadata (49)[0m
-[32mhardhat_metadata (50)[0m
-[32mhardhat_metadata (51)[0m
-[32mhardhat_metadata (52)[0m
-[32mhardhat_metadata (53)[0m
-[32mhardhat_metadata (54)[0m
-[32mhardhat_metadata (55)[0m
-[32mhardhat_metadata (56)[0m
-[32mhardhat_metadata (57)[0m
-[32mhardhat_metadata (58)[0m
-[32mhardhat_metadata (59)[0m
-[32mhardhat_metadata (60)[0m
-[32mhardhat_metadata (61)[0m
-[32mhardhat_metadata (62)[0m
-[32mhardhat_metadata (63)[0m
-[32mhardhat_metadata (64)[0m
-[32mhardhat_metadata (65)[0m
-[32mhardhat_metadata (66)[0m
-[32mhardhat_metadata (67)[0m
-[32mhardhat_metadata (68)[0m
-[32mhardhat_metadata (69)[0m
-[32mhardhat_metadata (70)[0m
-[32mhardhat_metadata (71)[0m
-[32mhardhat_metadata (72)[0m
-[32mhardhat_metadata (73)[0m
-[32mhardhat_metadata (74)[0m
-[32mhardhat_metadata (75)[0m
-[32mhardhat_metadata (76)[0m
-[32mhardhat_metadata (77)[0m
-[32mhardhat_metadata (78)[0m
-[32mhardhat_metadata (79)[0m
-[32mhardhat_metadata (80)[0m
-[32mhardhat_metadata (81)[0m
-[32mhardhat_metadata (82)[0m
-[32mhardhat_metadata (83)[0m
-[32mhardhat_metadata (84)[0m
-[32mhardhat_metadata (85)[0m
-[32mhardhat_metadata (86)[0m
-[32mhardhat_metadata (87)[0m
-[32mhardhat_metadata (88)[0m
-[32mhardhat_metadata (89)[0m
-[32mhardhat_metadata (90)[0m
-[32mhardhat_metadata (91)[0m
-[32mhardhat_metadata (92)[0m
-[32mhardhat_metadata (93)[0m
-[32mhardhat_metadata (94)[0m
-[32mhardhat_metadata (95)[0m
-[32mhardhat_metadata (96)[0m
-[32mhardhat_metadata (97)[0m
-[32mhardhat_metadata (98)[0m
-[32mhardhat_metadata (99)[0m
-[32mhardhat_metadata (100)[0m
-[32mhardhat_metadata (101)[0m
-[32mhardhat_metadata (102)[0m
-[32mhardhat_metadata (103)[0m
-[32mhardhat_metadata (104)[0m
-[32mhardhat_metadata (105)[0m
-[32mhardhat_metadata (106)[0m
-[32mhardhat_metadata (107)[0m
-[32mhardhat_metadata (108)[0m
-[32mhardhat_metadata (109)[0m
-[32mhardhat_metadata (110)[0m
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       PriceFeed#addPrice
+  Transaction:         0x903c438dc2151494eccc1c05d261be182933b301754dd0a33963f63ad8cbcb44
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xcafac3dd18ac6c6e92c921884f9e4176737c052c
+  Value:               0 ETH
+  Gas used:            119399 of 30000000
+  Block #45:           0x62c87383b3aceef5d2cfe2c3bf309b7b556756c74a692d52a5be0ae2193857e6
+
+[32meth_getTransactionByHash[0m
+[32meth_call[0m
+  Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+
+[32meth_blockNumber[0m
+[32meth_feeHistory[0m
+[32meth_sendTransaction[0m
+  Contract call:       PriceFeed#addPrice
+  Transaction:         0xf6b09b85c0f81f886ede34be3aa2af701c6b16e34fd49aa50b27d84debb7d2eb
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xcafac3dd18ac6c6e92c921884f9e4176737c052c
+  Value:               0 ETH
+  Gas used:            99487 of 30000000
+  Block #46:           0xde15c0fb89f301f3050aeb495841c1be8c90905851f8900ded86af2bc4115a09
+
+[32meth_getTransactionByHash[0m
 [32meth_call[0m
   Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
@@ -1307,16 +2023,16 @@ Any funds sent to them on Mainnet or any other live network WILL BE LOST.
 
 [32meth_call[0m
   Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
-  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  From:                0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
   To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
 
 [32meth_call[0m
   Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
 
 [32meth_call[0m
   Contract call:       TransparentUpgradeableProxy#<unrecognized-selector>
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0x5392a33f7f677f59e833febf4016cddd88ff9e67
+  To:                  0x3de2da43d4c1b137e385f36b400507c1a24401f8
 
