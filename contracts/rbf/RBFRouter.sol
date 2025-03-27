@@ -41,7 +41,6 @@ contract RBFRouter is IRBFRouter, Ownable {
         string symbol; //Symbol of the RBF token
         address assetToken; //Address of the asset backing the RBF
         address depositTreasury; //Address of the deposit treasury
-        uint256 mintSlippageBps; // Mint slippage tolerance for RBF
         address deployer; //Address of the deployer
         address manager; //Address of the RBF and PriceFeed manager
         address guardian; //Guardian address for security proxy update
@@ -165,7 +164,6 @@ contract RBFRouter is IRBFRouter, Ownable {
             depositTreasury: rbfDeployData.depositTreasury,
             dividendTreasury: dividendTreasury,
             priceFeed: pricerFeed,
-            mintSlippageBps: rbfDeployData.mintSlippageBps,
             manager: rbfDeployData.manager
         });
         (address rbf, address rbfProxyAdmin, address rbfImpl) = rbfFactory

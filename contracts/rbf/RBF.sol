@@ -26,7 +26,6 @@ struct RBFInitializeData {
     address depositTreasury; // The address that receives the deposits from the vault
     address dividendTreasury; // The address where dividends (profits) will be stored and distributed
     address priceFeed; // The address of the price feed (e.g., Chainlink) to get the asset price for RBF calculations
-    uint256 mintSlippageBps; // The slippage tolerance for minting RBF tokens
     address manager; // The address of the contract manager who can dividend in the RBF contract
 }
 
@@ -45,8 +44,8 @@ contract RBF is
     using SafeERC20 for IERC20;
     uint256 public constant BPS_DENOMINATOR = 10_000;
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
-    bytes32 public constant PRICE_MINT_AMOUNT_SETTER_ROLE =
-        keccak256("PRICE_MINT_AMOUNT_SETTER_ROLE");
+    bytes32 public constant MINT_AMOUNT_SETTER_ROLE =
+        keccak256("MINT_AMOUNT_SETTER_ROLE");
     // The address of the asset token that this contract interacts with (e.g., an ERC-20 token).
     address public assetToken;
     // The address of the treasury that holds deposited assets.
@@ -57,8 +56,6 @@ contract RBF is
     AggregatorV3Interface public priceFeed;
     // The address of the manager who has administrative privileges over the contract.
     address public manager;
-    // The slippage tolerance for minting RBF tokens.
-    uint256 public mintSlippageBps;  
     // The address of the vault  which can deposit assetToken.
     address public vault;
     // The amount of assetToken deposited into the depositTreasury.
@@ -117,7 +114,6 @@ contract RBF is
             "RBF: manager address can not be zero address" //tc-18:manager address is zero address
         );
         manager = data.manager;
-        mintSlippageBps = data.mintSlippageBps;
 
         decimalsMultiplier =
             10 **
@@ -126,7 +122,7 @@ contract RBF is
 
         _grantRole(DEFAULT_ADMIN_ROLE, data.manager);
         _grantRole(MANAGER_ROLE, data.manager);
-        _setRoleAdmin(PRICE_MINT_AMOUNT_SETTER_ROLE, MANAGER_ROLE);
+        _setRoleAdmin(MINT_AMOUNT_SETTER_ROLE, MANAGER_ROLE);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -156,24 +152,14 @@ contract RBF is
      * @notice  Allows the manager to claim the deposit and mint RBF tokens.
      * @dev     This function is only callable by the manager role.
      */
-    function claimDeposit() public onlyRole(MANAGER_ROLE) { //tc-66:不是MANAGER_ROLE角色的账户执行claimDeposit;是MANAGER_ROLE角色的账户执行claimDeposit
-        require(depositAmount > 0, "RBF: depositAmount must be greater than 0"); //tc-70:depositAmount为0，执行claimDeposit，执行失败
-        require(depositPrice > 0, "RBF: depositPirce must be greater than 0"); //tc-66:depositPirce为0，执行claimDeposit，执行失败;
+    function claimDeposit() public onlyRole(MANAGER_ROLE) {
+        require(depositAmount > 0, "RBF: depositAmount must be greater than 0");
         require(
             depositMintAmount > 0,
             "RBF: depositMintAmount must be greater than 0" //tc-66:depositMintAmount为0，执行claimDeposit，执行失败
         );
-        uint256 scaledDeposit = _scaleUp(depositAmount);
-        uint256 minAmount = (scaledDeposit * (10 ** priceFeed.decimals())) /
-            depositPrice;
-        uint256 slippageFactor = (mintSlippageBps * minAmount) / BPS_DENOMINATOR;
-        uint256 lowerBound = minAmount - slippageFactor;
-        uint256 upperBound = minAmount + slippageFactor;
-        require(
-            depositMintAmount >= lowerBound && depositMintAmount <= upperBound,
-            "RBF: depositMintAmount is not in the range" //tc-71:depositMintAmount不在范围内，执行claimDeposit，执行失败
-        );
         _mint(vault, depositMintAmount);
+        emit ClaimDepositEvent(vault,depositAmount,depositMintAmount);
         depositAmount = 0;
     }
 
@@ -207,19 +193,14 @@ contract RBF is
     /**
      * @notice  Sets the deposit price and mint amount for RBF tokens.
      * @dev     This function is only callable by the PRICE_MINT_AMOUNT_SETTER_ROLE.
-     * @param   _depositPrice    amount of assetToken deposited
      * @param   _depositMintAmount amount of RBF tokens minted
      */
-     //tc-66:是PRICE_MINT_AMOUNT_SETTER_ROLE的账户执行setDepositPriceAndMintAmount
-     //tc-66:是PRICE_MINT_AMOUNT_SETTER_ROLE的账户执行setDepositPriceAndMintAmount
-    function setDepositPriceAndMintAmount(
-        uint256 _depositPrice,
+    function setMintAmount(
         uint256 _depositMintAmount
-    ) public onlyRole(PRICE_MINT_AMOUNT_SETTER_ROLE) {
-        require(depositAmount > 0, "RBF: depositAmount must be greater than 0");//tc-70
-        depositPrice = _depositPrice;
+    ) public onlyRole(MINT_AMOUNT_SETTER_ROLE) {
+        require(depositAmount > 0, "RBF: depositAmount must be greater than 0");
         depositMintAmount = _depositMintAmount;
-        emit DepositDataEvent(depositPrice, depositMintAmount);
+        emit DepositDataEvent(depositMintAmount);
     }
 
     /**
@@ -238,16 +219,6 @@ contract RBF is
         emit SetVault(_vault);
     }
 
-    /**
-     * @notice  Sets the mint slippage percentage in basis points (bps)
-     * @dev     Only accounts with the MANAGER_ROLE can call this function
-     * @param   _mintSlippageBps The new mint slippage value in basis points (bps)
-     */
-    function setMintSlippageBps(uint256 _mintSlippageBps) public onlyRole(MANAGER_ROLE) {
-        mintSlippageBps=_mintSlippageBps;
-        emit SetMintSlippageBps(mintSlippageBps);
-    }
-
 
     /**
      * @notice  Sets the token metadata URI
@@ -258,7 +229,6 @@ contract RBF is
         tokenURI=_tokenURI;
         emit SetTokenURI(tokenURI);
     }
-
 
 
     /**

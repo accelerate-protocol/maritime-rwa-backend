@@ -11,8 +11,8 @@ pragma solidity 0.8.26;
 
 interface IRBF {
     event DepositEvent(address depositor, uint256 amount);
-    event DepositDataEvent(uint256 depositPrice, uint256 depositMintAmount);
+    event ClaimDepositEvent(address receiver,uint256 depositAmount,uint256 mintAmount);
+    event DepositDataEvent(uint256 depositMintAmount);
     event SetVault(address vault);
-    event SetMintSlippageBps(uint256 mintSlippageBps);
     event SetTokenURI(string tokenURI);
 }
