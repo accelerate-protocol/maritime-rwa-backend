@@ -190,7 +190,7 @@ contract Vault is
         uint256 manageFeeAmount = (assets * manageFee) / BPS_DENOMINATOR;
         manageFeeBalance = manageFeeBalance + manageFeeAmount;
         assetBalance = assetBalance + assets;
-        SafeERC20.safeTransferFrom(
+        SafeERC20.safeTransferFrom( 
             IERC20(assetToken),
             msg.sender,
             address(this),
@@ -309,7 +309,7 @@ contract Vault is
      *      deposits the assets into the RBF contract.
      */
     function execStrategy() public onlyRole(MANAGER_ROLE) {
-        require(assetBalance>0,"Vault: assetBalance is zero");
+        //require(assetBalance>0,"Vault: assetBalance is zero");
         require(
             maxSupply == totalSupply() ||
                 (block.timestamp >= subEndTime &&
