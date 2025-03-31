@@ -309,7 +309,7 @@ contract Vault is
      *      deposits the assets into the RBF contract.
      */
     function execStrategy() public onlyRole(MANAGER_ROLE) {
-        //require(assetBalance>0,"Vault: assetBalance is zero");
+        require(assetBalance>0,"Vault: assetBalance is zero");
         require(
             maxSupply == totalSupply() ||
                 (block.timestamp >= subEndTime &&
