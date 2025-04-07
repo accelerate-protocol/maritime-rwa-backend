@@ -44,7 +44,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       allowUnlimitedContractSize: true,
       accounts: {
-        count: 110,  // 设置测试账户数量
+        count: 210,  // 设置测试账户数量
         accountsBalance: ethers.parseEther("1000000").toString()  // 每个账户的初始余额
       }
     }

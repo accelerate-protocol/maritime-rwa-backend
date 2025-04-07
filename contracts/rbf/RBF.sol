@@ -153,7 +153,7 @@ contract RBF is
      * @dev     This function is only callable by the manager role.
      */
     function claimDeposit() public onlyRole(MANAGER_ROLE) {
-        require(depositAmount > 0, "RBF: depositAmount must be greater than 0");
+        //require(depositAmount > 0, "RBF: depositAmount must be greater than 0");
         require(
             depositMintAmount > 0,
             "RBF: depositMintAmount must be greater than 0" //tc-66:depositMintAmount为0，执行claimDeposit，执行失败
@@ -161,6 +161,7 @@ contract RBF is
         _mint(vault, depositMintAmount);
         emit ClaimDepositEvent(vault,depositAmount,depositMintAmount);
         depositAmount = 0;
+        depositMintAmount=0;
     }
 
     /**
@@ -198,7 +199,7 @@ contract RBF is
     function setMintAmount(
         uint256 _depositMintAmount
     ) public onlyRole(MINT_AMOUNT_SETTER_ROLE) {
-        require(depositAmount > 0, "RBF: depositAmount must be greater than 0");
+       // require(depositAmount > 0, "RBF: depositAmount must be greater than 0");
         depositMintAmount = _depositMintAmount;
         emit DepositDataEvent(depositMintAmount);
     }

@@ -180,6 +180,8 @@ contract Vault is
      * @return  uint256 The amount of shares minted in exchange for the deposit.
      */
      //tc-50:The financing reached the maximum supply, causing the financing to end early, and then the subscription continued.
+     //tc-92:发起者在线上白名单
+     //tc-92:发起者不在线上白名单
     function deposit(
         uint256 assets
     ) public virtual onlyOnChainWL(msg.sender) returns (uint256) {
@@ -215,7 +217,9 @@ contract Vault is
      *      to the user including the manager's fee.
      * @return The total amount of assets transferred to the user.
      */
-     //tc-69:认购期结束未达到阈值赎回成功
+     //tc-69:认购期结束未达到阈值线上赎回成功
+     //tc-69:在线上白名单的账户执行赎回
+     //tc-69:不在线上白名单的账户执行赎回
     function redeem()
         public
         virtual
@@ -225,7 +229,7 @@ contract Vault is
         require(block.timestamp >= subEndTime, "Vault: Invalid time");//tc-69:认购未达到阈值，未到认购截止时间时间执行赎回；tc-66:提前融资完成，在认购截止时间前白名单账户执行赎回，赎回失败
         require(
             (maxSupply * fundThreshold) / BPS_DENOMINATOR > totalSupply(),
-            "Vault: not allowed withdraw"
+            "Vault: not allowed withdraw" //tc-78
         );
         uint256 shares = balanceOf(msg.sender);
         uint256 assetAmount = _getAssetAmountForVault(shares);
@@ -250,17 +254,19 @@ contract Vault is
      * @param   receiver  The address of the recipient of the minted shares.
      * @param   amount    The amount of asset tokens to be deposited.
      */
+     //tc-92:执行者是MANAGE_ROLE
+     //tc-92:执行者不是MANAGE_ROLE
     function offChainDepositMint(address receiver,uint256 amount) public onlyRole(MANAGER_ROLE) {
-        require(_getAssetAmountForVault(amount) >= minDepositAmount, "Vault: OffChain deposit less than min");
+        require(_getAssetAmountForVault(amount) >= minDepositAmount, "Vault: OffChain deposit less than min");//tc-95
         require(
             block.timestamp >= subStartTime && block.timestamp <= subEndTime,
-            "Vault: Invalid time"
+            "Vault: Invalid time" //tc-95
         );
         require(
             totalSupply() + amount <= maxSupply,
-            "Vault: maxSupply exceeded"
+            "Vault: maxSupply exceeded" //tc-95
         );
-        require(offChainWLMap[receiver], "Vault:OffChain receiver are not in offChainWL");
+        require(offChainWLMap[receiver], "Vault:OffChain receiver are not in offChainWL");//tc-92
         _mint(receiver, amount);
         emit OffChainDepositEvent(msg.sender,receiver,amount);
     }
@@ -272,58 +278,20 @@ contract Vault is
      *      fund threshold is not met. The function burns the user's shares,
      *      calculates the corresponding asset amount and transfer to user offChain.
      */
+     //tc-96:线下白名单中的账户执行
+     //tc-96:不在线下白名单中的账户执行
     function offChainRedeem() public onlyOffChainWL(msg.sender){
-        require(block.timestamp >= subEndTime, "Vault: Invalid time");
+        require(block.timestamp >= subEndTime, "Vault: Invalid time");//tc-96
         require(
             (maxSupply * fundThreshold) / BPS_DENOMINATOR > totalSupply(),
-            "Vault: not allowed withdraw"
+            "Vault: not allowed withdraw" //tc-92
         );
         uint256 shares = balanceOf(msg.sender);
-        _spendAllowance(msg.sender, address(this), shares);
+        _spendAllowance(msg.sender, address(this), shares); //tc-96
         _burn(msg.sender, shares);
         emit OffChainRedeemEvent(msg.sender,shares);
     }
 
-
-    /**
-     * @notice  OffChain Deposits Mint into the vault during the subscription period 
-     * @dev     Ensures that deposits meet the minimum requirement and fall within the allowed period.
-     * @param   receiver  The address of the recipient of the minted shares.
-     * @param   amount    The amount of asset tokens to be deposited.
-     */
-    function offChainDepositMint(address receiver,uint256 amount) public onlyRole(MANAGER_ROLE) {
-        require(_getAssetAmountForVault(amount) >= minDepositAmount, "Vault: OffChain deposit less than min");
-        require(
-            block.timestamp >= subStartTime && block.timestamp <= subEndTime,
-            "Vault: Invalid time"
-        );
-        require(
-            totalSupply() + amount <= maxSupply,
-            "Vault: maxSupply exceeded"
-        );
-        require(offChainWLMap[receiver], "Vault:OffChain receiver are not in offChainWL");
-        _mint(receiver, amount);
-        emit OffChainDepositEvent(msg.sender,receiver,amount);
-    }
-
-
-    /**
-     * @notice  redemption to be serviced off chain
-     * @dev Users can redeem only after the subscription period ends and if the
-     *      fund threshold is not met. The function burns the user's shares,
-     *      calculates the corresponding asset amount and transfer to user offChain.
-     */
-    function offChainRedeem() public onlyOffChainWL(msg.sender){
-        require(block.timestamp >= subEndTime, "Vault: Invalid time");
-        require(
-            (maxSupply * fundThreshold) / BPS_DENOMINATOR > totalSupply(),
-            "Vault: not allowed withdraw"
-        );
-        uint256 shares = balanceOf(msg.sender);
-        _spendAllowance(msg.sender, address(this), shares);
-        _burn(msg.sender, shares);
-        emit OffChainRedeemEvent(msg.sender,shares);
-    }
 
     /**
      * @notice Allows the manager to withdraw accumulated management fees.
@@ -354,7 +322,7 @@ contract Vault is
      *      deposits the assets into the RBF contract.
      */
     function execStrategy() public onlyRole(MANAGER_ROLE) { //tc-66:不是MANAGER_ROLE角色的账户，执行策略;是MANAGER_ROLE角色的账户但不是vault，执行策略;
-        require(assetBalance>0,"Vault: assetBalance is zero"); //tc-68:assetBalance为0，执行策略失败
+        //require(assetBalance>0,"Vault: assetBalance is zero"); //tc-68:assetBalance为0，执行策略失败
         require(
             maxSupply == totalSupply() ||
                 (block.timestamp >= subEndTime &&
@@ -379,6 +347,10 @@ contract Vault is
      *      is not already whitelisted and that the whitelist does not exceed 100 entries.
      * @param whitelistAddr The address to be added to the whitelist.
      */
+    //tc-77:认购期内添加不在白名单中的账户到线上白名单，添加成功
+    //tc-77:认购期结束后添加不在白名单中的账户到线上白名单，添加失败
+    //tc-92:MANAGER_ROLE执行
+    //tc-92:非MANAGER_ROLE执行
     function addToOnChainWL(
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
@@ -388,10 +360,10 @@ contract Vault is
         );
         require(
             !onChainWLMap[whitelistAddr],
-            "Vault: Address is already onChainWL"
+            "Vault: Address is already onChainWL" //tc-77
         );
-        require(!offChainWLMap[whitelistAddr], "Vault: Address is already offChainWL");
-        require(onChainWL.length < 100, "Vault: Whitelist is full");
+        require(!offChainWLMap[whitelistAddr], "Vault: Address is already offChainWL"); //tc-92
+        require(onChainWL.length < 100, "Vault: Whitelist is full"); //tc-67
         onChainWLMap[whitelistAddr] = true;
         onChainWL.push(whitelistAddr);
     }
@@ -402,6 +374,10 @@ contract Vault is
      *      is currently whitelisted before proceeding.
      * @param whitelistAddr The address to be removed from the whitelist.
      */
+    //tc-77:在认购期内从线上白名单中删除在线上白名单中的账户，删除成功
+    //tc-77:在认购期结束后从线上白名单中删除在线上白名单中的账户，删除失败
+    //tc-92:MANAGER_ROLE执行
+    //tc-92:非MANAGER_ROLE执行
     function removeFromOnChainWL(
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
@@ -411,9 +387,9 @@ contract Vault is
         );
         require(
             onChainWLMap[whitelistAddr],
-            "Vault: Address is not in the whitelist"
+            "Vault: Address is not in the whitelist" //tc-77
         );
-        require(balanceOf(whitelistAddr)<=0, "Vault: Address has balance");
+        require(balanceOf(whitelistAddr)<=0, "Vault: Address has balance"); //tc-77
         onChainWLMap[whitelistAddr] = false;
         for (uint256 i = 0; i < onChainWL.length; i++) {
             if (onChainWL[i] == whitelistAddr) {
@@ -430,19 +406,23 @@ contract Vault is
       * @dev     This function is only callable by the manager of the vault.
       * @param   whitelistAddr  The address to be added to the OffChain Whitelist.
       */
+      //tc-92:认购期内添加不在白名单中的账户到线下白名单，添加成功
+      //tc-92:认购期结束后添加不在白名单中的账户到线下白名单，添加失败
+      //tc-92:MANAGER_ROLE执行
+      //tc-92:非MANAGER_ROLE执行
      function addToOffChainWL(
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
             block.timestamp <= subEndTime,
-            "Vault: Invalid time"
+            "Vault: Invalid time" //tc-92
         );
         require(
             !onChainWLMap[whitelistAddr],
-            "Vault: Address is already onChainWL"
+            "Vault: Address is already onChainWL" //tc-92
         );
-        require(!offChainWLMap[whitelistAddr], "Vault: Address is already offChainWL");
-        require(offChainWL.length < 100, "Vault: Whitelist is full");
+        require(!offChainWLMap[whitelistAddr], "Vault: Address is already offChainWL"); //tc-92
+        require(offChainWL.length < 100, "Vault: Whitelist is full");//tc-94
         offChainWLMap[whitelistAddr] = true;
         offChainWL.push(whitelistAddr);
     }
@@ -454,6 +434,10 @@ contract Vault is
      * @dev     This function can only be called by the manager of the vault.
      * @param   whitelistAddr   The address to be removed from the OffChain whitelist.
      */
+     //tc-92:在认购期内从线下白名单中删除在线下白名单中的账户，删除成功
+     //tc-92:在认购期结束后从线下白名单中删除在线下白名单中的账户，删除失败
+     //tc-92:MANAGER_ROLE执行
+     //tc-92:非MANAGER_ROLE执行
     function removeFromOffChainWL(
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
@@ -463,9 +447,9 @@ contract Vault is
         );
         require(
             offChainWLMap[whitelistAddr],
-            "Vault: Address is not in the offChain whitelist"
+            "Vault: Address is not in the offChain whitelist" //tc-92
         );
-        require(balanceOf(whitelistAddr)<=0, "Vault: Address has balance");
+        require(balanceOf(whitelistAddr)<=0, "Vault: Address has balance"); //tc-92
         offChainWLMap[whitelistAddr] = false;
         for (uint256 i = 0; i < offChainWL.length; i++) {
             if (offChainWL[i] == whitelistAddr) {
@@ -618,15 +602,15 @@ contract Vault is
     }
 
     function _checkTransferAuth(address from, address to) internal view {
-        require(endTime != 0, "Vault: Invalid endTime");
-        require(block.timestamp >= subEndTime, "Vault: Invalid time");
+        require(endTime != 0, "Vault: Invalid endTime"); //tc-72
+        require(block.timestamp >= subEndTime, "Vault: Invalid time"); //tc-72
         require(
             (maxSupply * fundThreshold) / BPS_DENOMINATOR <= totalSupply(),
             "Vault: not allowed transfer"
         );
         require(
             (onChainWLMap[from]|| offChainWLMap[from]) && (onChainWLMap[to]|| offChainWLMap[to]),
-            "Vault: transfer from and to must in onChainWL or offChainWL"
+            "Vault: transfer from and to must in onChainWL or offChainWL" //tc-72
         );
     }
 
@@ -644,8 +628,6 @@ contract Vault is
     ) internal view returns (uint256) {
         require(financePrice > 0, "Vault: financePrice must bigger than zero");
         uint256 assetAmount = (_scaleDown(vaultAmount) * financePrice) /
-        require(financePrice > 0, "Vault: financePrice must bigger than zero");//financePrice为0在部署和设置时会被拦截
-        uint256 withdrawAmount = (_scaleDown(vaultAmount) * financePrice) /
             FINANCE_PRICE_DENOMINATOR;
         return assetAmount;
     }

@@ -50,13 +50,12 @@ describe("FactoryAuth:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      ["(uint64,string,string,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
         usdt.address,
         depositTreasury,
-        "0",
         deployer,
         manager,
         guardian,]
@@ -70,6 +69,9 @@ describe("FactoryAuth:", function () {
     const signature2 = await signer2.signMessage(ethers.getBytes(deployDataHash));
     const signatures = [signature,signature2];
 
+    // await expect(
+    //   rbfRouter.connect(deployer).deployRBF(deployData, signatures)
+    // ).to.be.revertedWith("RBFRouter:Invalid deployer");
     await expect(
       rbfRouter.deployRBF(deployData, signatures)
     ).to.be.revertedWith("Auth/not-authorized");
@@ -145,13 +147,12 @@ describe("FactoryAuth:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      ["(uint64,string,string,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
         usdt.address,
         depositTreasury,
-        "0",
         deployer,
         manager,
         guardian,]
@@ -239,13 +240,12 @@ describe("FactoryAuth:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      ["(uint64,string,string,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
         usdt.address,
         depositTreasury,
-        "0",
         deployer,
         manager,
         guardian,]
@@ -330,13 +330,12 @@ describe("FactoryAuth:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      ["(uint64,string,string,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
         usdt.address,
         depositTreasury,
-        "0",
         deployer,
         manager,
         guardian,]
@@ -645,7 +644,6 @@ describe("FactoryAuth:", function () {
       dividendTreasury: manager,
       priceFeed: manager,
       manager: manager,
-      mintSlippageBps:"0",
     };
 
     await expect(rbfFactory.newRBF(deployData, investor1)).to.be.revertedWith(
@@ -679,7 +677,6 @@ describe("FactoryAuth:", function () {
       dividendTreasury: manager,
       priceFeed: manager,
       manager: manager,
-      mintSlippageBps:"0",
     };
     const tx = await rbfFactory.newRBF(deployData,RBFRouter.address);
     const receipt = await tx.wait();
@@ -701,13 +698,12 @@ describe("FactoryAuth:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      ["(uint64,string,string,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-tc38", "RBF-tc38",
         usdt.address,
         depositTreasury,
-        "0",
         deployer,
         manager,
         guardian,]
@@ -787,13 +783,12 @@ describe("FactoryAuth:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      ["(uint64,string,string,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-39", "RBF-39",
         usdt.address,
         depositTreasury,
-        "0",
         deployer,
         manager,
         guardian,]
@@ -874,13 +869,12 @@ describe("FactoryAuth:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      ["(uint64,string,string,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-39", "RBF-39",
         usdt.address,
         depositTreasury,
-        "0",
         deployer,
         manager,
         guardian,]
@@ -955,13 +949,12 @@ describe("FactoryAuth:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,uint256,address,address,address)"],
+      ["(uint64,string,string,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-31", "RBF-31",
         usdt.address,
         depositTreasury,
-        "0",
         deployer,
         manager,
         guardian,]
@@ -1051,7 +1044,6 @@ describe("FactoryAuth:", function () {
       dividendTreasury: ethers.ZeroAddress,
       priceFeed: manager,
       manager: manager,
-      mintSlippageBps:"0",
     };
     await expect(rbfFactory.newRBF(deployData,RBFRouter.address)).to.be.revertedWith(
       "RBF: dividendTreasury address cannot be zero address"
@@ -1084,7 +1076,6 @@ describe("FactoryAuth:", function () {
       dividendTreasury: manager,
       priceFeed: ethers.ZeroAddress,
       manager: manager,
-      mintSlippageBps:"0",
     };
     await expect(rbfFactory.newRBF(deployData,RBFRouter.address)).to.be.revertedWith(
       "RBF: priceFeedAddr can not be zero address"
@@ -1154,7 +1145,6 @@ describe("FactoryAuth:", function () {
       dividendTreasury: manager,
       priceFeed: manager,
       manager: manager,
-      mintSlippageBps:"0",
     };
     await expect(rbfFactory.newRBF(deployData,RBFRouter.address)).to.be.revertedWith(
         "Auth/not-authorized"
