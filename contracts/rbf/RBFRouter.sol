@@ -76,20 +76,20 @@ contract RBFRouter is IRBFRouter, Ownable {
         address _escrowFactory,
         address _priceFeedFactory
     ) Ownable() {
-        require(_whiteLists.length > 0, "whiteLists must not be empty");//75
+        require(_whiteLists.length > 0, "whiteLists must not be empty");//tc-21:白名单为空
         whiteLists = _whiteLists;
         for (uint256 i = 0; i < _whiteLists.length; i++) {
             whiteListed[_whiteLists[i]] = true;
         }
-        require(_threshold > 0, "threshold must >0");//tc-76
+        require(_threshold > 0, "threshold must >0");//tc-21:阈值为0
         threshold = _threshold;
-        require(_rbfFactory != address(0), "rbfFactory must not be zero");//tc-83
+        require(_rbfFactory != address(0), "rbfFactory must not be zero");//tc-21:RBFFactory地址为零地址
         rbfFactory = IRBFFactory(_rbfFactory);
-        require(_escrowFactory != address(0), "escrowFactory must not be zero");//tc-83
+        require(_escrowFactory != address(0), "escrowFactory must not be zero");//tc-21:EscrowFactory地址为零地址
         escrowFactory = IEscrowFactory(_escrowFactory);
         require(
             _priceFeedFactory != address(0),
-            "priceFeedFactory must not be zero"//tc-83
+            "priceFeedFactory must not be zero"//tc-21:PriceFeedFactory地址为零地址
         );
         priceFeedFactory = IPriceFeedFactory(_priceFeedFactory);
     }
@@ -102,13 +102,13 @@ contract RBFRouter is IRBFRouter, Ownable {
      * @param   _whiteLists  Array of new addresses to be whitelisted.
      * @param   _threshold  Minimum number of valid signatures required for verification.
      */
-     //tc-74:设置阈值和白名单成功且生效
+     //tc-19:设置阈值和白名单成功且生效
     function setWhiteListsAndThreshold(
         address[] memory _whiteLists,
         uint256 _threshold
     ) public onlyOwner {
-        require(_whiteLists.length > 0, "whiteLists must not be empty");//tc-75
-        require(_threshold > 0, "threshold must not be zero");//tc-76
+        require(_whiteLists.length > 0, "whiteLists must not be empty");//tc-19:设置签名白名单为null，失败
+        require(_threshold > 0, "threshold must not be zero");//tc-19:设置阈值为0，失败
         // Remove existing whitelist addresses
         uint oldLen=whiteLists.length;
         for (uint i = 0; i < oldLen; i++) {
@@ -134,9 +134,9 @@ contract RBFRouter is IRBFRouter, Ownable {
      * @param   signatures  Array of signatures for verification.
      */
      //tc-1:当前未给RBFRouter授权，应该不能部署RBF
-     //tc-4:给RBFRouter仅授权EscrowFactory调用权限后，部署RBF，应该部署失败
-     //tc-7:给RBFRouter仅授权EscrowFactory、PriceFeedFactory调用权限后，部署RBF，应该部署失败
-     //tc-10:给RBFRouter授权RBFFactory、EscrowFactory、PriceFeedFactory调用权限后，且各参数满足要求，部署RBF，应该部署成功
+     //tc-1:给RBFRouter仅授权EscrowFactory调用权限后，部署RBF，应该部署失败
+     //tc-1:给RBFRouter仅授权EscrowFactory、PriceFeedFactory调用权限后，部署RBF，应该部署失败
+     //tc-1:给RBFRouter授权RBFFactory、EscrowFactory、PriceFeedFactory调用权限后，且各参数满足要求，部署RBF，应该部署成功
     function deployRBF(
         bytes memory deployData,
         bytes[] memory signatures
@@ -147,10 +147,10 @@ contract RBFRouter is IRBFRouter, Ownable {
             deployData,
             (RBFDeployData)
         );
-        require(rbfDeployData.rbfId == rbfNonce, "RBFRouter:Invalid rbfId"); //tc-13
+        require(rbfDeployData.rbfId == rbfNonce, "RBFRouter:Invalid rbfId"); //tc-13：rbfId等于Nounce-1，部署失败；//tc-13:rbfId等于Nounce+1，部署失败；//tc-13:
         require(
             rbfDeployData.deployer == msg.sender,
-            "RBFRouter:Invalid deployer" //tc-12
+            "RBFRouter:Invalid deployer" //tc-16:部署RBF时，消息发送者与deploydata中的deployer不一致，部署失败报错
         );
         rbfNonce++;
         address dividendTreasury = escrowFactory.newEscrow(address(this));
@@ -198,10 +198,10 @@ contract RBFRouter is IRBFRouter, Ownable {
         uint256 validSignatures = 0;
         for (uint256 i = 0; i < signatures.length; i++) {
             address signer = recoverSigner(ethSignedMessageHash, signatures[i]);
-            require(whiteListed[signer], "RBFRouter:Invalid Signer"); //tc-11
+            require(whiteListed[signer], "RBFRouter:Invalid Signer"); //tc-12：使用不在签名白名单中的账户签名，部署RBF失败报错
             validSignatures++;
         }
-        require(validSignatures >= threshold, "RBFRouter:Invalid Threshold"); //tc-19
+        require(validSignatures >= threshold, "RBFRouter:Invalid Threshold"); //tc-19：签名个数小于阈值，部署失败；//tc-19:签名个数等于阈值，部署成功
     }
 
     /**

@@ -14,7 +14,7 @@ rm -rf "${PROJECT_ROOT}/deployments"
 
 # 准备链环境
 cd "${PROJECT_ROOT}"
-npx hardhat node > "${PROJECT_ROOT}/hardhat.log" 2>&1 &
+npx hardhat node --no-deploy > "${PROJECT_ROOT}/hardhat.log" 2>&1 &
 
 # 等待链环境启动
 sleep 30

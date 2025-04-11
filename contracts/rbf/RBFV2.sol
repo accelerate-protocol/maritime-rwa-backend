@@ -82,28 +82,28 @@ contract RBFV2 is
 
         require(
             data.assetToken != address(0),
-            "RBF: assetToken address cannot be zero address" //tc-14:assetToken address is zero address
+            "RBF: assetToken address cannot be zero address" 
         );
         assetToken = data.assetToken;
         require(
             data.depositTreasury != address(0),
-            "RBF: depositTreasury address cannot be zero address" //tc-15:depositTreasury address is zero address
+            "RBF: depositTreasury address cannot be zero address" 
         );
         depositTreasury = data.depositTreasury;
         require(
             data.dividendTreasury != address(0),
-            "RBF: dividendTreasury address cannot be zero address" //tc-16:dividendTreasury address is zero address
+            "RBF: dividendTreasury address cannot be zero address" 
         );
         dividendTreasury = data.dividendTreasury;
         require(
             data.priceFeed != address(0),
-            "RBF: priceFeedAddr can not be zero address" //tc-17:priceFeed address is zero address
+            "RBF: priceFeedAddr can not be zero address" 
         );
         priceFeed = AggregatorV3Interface(data.priceFeed);
         require(
             data.manager != address(0),
-            "RBF: manager address can not be zero address" //tc-18:manager address is zero address
-        );
+            "RBF: manager address can not be zero address"
+        ); 
         manager = data.manager;
 
         decimalsMultiplier =
@@ -124,7 +124,7 @@ contract RBFV2 is
      * @dev     This function is only callable by the Vault.
      * @param   amount The amount of assetToken to deposit.
      */
-    function requestDeposit(uint256 amount) public onlyVault { //tc-66:不是Vault执行requestDeposit；是Vault执行requestDeposit
+    function requestDeposit(uint256 amount) public onlyVault { 
         require(
             IERC20(assetToken).balanceOf(msg.sender) >= amount,
             "RBF: Insufficient balance"
@@ -147,23 +147,24 @@ contract RBFV2 is
         require(depositAmount > 0, "RBF: depositAmount must be greater than 0");
         require(
             depositMintAmount > 0,
-            "RBF: depositMintAmount must be greater than 0" //tc-66:depositMintAmount为0，执行claimDeposit，执行失败
+            "RBF: depositMintAmount must be greater than 0" 
         );
         _mint(vault, depositMintAmount);
         emit ClaimDepositEvent(vault,depositAmount,depositMintAmount);
         depositAmount = 0;
+        depositMintAmount=0;
     }
 
     /**
      * @notice  Allows the manager to distribute dividends from the dividend treasury to the vault.
      * @dev     This function calculates the dividend share for the vault and transfers the dividend amount.
      */
-    function dividend() public onlyRole(MANAGER_ROLE) {//tc-66:不是MANAGER_ROLE角色的账户执行dividend;是MANAGER_ROLE角色的账户执行dividend
+    function dividend() public onlyRole(MANAGER_ROLE) {
         uint256 totalDividend = IERC20(assetToken).balanceOf(dividendTreasury);
-        require(totalDividend > 0, "RBF: totalDividend must be greater than 0"); //tc-66:totalDividend为0，执行dividend，执行失败
+        require(totalDividend > 0, "RBF: totalDividend must be greater than 0"); 
         uint256 totalSupply = totalSupply();
-        require(totalSupply > 0, "RBF: totalSupply must be greater than 0");// tc-81
-        require(vault != address(0), "RBF: vault can not be zero address"); //无法覆盖
+        require(totalSupply > 0, "RBF: totalSupply must be greater than 0");
+        require(vault != address(0), "RBF: vault can not be zero address"); 
         require(
             balanceOf(vault) > 0,
             "RBF: vault balance must be greater than 0"
@@ -171,7 +172,7 @@ contract RBFV2 is
         address vaultDividendTreasury = Vault(vault).dividendTreasury(); 
         require(
             vaultDividendTreasury != address(0),
-            "RBF: vault dividendTreasury cant not be zero" //无法覆盖，dividendTreasury为零地址，在部署时会被拦掉
+            "RBF: vault dividendTreasury cant not be zero" 
         );
         _dividend(
             balanceOf(vault),
@@ -199,13 +200,12 @@ contract RBFV2 is
      * @dev     This function assigns the vault address, which interacts with the RBF contract.
      * @param   _vault  The address of the vault to be set.
      */
-     //tc-66:不是MANAGER_ROLE角色的账户执行setVault;是MANAGER_ROLE角色的账户执行setVault
     function setVault(address _vault) public onlyRole(MANAGER_ROLE) { 
         require(
             _vault != address(0),
-            "RBF: vaultAddr cannot be zero address" //tc-66
+            "RBF: vaultAddr cannot be zero address" 
         );
-        require(vault==address(0),"RBF: vaultAddr already set");//tc-66
+        require(vault==address(0),"RBF: vaultAddr already set");
         vault = _vault;
         emit SetVault(_vault);
     }
@@ -227,7 +227,6 @@ contract RBFV2 is
      * @dev     This function calculates the NAV of the RBF tokens held by vault by fetching the latest price.
      * @return  uint256  The NAV in terms of the asset token's value.
      */
-     //tc-90
     function getAssetsNav() public view returns (uint256) {
         int256 lastPrice = getLatestPrice();
         uint256 amount = balanceOf(vault);
@@ -240,7 +239,6 @@ contract RBFV2 is
      * @dev     This function interacts with the price feed contract to get the latest price of the asset token.
      * @return  int256  The latest price of the asset token.
      */
-     //tc-90
     function getLatestPrice() public view returns (int256) {
         (
             uint80 roundId,
@@ -255,7 +253,7 @@ contract RBFV2 is
                 startedAt > 0 &&
                 updatedAt > 0 &&
                 answeredInRound > 0),
-            "Invalid price data" //tc-90
+            "Invalid price data" 
         );
         return price;
     }

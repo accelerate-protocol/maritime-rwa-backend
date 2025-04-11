@@ -101,12 +101,12 @@ contract RBF is
         depositTreasury = data.depositTreasury;
         require(
             data.dividendTreasury != address(0),
-            "RBF: dividendTreasury address cannot be zero address" //tc-16:dividendTreasury address is zero address
+            "RBF: dividendTreasury address cannot be zero address" //tc-9:dividendTreasury address is zero address
         );
         dividendTreasury = data.dividendTreasury;
         require(
             data.priceFeed != address(0),
-            "RBF: priceFeedAddr can not be zero address" //tc-17:priceFeed address is zero address
+            "RBF: priceFeedAddr can not be zero address" //tc-10:priceFeed address is zero address
         );
         priceFeed = AggregatorV3Interface(data.priceFeed);
         require(
@@ -133,7 +133,7 @@ contract RBF is
      * @dev     This function is only callable by the Vault.
      * @param   amount The amount of assetToken to deposit.
      */
-    function requestDeposit(uint256 amount) public onlyVault { //tc-66:不是Vault执行requestDeposit；是Vault执行requestDeposit
+    function requestDeposit(uint256 amount) public onlyVault { //tc-46:不是Vault执行requestDeposit；//tc-46:是Vault执行requestDeposit
         require(
             IERC20(assetToken).balanceOf(msg.sender) >= amount,
             "RBF: Insufficient balance"
@@ -152,11 +152,13 @@ contract RBF is
      * @notice  Allows the manager to claim the deposit and mint RBF tokens.
      * @dev     This function is only callable by the manager role.
      */
+     //tc-46:不是MANAGER_ROLE角色的账户执行claimDeposit，执行失败
+     //tc-46:是MANAGER_ROLE角色的账户执行claimDeposit，执行成功
     function claimDeposit() public onlyRole(MANAGER_ROLE) {
-        //require(depositAmount > 0, "RBF: depositAmount must be greater than 0");
+        require(depositAmount > 0, "RBF: depositAmount must be greater than 0");//tc-45:是MANAGER_ROLE角色的账户执行claimDeposit，depositAmount为0，执行claimDeposit，执行失败
         require(
             depositMintAmount > 0,
-            "RBF: depositMintAmount must be greater than 0" //tc-66:depositMintAmount为0，执行claimDeposit，执行失败
+            "RBF: depositMintAmount must be greater than 0" //tc-46:depositMintAmount为0，执行claimDeposit，执行失败
         );
         _mint(vault, depositMintAmount);
         emit ClaimDepositEvent(vault,depositAmount,depositMintAmount);
@@ -168,11 +170,13 @@ contract RBF is
      * @notice  Allows the manager to distribute dividends from the dividend treasury to the vault.
      * @dev     This function calculates the dividend share for the vault and transfers the dividend amount.
      */
-    function dividend() public onlyRole(MANAGER_ROLE) {//tc-66:不是MANAGER_ROLE角色的账户执行dividend;是MANAGER_ROLE角色的账户执行dividend
+    //tc-46:不是MANAGER_ROLE角色的账户执行dividend;
+    //tc-46：是MANAGER_ROLE角色的账户执行dividend
+    function dividend() public onlyRole(MANAGER_ROLE) {
         uint256 totalDividend = IERC20(assetToken).balanceOf(dividendTreasury);
-        require(totalDividend > 0, "RBF: totalDividend must be greater than 0"); //tc-66:totalDividend为0，执行dividend，执行失败
+        require(totalDividend > 0, "RBF: totalDividend must be greater than 0"); //tc-46:totalDividend为0，执行dividend，执行失败
         uint256 totalSupply = totalSupply();
-        require(totalSupply > 0, "RBF: totalSupply must be greater than 0");// tc-81
+        require(totalSupply > 0, "RBF: totalSupply must be greater than 0");// tc-49：融资金额为0，rbf执行派息
         require(vault != address(0), "RBF: vault can not be zero address"); //无法覆盖
         require(
             balanceOf(vault) > 0,
@@ -196,10 +200,12 @@ contract RBF is
      * @dev     This function is only callable by the PRICE_MINT_AMOUNT_SETTER_ROLE.
      * @param   _depositMintAmount amount of RBF tokens minted
      */
+    //tc-46:不是PRICE_MINT_AMOUNT_SETTER_ROLE角色的账户执行setMintAmount，执行失败
+    //tc-46:是PRICE_MINT_AMOUNT_SETTER_ROLE角色的账户执行setMintAmount，执行成功
     function setMintAmount(
         uint256 _depositMintAmount
     ) public onlyRole(MINT_AMOUNT_SETTER_ROLE) {
-       // require(depositAmount > 0, "RBF: depositAmount must be greater than 0");
+        require(depositAmount > 0, "RBF: depositAmount must be greater than 0"); //tc-45:depositAmount为0的情况下，执行setMintAmount，执行失败
         depositMintAmount = _depositMintAmount;
         emit DepositDataEvent(depositMintAmount);
     }
@@ -209,13 +215,14 @@ contract RBF is
      * @dev     This function assigns the vault address, which interacts with the RBF contract.
      * @param   _vault  The address of the vault to be set.
      */
-     //tc-66:不是MANAGER_ROLE角色的账户执行setVault;是MANAGER_ROLE角色的账户执行setVault
+     //tc-46:不是MANAGER_ROLE角色的账户执行setVault;
+     //tc-46:是MANAGER_ROLE角色的账户执行setVault
     function setVault(address _vault) public onlyRole(MANAGER_ROLE) { 
         require(
             _vault != address(0),
-            "RBF: vaultAddr cannot be zero address" //tc-66
+            "RBF: vaultAddr cannot be zero address" //tc-46：setVault时，Vault地址为零地址；//tc-46:setVault时，Vault地址为零地址
         );
-        require(vault==address(0),"RBF: vaultAddr already set");//tc-66
+        require(vault==address(0),"RBF: vaultAddr already set");//tc-46：对已经setVault的地址继续执行setVault
         vault = _vault;
         emit SetVault(_vault);
     }
@@ -237,7 +244,7 @@ contract RBF is
      * @dev     This function calculates the NAV of the RBF tokens held by vault by fetching the latest price.
      * @return  uint256  The NAV in terms of the asset token's value.
      */
-     //tc-90
+     //tc-50：查询RBF净值
     function getAssetsNav() public view returns (uint256) {
         int256 lastPrice = getLatestPrice();
         uint256 amount = balanceOf(vault);
@@ -250,7 +257,9 @@ contract RBF is
      * @dev     This function interacts with the price feed contract to get the latest price of the asset token.
      * @return  int256  The latest price of the asset token.
      */
-     //tc-90
+     //tc-50：喂价前查询RBF最新价格，查询成功
+     //tc-50：喂价不为0时，查询RBF最新价格，查询成功
+     //tc-50: 喂价为0后查询最新价格，查询成功
     function getLatestPrice() public view returns (int256) {
         (
             uint80 roundId,
@@ -265,7 +274,7 @@ contract RBF is
                 startedAt > 0 &&
                 updatedAt > 0 &&
                 answeredInRound > 0),
-            "Invalid price data" //tc-90
+            "Invalid price data" //tc-50：喂价小于0后，查询RBF最新价格，执行失败
         );
         return price;
     }

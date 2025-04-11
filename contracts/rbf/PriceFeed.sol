@@ -46,13 +46,13 @@ contract PriceFeed is AggregatorV3Interface, AccessControl {
      * @param   price  The new price value to store.
      * @param   priceTime  Timestamp of the price update.
      */
-     //tc-90:不是FEEDER_ROLE角色的账户执行addPrice，执行失败
-     //tc-90:是FEEDER_ROLE角色的账户执行addPrice，执行成功
+     //tc-50:不是FEEDER_ROLE角色的账户执行addPrice，执行失败
+     //tc-50:是FEEDER_ROLE角色的账户执行addPrice，执行成功
     function addPrice(
         int256 price,
         uint256 priceTime
     ) public onlyRole(FEEDER_ROLE) {
-        _addPrice(price, priceTime);
+        _addPrice(price, priceTime); //tc-50:喂价小于0，失败；//tc-50:喂价：浮点数一位小数；//tc-50:喂价：浮点数8位小数；//tc-50:喂价为0
     }
 
     /**
@@ -127,6 +127,7 @@ contract PriceFeed is AggregatorV3Interface, AccessControl {
         );
     }
 
+    //
     function _addPrice(int256 price, uint256 priceTime) internal {
         latestRoundId++;
         rounds[latestRoundId] = RoundData({

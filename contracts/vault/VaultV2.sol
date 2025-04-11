@@ -98,46 +98,46 @@ contract VaultV2 is
 
         require(
             data.assetToken != address(0),
-            "Vault: Invalid assetToken address" //tc-28:assetToken is zero address, deploy failed
+            "Vault: Invalid assetToken address" 
         ); 
         assetToken = data.assetToken;
-        require(data.rbf != address(0), "Vault: Invalid rbf address"); //yes tc-73:rbf is zero address、tc-51:rbf is zero address
+        require(data.rbf != address(0), "Vault: Invalid rbf address"); 
         rbf = data.rbf;
-        require(data.maxSupply > 0, "Vault: Invalid maxSupply");//yes tc-53:maxSupply等于0、tc-52:maxSupply is less than 0
+        require(data.maxSupply > 0, "Vault: Invalid maxSupply");
         maxSupply = data.maxSupply;
-        require(data.subStartTime < data.subEndTime, "Vault: Invalid subTime"); //yes tc-54:Subscription end time equal to the start time、tc-42:Subscription end time is earlier than the start time
+        require(data.subStartTime < data.subEndTime, "Vault: Invalid subTime"); 
         subStartTime = data.subStartTime;
         subEndTime = data.subEndTime;
-        require(data.duration > 0, "Vault: Invalid duration");//yes tc-58:lockPeriod is equal to 0
+        require(data.duration > 0, "Vault: Invalid duration");
         duration = data.duration;
         require(
             data.fundThreshold > 0 && data.fundThreshold <= BPS_DENOMINATOR,
-            "Vault: Invalid fundThreshold" //yes tc-56:fundThreshold is greater than 100%、tc-55:fundThreshold is equal to 0
+            "Vault: Invalid fundThreshold" 
         );
         fundThreshold = data.fundThreshold;
-        require(data.financePrice > 0, "Vault: Invalid financePrice"); //yes tc-57:financePrice is equal to 0
+        require(data.financePrice > 0, "Vault: Invalid financePrice"); 
         financePrice = data.financePrice;
         require(data.minDepositAmount > 0 && data.minDepositAmount<= (data.financePrice*data.maxSupply/FINANCE_PRICE_DENOMINATOR), "Vault: Invalid minDepositAmount");
         minDepositAmount = data.minDepositAmount;
         require(
-            data.manageFee > 0 && data.manageFee <= BPS_DENOMINATOR, //yes tc-61:manageFee is greater than 100%、tc-60:manageFee is equal to 0、tc-65:manageFee is equal to 100%
+            data.manageFee > 0 && data.manageFee <= BPS_DENOMINATOR, 
             "Vault: Invalid managerFee"
         );
         manageFee = data.manageFee;
-        require(data.manager != address(0), "Vault: Invalid manager"); //yes tc-29:manager is zero address, deploy failed
+        require(data.manager != address(0), "Vault: Invalid manager"); 
         manager = data.manager;
         require(
             data.feeReceiver != address(0),
-            "Vault: Invalid feeReceiver address" //yes tc-30:feeReceiver is zero address, deploy failed
+            "Vault: Invalid feeReceiver address" 
         );
         feeReceiver = data.feeReceiver;
         require(
             data.dividendTreasury != address(0),
-            "Vault: Invalid dividendTreasury address" //tc-31:dividendEscrow is zero address, deploy failed
+            "Vault: Invalid dividendTreasury address" 
         );
         dividendTreasury = data.dividendTreasury;
         require(
-            (data.whitelists.length > 0) && (data.whitelists.length <= 100), //yes tc-65（101）、tc-63（0）、tc-64（100）
+            (data.whitelists.length > 0) && (data.whitelists.length <= 100),
             "Vault: Invalid whitelists length"
         );
         onChainWL = data.whitelists;
@@ -159,13 +159,12 @@ contract VaultV2 is
      * @param   assets The amount of assets to deposit.
      * @return  uint256 The amount of shares minted in exchange for the deposit.
      */
-     //tc-50:The financing reached the maximum supply, causing the financing to end early, and then the subscription continued.
     function deposit(
         uint256 assets
     ) public virtual onlyOnChainWL(msg.sender) returns (uint256) {
         require(assets >= minDepositAmount, "Vault: deposit less than min");
         require(
-            block.timestamp >= subStartTime && block.timestamp <= subEndTime,//tc-49:Subscribe after the subscription period ends、tc-46:Subscribe before the subscription starts
+            block.timestamp >= subStartTime && block.timestamp <= subEndTime,
             "Vault: Invalid time"
         );
         uint256 manageFeeAmount = (assets * manageFee) / BPS_DENOMINATOR;
@@ -180,7 +179,7 @@ contract VaultV2 is
         uint256 shares = _getMintAmountForPrice(assets);
         require(
             totalSupply() + shares <= maxSupply,
-            "Vault: maxSupply exceeded" //tc-48:Subscribe amount more than the max supply
+            "Vault: maxSupply exceeded" 
         );
         _mint(msg.sender, shares);
         emit DepositEvent(msg.sender,assets,manageFeeAmount,shares);
@@ -195,14 +194,14 @@ contract VaultV2 is
      *      to the user including the manager's fee.
      * @return The total amount of assets transferred to the user.
      */
-     //tc-69:认购期结束未达到阈值赎回成功
+     
     function redeem()
         public
         virtual
         onlyOnChainWL(msg.sender)
         returns (uint256)
     {
-        require(block.timestamp >= subEndTime, "Vault: Invalid time");//tc-69:认购未达到阈值，未到认购截止时间时间执行赎回；tc-66:提前融资完成，在认购截止时间前白名单账户执行赎回，赎回失败
+        require(block.timestamp >= subEndTime, "Vault: Invalid time");
         require(
             (maxSupply * fundThreshold) / BPS_DENOMINATOR > totalSupply(),
             "Vault: not allowed withdraw"
@@ -220,7 +219,7 @@ contract VaultV2 is
             assetAmount + feeAmount
         ); 
         emit FundFailRedeem(msg.sender,shares, assetAmount, feeAmount);
-        return assetAmount + feeAmount; //tc-69:赎回金额验证
+        return assetAmount + feeAmount; 
     }
 
 
@@ -271,18 +270,16 @@ contract VaultV2 is
      *      The entire balance of management fees is transferred to the designated
      *      fee receiver.
      */
-     //tc-78:提前完成融资，但是提取管理费时间到设定的认购结束时间，提取成功
-     //tc-72:融资结束时达到阈值，提取管理费，提取成功
-    function withdrawManageFee() public onlyRole(MANAGER_ROLE) {//tc-78:非管理员提取管理费，提取失败
-        require(endTime != 0, "Vault: Invalid endTime");//tc-69:认购未达到阈值，未到认购截止时间时间执行提取管理费，提取失败；tc-69:认购期结束未达到阈值认购期结束后（在计息期间）提取管理费
-        require(block.timestamp >= subEndTime, "Vault: Invalid time");//tc-66:提前完成融资，但是提取管理费时间未到设定的认购结束时间，提取失败
+    function withdrawManageFee() public onlyRole(MANAGER_ROLE) {
+        require(endTime != 0, "Vault: Invalid endTime");
+        require(block.timestamp >= subEndTime, "Vault: Invalid time");
         require(
             (maxSupply * fundThreshold) / BPS_DENOMINATOR <= totalSupply(),
             "Vault: not allowed withdraw"
         );
         uint256 feeAmount = manageFeeBalance;
         manageFeeBalance = 0;
-        SafeERC20.safeTransfer(IERC20(assetToken), feeReceiver, feeAmount); //tc-78:管理费提取金额验证
+        SafeERC20.safeTransfer(IERC20(assetToken), feeReceiver, feeAmount); 
     }
 
     /**
@@ -292,8 +289,8 @@ contract VaultV2 is
      *      threshold before proceeding. The function approves the asset transfer and
      *      deposits the assets into the RBF contract.
      */
-    function execStrategy() public onlyRole(MANAGER_ROLE) { //tc-66:不是MANAGER_ROLE角色的账户，执行策略;是MANAGER_ROLE角色的账户但不是vault，执行策略;
-        //require(assetBalance>0,"Vault: assetBalance is zero"); //tc-68:assetBalance为0，执行策略失败
+    function execStrategy() public onlyRole(MANAGER_ROLE) { 
+        //require(assetBalance>0,"Vault: assetBalance is zero"); 
         require(
             maxSupply == totalSupply() ||
                 (block.timestamp >= subEndTime &&
@@ -308,7 +305,7 @@ contract VaultV2 is
         assetBalance=0;
         bool authRes = IERC20(assetToken).approve(rbf, depositAmount);
         require(authRes, "Vault: assetToken approve error");
-        RBF(rbf).requestDeposit(depositAmount); //tc-66:不是Vault执行requestDeposit、setVault后是Vault执行requestDeposit
+        RBF(rbf).requestDeposit(depositAmount); 
         emit ExecStrategyEvent(depositAmount);
     }
 
@@ -323,13 +320,13 @@ contract VaultV2 is
     ) public onlyRole(MANAGER_ROLE) {
         require(
             block.timestamp <= subEndTime,
-            "Vault: Invalid time" //tc-77:认购结束后，添加白名单失败
+            "Vault: Invalid time" 
         );
         require(
             !onChainWLMap[whitelistAddr],
             "Vault: Address is already onChainWL"
         );
-        require(!offChainWLMap[whitelistAddr], "Vault: Address is already offChainWL"); //tc-92
+        require(!offChainWLMap[whitelistAddr], "Vault: Address is already offChainWL"); 
         require(onChainWL.length < 100, "Vault: Whitelist is full");
         onChainWLMap[whitelistAddr] = true;
         onChainWL.push(whitelistAddr);
@@ -345,7 +342,7 @@ contract VaultV2 is
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
-            block.timestamp <= subEndTime,  //tc-77:认购结束后删除白名单账户，删除失败
+            block.timestamp <= subEndTime,  
             "Vault: Invalid time"
         );
         require(
@@ -420,10 +417,9 @@ contract VaultV2 is
      * @dev The function calculates the dividend amount for each whitelisted user and transfers
      *      the corresponding amount. Only users with a nonzero balance receive dividends.
      */
-     //派息是否有时间限制
     function dividend() public onlyRole(MANAGER_ROLE) {
         uint256 totalDividend = IERC20(assetToken).balanceOf(dividendTreasury);
-        require(totalDividend > 0, "Vault: No dividend to pay"); //tc-70:No dividend to pay
+        require(totalDividend > 0, "Vault: No dividend to pay"); 
         uint256 totalSupply = totalSupply();
         require(totalSupply > 0, "Vault: No rbu to pay");
         for (uint8 i = 0; i < onChainWL.length; i++) {
@@ -458,7 +454,6 @@ contract VaultV2 is
      *      and adjusting it according to the price feed's decimal format.
      * @return The price of one share in the vault.
      */
-     //tc-90
     function price() public view returns (uint256) {
         uint256 totalSupply = totalSupply();
         uint256 nav = RBF(rbf).getAssetsNav();
@@ -502,8 +497,6 @@ contract VaultV2 is
      * @param amount The amount of tokens to transfer.
      * @return A boolean value indicating whether the transfer was successful.
      */
-     //tc-72:白名单中的账户相互转账,可以成功
-     //tc-72:白名单的账户向不是白名单的账户转账,执行失败
     function transfer(
         address to,
         uint256 amount
@@ -522,10 +515,6 @@ contract VaultV2 is
      * @param amount The amount of tokens to transfer.
      * @return A boolean value indicating whether the transfer was successful.
      */
-     //tc-72:白名单中的账户向非白名单的账户转账，执行失败
-     //tc-72:非白名单中的账户向白名单的账户转账，执行失败
-     //tc-72:白名单的账户向白名单中的账户转账（授权前）执行失败
-     //tc-72:白名单的账户向白名单中的账户转账（授权后）执行成功
     function transferFrom(
         address from,
         address to,

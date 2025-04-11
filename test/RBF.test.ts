@@ -1,6 +1,6 @@
 import hre from "hardhat";
 import { expect } from "chai";
-import { deployFactories } from '../utils/deployFactories';
+import { deployFactories } from '../utils/deployFactoriesAndRouter';
 import { factoryAuth } from '../utils/factoryAuth';
 import path from "path";
 import { execSync } from "child_process";
@@ -49,7 +49,7 @@ describe("RBF:", function () {
   });
 
   //使用不在签名白名单中的账户签名，部署RBF失败报错
-  it("tc-11:deploy rbf with error sign :", async function () {
+  it("tc-12:deploy rbf with error sign :", async function () {
     const {deployer,guardian,manager,depositTreasury,rbfSigner2} = await getNamedAccounts();
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
@@ -78,7 +78,7 @@ describe("RBF:", function () {
   });
 
   //部署RBF时，消息发送者与deploydata中的deployer不一致，部署失败报错
-  it.skip("tc-12:rbf error deployer deploy:", async function () {
+  it("tc-16:rbf error deployer deploy:", async function () {
     const {investor1,guardian,manager,rbfSigner,depositTreasury,rbfSigner2} = await getNamedAccounts();
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
@@ -107,8 +107,8 @@ describe("RBF:", function () {
     ).to.be.revertedWith("RBFRouter:Invalid deployer");
   });
 
-  //使用错误的rbfId（唯一性），部署RBF失败报错
-  it("tc-13:rbf error rbfId deploy:", async function () {
+  
+  it("tc-13:rbf deploy check rbfId:", async function () {
     const {deployer,guardian,manager,rbfSigner,depositTreasury,rbfSigner2} = await getNamedAccounts();
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
@@ -131,11 +131,41 @@ describe("RBF:", function () {
     const signer2 = await ethers.getSigner(rbfSigner2);
     const signature2 = await signer2.signMessage(ethers.getBytes(deployDataHash));
     const signatures = [signature,signature2];
-    await rbfRouter.deployRBF(deployData, signatures)
+
+    //rbfId等于Nounce，部署成功
+    await expect(rbfRouter.deployRBF(deployData, signatures)).to.not.be.reverted;
+
+    //rbfId等于Nounce-1，部署失败
     await expect(
       rbfRouter.deployRBF(deployData, signatures)
     ).to.be.revertedWith("RBFRouter:Invalid rbfId");
+
+
+    //rbfId等于Nounce+1，部署失败
+    const deployData_1 = abiCoder.encode(
+      ["(uint64,string,string,address,address,address,address,address)"],
+      [
+        [rbfId + 2n,
+        "RBF", "RBF",
+        usdt.address,
+        depositTreasury,
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+
+    const deployDataHash_1 = ethers.keccak256(deployData_1);
+    const signature_1 = await signer.signMessage(ethers.getBytes(deployDataHash_1));
+    const signature2_1 = await signer2.signMessage(ethers.getBytes(deployDataHash_1));
+    const signatures_1 = [signature_1,signature2_1];
+    await expect(
+      rbfRouter.deployRBF(deployData_1, signatures_1)
+    ).to.be.revertedWith("RBFRouter:Invalid rbfId");
+
   });
+
+
   //assetToken为零地址，部署报错
   it("tc-14:assetToken address is zero address", async function () {
     const {deployer,guardian,manager,rbfSigner,depositTreasury,rbfSigner2} = await getNamedAccounts();
@@ -279,32 +309,89 @@ describe("RBF:", function () {
     ).to.be.revertedWith("RBF: manager address can not be zero address");
   });
 
-  //签名数量小于threshold，部署失败
-  it("tc-19:sign number less than threshold", async function () {
-    const {deployer,guardian,manager,rbfSigner,depositTreasury} = await getNamedAccounts();
+
+  //设置白名单和阈值
+  it("tc-19:setWhiteListsAndThreshold", async function () {
+    console.log("tc-19:setWhiteListsAndThreshold")
+    const {deployer,guardian,manager,rbfSigner,depositTreasury,rbfSigner2} = await getNamedAccounts();
+
+    //设置签名白名单为null，失败
+    await expect(rbfRouter.setWhiteListsAndThreshold([],1)).to.be.revertedWith("whiteLists must not be empty");
+
+    //设置阈值为0，失败
+    await expect(rbfRouter.setWhiteListsAndThreshold([rbfSigner2],0)).to.be.revertedWith("threshold must not be zero");
+
+
+    await expect(rbfRouter.setWhiteListsAndThreshold([rbfSigner],1)).not.to.be.reverted;
+    console.log("threshold-1",await rbfRouter.threshold())
+    expect(await rbfRouter.threshold()).to.equal(1);
+    console.log("rbfSigner",await rbfRouter.whiteListed(rbfSigner))
+    expect(await rbfRouter.whiteListed(rbfSigner)).to.equal(true);
+    console.log("rbfSigner2",await rbfRouter.whiteListed(rbfSigner2))
+    expect(await rbfRouter.whiteListed(rbfSigner2)).to.equal(false);
+    
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
       ["(uint64,string,string,address,address,address,address,address)"],
       [
         [rbfId,
-        "RBF", "RBF",
+        "RBF-19", "RBF-19",
         usdt.address,
         depositTreasury,
         deployer,
-        ethers.ZeroAddress,
+        manager,
         guardian,]
       ]
     );
-    
     const deployDataHash = ethers.keccak256(deployData);
     const signer = await ethers.getSigner(rbfSigner);
     const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
     const signatures = [signature];
     await expect(
       rbfRouter.deployRBF(deployData, signatures)
+    ).not.to.be.reverted;
+
+    await expect(rbfRouter.setWhiteListsAndThreshold([rbfSigner,rbfSigner2],2)).not.to.be.reverted;
+    console.log("threshold-2",await rbfRouter.threshold())
+    expect(await rbfRouter.threshold()).to.equal(2);
+    //console.log(await rbfRouter.whiteLists())
+    console.log("rbfSigner",await rbfRouter.whiteListed(rbfSigner))
+    expect(await rbfRouter.whiteListed(rbfSigner)).to.equal(true);
+    console.log("rbfSigner2",await rbfRouter.whiteListed(rbfSigner2))
+    expect(await rbfRouter.whiteListed(rbfSigner2)).to.equal(true);
+    const rbfId_1 = await rbfRouter.rbfNonce();
+    // const abiCoder = new ethers.AbiCoder();
+    const deployData1 = abiCoder.encode(
+      ["(uint64,string,string,address,address,address,address,address)"],
+      [
+        [rbfId_1,
+        "RBF-19-2", "RBF-19-2",
+        usdt.address,
+        depositTreasury,
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+    const deployDataHash1 = ethers.keccak256(deployData1);
+    const signer1 = await ethers.getSigner(rbfSigner);
+    const signature1 = await signer1.signMessage(ethers.getBytes(deployDataHash1));
+    const signatures2_1 = [signature1];
+
+    //签名个数小于阈值，部署失败
+    await expect(
+      rbfRouter.deployRBF(deployData1, signatures2_1)
     ).to.be.revertedWith("RBFRouter:Invalid Threshold");
-  }); 
+
+    //签名个数等于阈值，部署成功
+    const signer2 = await ethers.getSigner(rbfSigner2);
+    const signature2 = await signer2.signMessage(ethers.getBytes(deployDataHash1));
+    const signatures2 = [signature1,signature2];
+    await expect(
+      rbfRouter.deployRBF(deployData1, signatures2)
+    ).not.to.be.reverted;
+  });
 
   //参数提供不完整，部署失败
   it.skip("tc-20:parameter is not complete", async function () {
@@ -340,115 +427,9 @@ describe("RBF:", function () {
     }
   });
 
-  //设置白名单和阈值
-  it("tc-74:setWhiteListsAndThreshold", async function () {
-    console.log("tc-74:setWhiteListsAndThreshold")
-    const {deployer,guardian,manager,rbfSigner,depositTreasury,rbfSigner2} = await getNamedAccounts();
-    await expect(rbfRouter.setWhiteListsAndThreshold([rbfSigner],1)).not.to.be.reverted;
-    console.log("threshold-1",await rbfRouter.threshold())
-    expect(await rbfRouter.threshold()).to.equal(1);
-    console.log("rbfSigner",await rbfRouter.whiteListed(rbfSigner))
-    expect(await rbfRouter.whiteListed(rbfSigner)).to.equal(true);
-    console.log("rbfSigner2",await rbfRouter.whiteListed(rbfSigner2))
-    expect(await rbfRouter.whiteListed(rbfSigner2)).to.equal(false);
-    
-    const rbfId = await rbfRouter.rbfNonce();
-    const abiCoder = new ethers.AbiCoder();
-    const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
-      [
-        [rbfId,
-        "RBF-74-1", "RBF-74-1",
-        usdt.address,
-        depositTreasury,
-        deployer,
-        manager,
-        guardian,]
-      ]
-    );
-    const deployDataHash = ethers.keccak256(deployData);
-    const signer = await ethers.getSigner(rbfSigner);
-    const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
-    const signatures = [signature];
-    await expect(
-      rbfRouter.deployRBF(deployData, signatures)
-    ).not.to.be.reverted;
-
-    await expect(rbfRouter.setWhiteListsAndThreshold([rbfSigner,rbfSigner2],2)).not.to.be.reverted;
-    console.log("threshold-2",await rbfRouter.threshold())
-    expect(await rbfRouter.threshold()).to.equal(2);
-    //console.log(await rbfRouter.whiteLists())
-    console.log("rbfSigner",await rbfRouter.whiteListed(rbfSigner))
-    expect(await rbfRouter.whiteListed(rbfSigner)).to.equal(true);
-    console.log("rbfSigner2",await rbfRouter.whiteListed(rbfSigner2))
-    expect(await rbfRouter.whiteListed(rbfSigner2)).to.equal(true);
-    const rbfId_1 = await rbfRouter.rbfNonce();
-    // const abiCoder = new ethers.AbiCoder();
-    const deployData1 = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
-      [
-        [rbfId_1,
-        "RBF-74-2", "RBF-74-2",
-        usdt.address,
-        depositTreasury,
-        deployer,
-        manager,
-        guardian,]
-      ]
-    );
-    const deployDataHash1 = ethers.keccak256(deployData1);
-    const signer1 = await ethers.getSigner(rbfSigner);
-    const signature1 = await signer1.signMessage(ethers.getBytes(deployDataHash1));
-    const signer2 = await ethers.getSigner(rbfSigner2);
-    const signature2 = await signer2.signMessage(ethers.getBytes(deployDataHash1));
-    const signatures2 = [signature1,signature2];
-    await expect(
-      rbfRouter.deployRBF(deployData1, signatures2)
-    ).not.to.be.reverted;
-  });
-
-  //设置白名单和阈值
-  it("tc-75:setWhiteListsAndThreshold - whitlist is null", async function () {
-    console.log("tc-75")
-    const {rbfSigner,rbfSigner2} = await getNamedAccounts();
-    console.log("B-threshold",await rbfRouter.threshold())
-    expect(await rbfRouter.threshold()).to.equal(2);
-    console.log("B-rbfSigner",await rbfRouter.whiteListed(rbfSigner))
-    expect(await rbfRouter.whiteListed(rbfSigner)).to.equal(true);
-    console.log("B-rbfSigner2",await rbfRouter.whiteListed(rbfSigner2))
-    expect(await rbfRouter.whiteListed(rbfSigner2)).to.equal(true);
-    await expect(rbfRouter.setWhiteListsAndThreshold([],1)).to.be.revertedWith("whiteLists must not be empty");
-
-    console.log("A-threshold",await rbfRouter.threshold())
-    expect(await rbfRouter.threshold()).to.equal(2);
-    console.log("A-rbfSigner",await rbfRouter.whiteListed(rbfSigner))
-    expect(await rbfRouter.whiteListed(rbfSigner)).to.equal(true);
-    console.log("A-rbfSigner2",await rbfRouter.whiteListed(rbfSigner2))
-    expect(await rbfRouter.whiteListed(rbfSigner2)).to.equal(true);
-  });
-
-  //设置白名单和阈值
-  it("tc-76:setWhiteListsAndThreshold - threshhold is 0", async function () {
-    console.log("tc-76")
-    const {rbfSigner,rbfSigner2} = await getNamedAccounts();
-    console.log("B-threshold",await rbfRouter.threshold())
-    expect(await rbfRouter.threshold()).to.equal(2);
-    console.log("B-rbfSigner",await rbfRouter.whiteListed(rbfSigner))
-    expect(await rbfRouter.whiteListed(rbfSigner)).to.equal(true);
-    console.log("B-rbfSigner2",await rbfRouter.whiteListed(rbfSigner2))
-    expect(await rbfRouter.whiteListed(rbfSigner2)).to.equal(true);
-
-    await expect(rbfRouter.setWhiteListsAndThreshold([rbfSigner2],0)).to.be.revertedWith("threshold must not be zero");
-    console.log("A-threshold-2",await rbfRouter.threshold())
-    expect(await rbfRouter.threshold()).to.equal(2);
-    console.log("A-rbfSigner",await rbfRouter.whiteListed(rbfSigner))
-    expect(await rbfRouter.whiteListed(rbfSigner)).to.equal(true);
-    console.log("A-rbfSigner2",await rbfRouter.whiteListed(rbfSigner2))
-    expect(await rbfRouter.whiteListed(rbfSigner2)).to.equal(true);
-  });
-
-  it("tc-83:RBFRouter ", async function () {
+  it("tc-21:RBFRouter deploy", async function () {
     const {deployer,rbfSigner,rbfSigner2} = await getNamedAccounts();
+    
     //白名单为空
     const whiteLists: string[] = [];
     let err:any;

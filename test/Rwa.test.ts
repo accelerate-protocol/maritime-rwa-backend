@@ -1,6 +1,6 @@
 import hre from "hardhat";
 import { expect } from "chai";
-import { bigint } from "hardhat/internal/core/params/argumentTypes";
+// import { bigint } from "hardhat/internal/core/params/argumentTypes";
 
 describe("RWA:", function () {
   const { deployments, getNamedAccounts, ethers } = hre;

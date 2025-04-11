@@ -38,6 +38,7 @@ const config: HardhatUserConfig = {
     drds:11,
     common: 12,
     rbfSigner2: 13,
+    investor6:14,
   },
 
   networks: {

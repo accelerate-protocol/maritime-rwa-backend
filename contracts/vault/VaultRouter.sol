@@ -67,16 +67,16 @@ contract VaultRouter is Ownable,IVaultRouter {
      * @param vaultDeployData Struct containing vault initialization parameters.
      * @notice Only the owner of the associated RBF contract can deploy a vault.
      */
-     //tc-21:当前未给VaultRouter授权，应该不能部署Vault
-     //tc-24:给VaultRouter授权EscrowFactory调用权限：使用有权限的人给VaultRouter授权，应该成功
-     //tc-27:当前给VaultRouter授权EscrowFactory、VaultFactory操作权限，其他参数满足要求，应该部署Vault成功
+     //tc-2:当前未给VaultRouter授权，应该不能部署Vault
+     //tc-2:给VaultRouter授权EscrowFactory调用权限：使用有权限的人给VaultRouter授权，应该成功
+     //tc-2:当前给VaultRouter授权EscrowFactory、VaultFactory操作权限，其他参数满足要求，应该部署Vault成功
     function deployVault(VaultDeployData memory vaultDeployData) public {
-        require(vaultDeployData.vaultId == vaultNonce, "Invalid vaultId");
+        require(vaultDeployData.vaultId == vaultNonce, "Invalid vaultId"); //tc-59:部署Vault：vaultId大于Nounce；//tc-59:部署Vault：vaultId小于Nounce
         uint64 vaultId=vaultDeployData.vaultId;
         vaultNonce++;
 
-        require(RBF(vaultDeployData.rbf).owner() == msg.sender,"only rbf owner can deploy vault"); //tc-82
-        require(!rbfVaultExist[vaultDeployData.rbf],"rbf vault already exist");//tc-82
+        require(RBF(vaultDeployData.rbf).owner() == msg.sender,"only rbf owner can deploy vault"); //tc-35：部署Vault：not rbf owner；//tc-35:部署Vault：not rbf owner
+        require(!rbfVaultExist[vaultDeployData.rbf],"rbf vault already exist");//tc-35:部署Vault：vault已存在
         rbfVaultExist[vaultDeployData.rbf]=true;
         address dividendTreasury = escrowFactory.newEscrow(address(this));
 
