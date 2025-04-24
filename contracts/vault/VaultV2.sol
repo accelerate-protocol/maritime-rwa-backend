@@ -120,7 +120,7 @@ contract VaultV2 is
         require(data.minDepositAmount > 0 && data.minDepositAmount<= (data.financePrice*data.maxSupply/FINANCE_PRICE_DENOMINATOR), "Vault: Invalid minDepositAmount");
         minDepositAmount = data.minDepositAmount;
         require(
-            data.manageFee > 0 && data.manageFee <= BPS_DENOMINATOR, 
+            data.manageFee <= BPS_DENOMINATOR, 
             "Vault: Invalid managerFee"
         );
         manageFee = data.manageFee;
