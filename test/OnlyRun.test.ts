@@ -1945,13 +1945,16 @@ describe("RWA:", function () {
 
     await expect(vaultInvest.deposit(investAmount)).not.to.be.reverted; 
 
-    //线上认购大于maxsupply-已认购金额，认购失败
-    await expect(USDT.mint(whitelists[1], totalInvestAmount)).not.to.be.reverted;
-    await expect(USDT.approve(vault, totalInvestAmount)).not.to.be.reverted;
-    await expect(vaultInvest.deposit(investAmount)).to.be.revertedWith("Vault: maxSupply exceeded");
-
-
     const off_investAmount = BigInt(Math.floor(distribution[1] * 1e6));
+
+    //线上认购大于maxsupply-已认购金额，认购失败
+
+    const investAmount_2 = off_investAmount + BigInt(100)
+    const feeAmount_2 = (investAmount_2 * BigInt(manageFee)) / BigInt(10000);
+    const totalInvestAmount_2 = investAmount_2 + feeAmount_2;
+    await expect(USDT.mint(whitelists[1], totalInvestAmount_2)).not.to.be.reverted;
+    await expect(USDT.approve(vault, totalInvestAmount_2)).not.to.be.reverted;
+    await expect(vaultInvest.deposit(investAmount_2)).to.be.revertedWith("Vault: maxSupply exceeded");
     
     //线下认购大于maxsupply-已认购金额，认购失败
     await expect(vaultManager.offChainDepositMint(whitelists[0],off_investAmount + BigInt(100))).to.be.revertedWith("Vault: maxSupply exceeded");
