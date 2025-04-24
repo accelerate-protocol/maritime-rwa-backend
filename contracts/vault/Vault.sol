@@ -195,7 +195,7 @@ contract Vault is
         uint256 manageFeeAmount = (assets * manageFee) / BPS_DENOMINATOR;
         manageFeeBalance = manageFeeBalance + manageFeeAmount;
         assetBalance = assetBalance + assets;
-        SafeERC20.safeTransferFrom(
+        SafeERC20.safeTransferFrom( 
             IERC20(assetToken),
             msg.sender,
             address(this),
