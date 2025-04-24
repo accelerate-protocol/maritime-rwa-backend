@@ -1479,31 +1479,6 @@ describe("Vault:", function () {
       "Vault: Invalid minDepositAmount"
     );
 
-    //管理费等于0
-    const vaultDeployData_5 = {
-      vaultId: vaultId,
-      name: "RbfVaultForTc60",
-      symbol: "RbfVaultForTc60",
-      assetToken: usdt.address,
-      rbf: rbfData.rbf,
-      subStartTime: subStartTime,
-      subEndTime: subEndTime,
-      duration: "2592000",
-      fundThreshold: "3000",
-      minDepositAmount: "1000000",
-      manageFee: "0",
-      manager: manager,
-      feeReceiver: feeReceiver,
-      dividendEscrow: manager, // 添加这一行
-      whitelists: whitelists,
-      guardian: guardian,
-      maxSupply: "10000000000",
-      financePrice: "100000000",
-    };
-    await expect(vaultRouter.deployVault(vaultDeployData_5)).to.be.revertedWith(
-      "Vault: Invalid managerFee"
-    );
-
     //管理费大于100%
     const vaultDeployData_6 = {
       vaultId: vaultId,
@@ -2134,6 +2109,77 @@ describe("Vault:", function () {
       "Invalid vaultId"
     );
 
+  });
+
+   //管理费等于0
+   it("tc-60:manageFee is equal to 0", async function () {
+    const {deployer,guardian,manager,rbfSigner,depositTreasury,feeReceiver,investor1,investor2,investor3,investor4,investor5,rbfSigner2} = await getNamedAccounts();
+    const RBFRouter = await deployments.get("RBFRouter");
+    // 获取 RBFRouter 合约实例
+    const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
+    const rbfId = await rbfRouter.rbfNonce();
+    const abiCoder = new ethers.AbiCoder();
+    const deployData = abiCoder.encode(
+      ["(uint64,string,string,address,address,address,address,address)"],
+      [
+        [rbfId,
+        "RBF-60", "RBF-60",
+        usdt.address,
+        depositTreasury,
+        deployer,
+        manager,
+        guardian,]
+      ]
+    );
+   
+    const deployDataHash = ethers.keccak256(deployData);
+    const signer = await ethers.getSigner(rbfSigner);
+    const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
+    const signer2 = await ethers.getSigner(rbfSigner2);
+    const signature2 = await signer2.signMessage(ethers.getBytes(deployDataHash));
+    const signatures = [signature,signature2];
+    
+    var res = await rbfRouter.deployRBF(deployData, signatures);
+    var receipt = await res.wait();
+    if (!receipt) throw new Error("Transaction failed");
+    expect(receipt.status).to.equal(1);
+
+    const whitelists = [investor1, investor2, investor3, investor4, investor5];
+    const rbfData = await rbfRouter.getRBFInfo(rbfId);
+    
+    const VaultRouter = await deployments.get("VaultRouter");
+    const vaultRouter = await hre.ethers.getContractAt(
+            "VaultRouter",
+            VaultRouter.address
+          );
+    const vaultId = await vaultRouter.vaultNonce();
+    const subStartTime = Math.floor(Date.now() / 1000) 
+    const subEndTime = subStartTime + 3600;
+    const vaultDeployData = {
+        vaultId: vaultId,
+        name: "RbfVaultForTc60",
+        symbol: "RbfVaultForTc60",
+        assetToken: usdt.address,
+        rbf: rbfData.rbf,
+        subStartTime: subStartTime,
+        subEndTime: subEndTime,
+        duration: "2592000",
+        fundThreshold: "3000",
+        minDepositAmount: "1000000",
+        manageFee: "0",
+        manager: manager,
+        feeReceiver: feeReceiver,
+        dividendEscrow: manager, // 添加这一行
+        whitelists: whitelists,
+        guardian: guardian,
+        maxSupply: "10000000000",
+        financePrice: "100000000",
+    };
+    var res = await vaultRouter.deployVault(vaultDeployData);
+    var receipt = await res.wait();
+    if (!receipt) throw new Error("Transaction failed");
+    expect(receipt.status).to.equal(1);
+  
   });
 
   it.skip("tc-85", async function () {

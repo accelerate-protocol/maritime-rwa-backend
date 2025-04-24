@@ -140,7 +140,7 @@ contract Vault is
         require(data.minDepositAmount > 0 && data.minDepositAmount<= (data.financePrice*data.maxSupply/FINANCE_PRICE_DENOMINATOR), "Vault: Invalid minDepositAmount"); //tc-34:最小投资金额等于0;//tc-34:最小投资金额大于最大供应量
         minDepositAmount = data.minDepositAmount;
         require(
-            data.manageFee > 0 && data.manageFee <= BPS_DENOMINATOR, //tc-34://管理费大于100%;//tc-34:管理费等于0;//tc-37:管理费等于100%
+            data.manageFee <= BPS_DENOMINATOR, //tc-34://管理费大于100%;//tc-34:管理费等于0;//tc-37:管理费等于100%
             "Vault: Invalid managerFee"
         );
         manageFee = data.manageFee;
