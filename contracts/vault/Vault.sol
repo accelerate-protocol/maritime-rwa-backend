@@ -104,7 +104,7 @@ contract Vault is
     mapping(address => uint256) private subBalance;
 
     modifier onlyOnChainWL(address _address) {
-        if (!isOpen){
+        if (!isOpen) {
             require(onChainWLMap[_address], "Vault: you are not in onChainWL");
         }
         _;
@@ -216,6 +216,9 @@ contract Vault is
         _mint(msg.sender, shares);
         if (isOpen) {
             subBalance[msg.sender] = subBalance[msg.sender] + shares;
+            if (!onChainWLMap[msg.sender]) {
+                _addToOnChainWL(msg.sender);
+            }
         }
         emit DepositEvent(msg.sender, assets, manageFeeAmount, shares);
         return shares;
@@ -362,7 +365,11 @@ contract Vault is
     function addToOnChainWL(
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
-        if (!isOpen){
+        _addToOnChainWL(whitelistAddr);
+    }
+
+    function _addToOnChainWL(address whitelistAddr) internal {
+        if (!isOpen) {
             require(block.timestamp <= subEndTime, "Vault: Invalid time");
         }
         require(
@@ -387,7 +394,7 @@ contract Vault is
     function removeFromOnChainWL(
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
-        if (!isOpen){
+        if (!isOpen) {
             require(block.timestamp <= subEndTime, "Vault: Invalid time");
         }
         require(
@@ -474,7 +481,7 @@ contract Vault is
                     }
                 }
             }
-             for (uint8 i = 0; i < offChainWL.length; i++) {
+            for (uint8 i = 0; i < offChainWL.length; i++) {
                 if (offChainWLMap[offChainWL[i]]) {
                     if (subBalance[offChainWL[i]] != 0) {
                         _dividend(
@@ -617,11 +624,13 @@ contract Vault is
             (maxSupply * fundThreshold) / BPS_DENOMINATOR <= totalSupply(),
             "Vault: not allowed transfer"
         );
-        require(
-            (onChainWLMap[from] || offChainWLMap[from]) &&
-                (onChainWLMap[to] || offChainWLMap[to]),
-            "Vault: transfer from and to must in onChainWL or offChainWL"
-        );
+        if (!isOpen) {
+            require(
+                (onChainWLMap[from] || offChainWLMap[from]) &&
+                    (onChainWLMap[to] || offChainWLMap[to]),
+                "Vault: transfer from and to must in onChainWL or offChainWL"
+            );
+        }
     }
 
     function _getMintAmountForPrice(
