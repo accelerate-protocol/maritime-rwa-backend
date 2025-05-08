@@ -93,7 +93,8 @@ contract VaultRouter is Ownable,IVaultRouter {
             manager: vaultDeployData.manager,
             feeReceiver:vaultDeployData.feeReceiver,
             dividendTreasury: dividendTreasury,
-            whitelists:vaultDeployData.whitelists
+            whitelists:vaultDeployData.whitelists,
+            isOpen:vaultDeployData.isOpen
         });
 
         (address vault,address vaultProxyAdmin,address vaultImpl) = vaultFactory.newVault(data,vaultDeployData.guardian);

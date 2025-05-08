@@ -25,6 +25,7 @@ struct VaultDeployData {
     uint256 manageFee;
     address manager;
     address feeReceiver;
+    bool isOpen;
     address[] whitelists;
     address guardian;
 }
