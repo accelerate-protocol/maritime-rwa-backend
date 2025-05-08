@@ -618,8 +618,6 @@ contract Vault is
     }
 
     function _checkTransferAuth(address from, address to) internal view {
-        require(endTime != 0, "Vault: Invalid endTime");
-        require(block.timestamp >= subEndTime, "Vault: Invalid time");
         require(
             (maxSupply * fundThreshold) / BPS_DENOMINATOR <= totalSupply(),
             "Vault: not allowed transfer"
