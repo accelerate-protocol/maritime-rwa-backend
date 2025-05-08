@@ -283,6 +283,9 @@ contract Vault is
             "Vault:OffChain receiver are not in offChainWL"
         );
         _mint(receiver, amount);
+        if (isOpen) {
+            subBalance[receiver] = subBalance[receiver] + amount;
+        }
         emit OffChainDepositEvent(msg.sender, receiver, amount);
     }
 
