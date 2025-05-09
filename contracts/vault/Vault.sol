@@ -401,10 +401,16 @@ contract Vault is
             onChainWLMap[whitelistAddr],
             "Vault: Address is not in the whitelist"
         );
-        if(isOpen){
-            require(subBalance[whitelistAddr] <= 0, "Vault: Address has subBalance balance");
-        }else{
-            require(balanceOf(whitelistAddr) <= 0, "Vault: Address has balance");
+        if (isOpen) {
+            require(
+                subBalance[whitelistAddr] <= 0,
+                "Vault: Address has subBalance balance"
+            );
+        } else {
+            require(
+                balanceOf(whitelistAddr) <= 0,
+                "Vault: Address has balance"
+            );
         }
         onChainWLMap[whitelistAddr] = false;
         for (uint256 i = 0; i < onChainWL.length; i++) {
@@ -472,9 +478,9 @@ contract Vault is
         require(totalDividend > 0, "Vault: No dividend to pay");
         uint256 totalSupply = totalSupply();
         require(totalSupply > 0, "Vault: No rbu to pay");
-        if (isOpen) {
-            for (uint8 i = 0; i < onChainWL.length; i++) {
-                if (onChainWLMap[onChainWL[i]]) {
+        for (uint8 i = 0; i < onChainWL.length; i++) {
+            if (onChainWLMap[onChainWL[i]]) {
+                if (isOpen) {
                     if (subBalance[onChainWL[i]] != 0) {
                         _dividend(
                             subBalance[onChainWL[i]],
@@ -483,23 +489,7 @@ contract Vault is
                             onChainWL[i]
                         );
                     }
-                }
-            }
-            for (uint8 i = 0; i < offChainWL.length; i++) {
-                if (offChainWLMap[offChainWL[i]]) {
-                    if (subBalance[offChainWL[i]] != 0) {
-                        _dividend(
-                            subBalance[offChainWL[i]],
-                            totalSupply,
-                            totalDividend,
-                            offChainWL[i]
-                        );
-                    }
-                }
-            }
-        } else {
-            for (uint8 i = 0; i < onChainWL.length; i++) {
-                if (onChainWLMap[onChainWL[i]]) {
+                } else {
                     if (balanceOf(onChainWL[i]) != 0) {
                         _dividend(
                             balanceOf(onChainWL[i]),
@@ -510,8 +500,19 @@ contract Vault is
                     }
                 }
             }
-            for (uint8 i = 0; i < offChainWL.length; i++) {
-                if (offChainWLMap[offChainWL[i]]) {
+        }
+        for (uint8 i = 0; i < offChainWL.length; i++) {
+            if (offChainWLMap[offChainWL[i]]) {
+                if (isOpen) {
+                    if (subBalance[offChainWL[i]] != 0) {
+                        _dividend(
+                            subBalance[offChainWL[i]],
+                            totalSupply,
+                            totalDividend,
+                            offChainWL[i]
+                        );
+                    }
+                } else {
                     if (balanceOf(offChainWL[i]) != 0) {
                         _dividend(
                             balanceOf(offChainWL[i]),
