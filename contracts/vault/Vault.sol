@@ -401,7 +401,11 @@ contract Vault is
             onChainWLMap[whitelistAddr],
             "Vault: Address is not in the whitelist"
         );
-        require(balanceOf(whitelistAddr) <= 0, "Vault: Address has balance");
+        if(isOpen){
+            require(subBalance[whitelistAddr] <= 0, "Vault: Address has subBalance balance");
+        }else{
+            require(balanceOf(whitelistAddr) <= 0, "Vault: Address has balance");
+        }
         onChainWLMap[whitelistAddr] = false;
         for (uint256 i = 0; i < onChainWL.length; i++) {
             if (onChainWL[i] == whitelistAddr) {
