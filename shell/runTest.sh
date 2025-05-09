@@ -6,8 +6,10 @@ SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 # 获取项目根目录（假设脚本在 scripts/ 目录下）
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
+rm -rf "${PROJECT_ROOT}/logs"
 # 准备链环境
 cd "${PROJECT_ROOT}"
+
 logdir="${PROJECT_ROOT}/logs"
 mkdir -p "${logdir}"
 

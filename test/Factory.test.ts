@@ -83,25 +83,26 @@ describe("RBFFactory:", function () {
     const subStartTime = Math.floor(Date.now() / 1000);
     const subEndTime = subStartTime + 3600;
     const vaultDeployData = {
-        vaultId: vaultId,
-        name: "RbfVault-7",
-        symbol: "RbfVault-7",
-        assetToken: usdt.address,
-        rbf: rbfData.rbf,
-        subStartTime: subStartTime,
-        subEndTime: subEndTime,
-        duration: "2592000",
-        fundThreshold: "3000",
-        minDepositAmount: "10000000",
-        manageFee: "50",
-        manager: manager,
-        feeReceiver: feeReceiver,
-        dividendEscrow: manager, // 添加这一行
-        whitelists: whitelists,
-        guardian: guardian,
-        maxSupply: "10000000000", // Add this
-        financePrice: "100000000", // Add this
-        dividendTreasury: manager,
+      vaultId: vaultId,
+      name: "RbfVault-7",
+      symbol: "RbfVault-7",
+      assetToken: usdt.address,
+      rbf: rbfData.rbf,
+      subStartTime: subStartTime,
+      subEndTime: subEndTime,
+      duration: "2592000",
+      fundThreshold: "3000",
+      minDepositAmount: "10000000",
+      manageFee: "50",
+      manager: manager,
+      feeReceiver: feeReceiver,
+      dividendEscrow: manager, // 添加这一行
+      whitelists: whitelists,
+      isOpen: false,
+      guardian: guardian,
+      maxSupply: "10000000000", // Add this
+      financePrice: "100000000", // Add this
+      dividendTreasury: manager,
     };
     // await expect(vaultFactory.newVault(vaultDeployData,deployer)).not.to.be.reverted;
     await expect(vaultFactory.newVault(vaultDeployData,deployer)).to.be.revertedWith(
@@ -181,6 +182,7 @@ describe("RBFFactory:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "10000000000", // Add this
         financePrice: "100000000", // Add this

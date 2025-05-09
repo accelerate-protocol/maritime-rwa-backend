@@ -12,6 +12,7 @@ kill -9 $(lsof -t -i:8545)
 rm -rf "${PROJECT_ROOT}/cache"
 rm -rf "${PROJECT_ROOT}/deployments"
 
+
 # 准备链环境
 cd "${PROJECT_ROOT}"
 npx hardhat node --no-deploy > "${PROJECT_ROOT}/hardhat.log" 2>&1 &

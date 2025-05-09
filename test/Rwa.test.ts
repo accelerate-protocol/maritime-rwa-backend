@@ -127,6 +127,7 @@ describe("RWA:", function () {
       manager: manager,
       feeReceiver: feeReceiver,
       whitelists: [manager],
+      isOpen: false,
       guardian: guardian,
     };
     await expect(vaultRouter.deployVault(vaultDeployData)).not.to.be.reverted;
@@ -316,6 +317,7 @@ describe("RWA:", function () {
       feeReceiver: feeReceiver,
       dividendTreasury: manager,
       whitelists: whitelists,
+      isOpen: false,
     };
     await expect(
       vaultFactory.newVault(deployData, guardian)

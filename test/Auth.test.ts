@@ -266,6 +266,7 @@ describe("FactoryAuth:", function () {
         manager: manager,
         feeReceiver: feeReceiver,
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "10000000000", // Add this
         financePrice: "100000000" // Add this
@@ -507,6 +508,7 @@ describe("FactoryAuth:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, 
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "10000000000", // Add this
         financePrice: "100000000", // Add this

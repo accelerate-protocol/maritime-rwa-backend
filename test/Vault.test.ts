@@ -4,6 +4,7 @@ import { execSync } from "child_process";
 import path from "path";
 import { deployFactories } from '../utils/deployFactoriesAndRouter';
 import { factoryAuth } from '../utils/factoryAuth';
+import { introspection } from "../typechain-types/@openzeppelin/contracts/utils";
 
 describe("Vault:", function () {
   this.timeout(200000); // 增加到 100 秒
@@ -58,7 +59,7 @@ describe("Vault:", function () {
       ["(uint64,string,string,address,address,address,address,address)"],
       [
         [rbfId,
-        "RBF-28", "RBF-28",
+        "RBF-22", "RBF-22",
         usdt.address,
         depositTreasury,
         deployer,
@@ -108,6 +109,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -133,6 +135,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -158,6 +161,7 @@ describe("Vault:", function () {
       feeReceiver: ethers.ZeroAddress,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -202,6 +206,7 @@ describe("Vault:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "10000000000",
         financePrice: "100000000",
@@ -277,6 +282,7 @@ describe("Vault:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "10000000000",
         financePrice: "100000000",
@@ -333,8 +339,8 @@ describe("Vault:", function () {
     const subEndTime = subStartTime - 24 * 3600;
     const vaultDeployData = {
       vaultId: vaultId,
-      name: "RbfVaultForTc42",
-      symbol: "RbfVaultForTc42",
+      name: "RbfVaultForTc24",
+      symbol: "RbfVaultForTc24",
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
@@ -347,6 +353,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false, 
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -360,8 +367,8 @@ describe("Vault:", function () {
     const subEndTime_1 = subStartTime;
     const vaultDeployData_1 = {
       vaultId: vaultId,
-      name: "RbfVaultForTc42",
-      symbol: "RbfVaultForTc42",
+      name: "RbfVaultForTc24",
+      symbol: "RbfVaultForTc24",
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime_1,
@@ -374,6 +381,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -395,7 +403,7 @@ describe("Vault:", function () {
       ["(uint64,string,string,address,address,address,address,address)"],
       [
         [rbfId,
-        "RBF-43", "RBF-43",
+        "RBF-25", "RBF-25",
         usdt.address,
         depositTreasury,
         deployer,
@@ -429,8 +437,8 @@ describe("Vault:", function () {
     const subEndTime = subStartTime + 3600;
     const vaultDeployData = {
         vaultId: vaultId,
-        name: "RbfVaultForTc43",
-        symbol: "RbfVaultForTc43",
+        name: "RbfVaultForTc25",
+        symbol: "RbfVaultForTc25",
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
@@ -443,6 +451,7 @@ describe("Vault:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "10000000000",
         financePrice: "100000000",
@@ -541,6 +550,7 @@ describe("Vault:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "10000000000",
         financePrice: "100000000",
@@ -636,6 +646,7 @@ describe("Vault:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "10000000000",
         financePrice: "100000000",
@@ -732,6 +743,7 @@ describe("Vault:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "10000000000",
         financePrice: "100000000",
@@ -829,6 +841,7 @@ describe("Vault:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "10000000000",
         financePrice: "100000000",
@@ -927,6 +940,7 @@ describe("Vault:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "10000000000",
         financePrice: "100000000",
@@ -1024,6 +1038,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -1143,6 +1158,7 @@ describe("Vault:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "10000000000",
         financePrice: "100000000",
@@ -1221,6 +1237,7 @@ describe("Vault:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: BigInt(0)-BigInt(1),
         financePrice: "100000000",
@@ -1293,6 +1310,7 @@ describe("Vault:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "0",
         financePrice: "100000000",
@@ -1371,6 +1389,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -1396,6 +1415,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -1421,6 +1441,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "0",
@@ -1446,6 +1467,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -1471,6 +1493,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -1496,6 +1519,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -1521,6 +1545,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -1546,6 +1571,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: [],
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -1574,6 +1600,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists_101,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -1588,24 +1615,25 @@ describe("Vault:", function () {
     console.log("Generated Wallets:", wallets_100);
     const whitelists_100 = wallets_100.map(wallet => wallet.address);
     const vaultDeployData_10 = {
-        vaultId: vaultId,
-        name: "RbfVaultForTc64",
-        symbol: "RbfVaultForTc64",
-        assetToken: usdt.address,
-        rbf: rbfData.rbf,
-        subStartTime: subStartTime,
-        subEndTime: subEndTime,
-        duration: "2592000",
-        fundThreshold: "3000",
-        minDepositAmount: "100000",
-        manageFee: "3000",
-        manager: manager,
-        feeReceiver: feeReceiver,
-        dividendEscrow: manager, // 添加这一行
-        whitelists: whitelists_100,
-        guardian: guardian,
-        maxSupply: "10000000000",
-        financePrice: "100000000",
+      vaultId: vaultId,
+      name: "RbfVaultForTc64",
+      symbol: "RbfVaultForTc64",
+      assetToken: usdt.address,
+      rbf: rbfData.rbf,
+      subStartTime: subStartTime,
+      subEndTime: subEndTime,
+      duration: "2592000",
+      fundThreshold: "3000",
+      minDepositAmount: "100000",
+      manageFee: "3000",
+      manager: manager,
+      feeReceiver: feeReceiver,
+      dividendEscrow: manager, // 添加这一行
+      whitelists: whitelists_100,
+      isOpen: false,
+      guardian: guardian,
+      maxSupply: "10000000000",
+      financePrice: "100000000",
     };
     console.log("whitelists length:",whitelists_100.length);
     var res = await vaultRouter.deployVault(vaultDeployData_10);
@@ -1627,7 +1655,7 @@ describe("Vault:", function () {
       ["(uint64,string,string,address,address,address,address,address)"],
       [
         [rbfId,
-        "RBF-36", "RBF-36",
+        "RBF-37", "RBF-37",
         usdt.address,
         depositTreasury,
         deployer,
@@ -1675,6 +1703,7 @@ describe("Vault:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "10000000000",
         financePrice: "100000000",
@@ -1746,6 +1775,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -1779,6 +1809,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -1803,7 +1834,7 @@ describe("Vault:", function () {
       ["(uint64,string,string,address,address,address,address,address)"],
       [
         [rbfId,
-        "RBF-84", "RBF-84",
+        "RBF-36", "RBF-36",
         usdt.address,
         depositTreasury,
         deployer,
@@ -1836,24 +1867,25 @@ describe("Vault:", function () {
     const subStartTime = Math.floor(Date.now() / 1000) 
     const subEndTime = subStartTime + 3600;
     const vaultDeployData = {
-        vaultId: vaultId,
-        name: "RbfVaultForTc84",
-        symbol: "RbfVaultForTc84",
-        assetToken: usdt.address,
-        rbf: rbfData.rbf,
-        subStartTime: subStartTime,
-        subEndTime: subEndTime,
-        duration: "2592000",
-        fundThreshold: "3000",
-        minDepositAmount: "10000000",
-        manageFee: "50",
-        manager: manager,
-        feeReceiver: feeReceiver,
-        dividendEscrow: manager, // 添加这一行
-        whitelists: whitelists,
-        guardian: guardian,
-        maxSupply: "10000000000",
-        financePrice: "100000000",
+      vaultId: vaultId,
+      name: "RbfVaultForTc84",
+      symbol: "RbfVaultForTc84",
+      assetToken: usdt.address,
+      rbf: rbfData.rbf,
+      subStartTime: subStartTime,
+      subEndTime: subEndTime,
+      duration: "2592000",
+      fundThreshold: "3000",
+      minDepositAmount: "10000000",
+      manageFee: "50",
+      manager: manager,
+      feeReceiver: feeReceiver,
+      dividendEscrow: manager, // 添加这一行
+      whitelists: whitelists,
+      isOpen: false,
+      guardian: guardian,
+      maxSupply: "10000000000",
+      financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
     var receipt = await res.wait();
@@ -2041,6 +2073,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -2073,6 +2106,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -2099,6 +2133,7 @@ describe("Vault:", function () {
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
+      isOpen: false,
       guardian: guardian,
       maxSupply: "10000000000",
       financePrice: "100000000",
@@ -2171,6 +2206,7 @@ describe("Vault:", function () {
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
+        isOpen: false,
         guardian: guardian,
         maxSupply: "10000000000",
         financePrice: "100000000",
@@ -2226,24 +2262,25 @@ describe("Vault:", function () {
     const subStartTime = Math.floor(Date.now() / 1000) 
     const subEndTime = subStartTime + 3600;
     const vaultDeployData = {
-        vaultId: vaultId,
-        name: "RbfVaultForTc66",
-        symbol: "RbfVaultForTc66",
-        assetToken: usdt.address,
-        rbf: rbfData.rbf,
-        subStartTime: subStartTime,
-        subEndTime: subEndTime,
-        duration: "2592000",
-        fundThreshold: "3000",
-        minDepositAmount: "10000000",
-        manageFee: "50",
-        manager: manager,
-        feeReceiver: feeReceiver,
-        dividendEscrow: manager, // 添加这一行
-        whitelists: whitelists,
-        guardian: guardian,
-        maxSupply: "10000000000",
-        financePrice: "100000000",
+      vaultId: vaultId,
+      name: "RbfVaultForTc66",
+      symbol: "RbfVaultForTc66",
+      assetToken: usdt.address,
+      rbf: rbfData.rbf,
+      subStartTime: subStartTime,
+      subEndTime: subEndTime,
+      duration: "2592000",
+      fundThreshold: "3000",
+      minDepositAmount: "10000000",
+      manageFee: "50",
+      manager: manager,
+      feeReceiver: feeReceiver,
+      dividendEscrow: manager, // 添加这一行
+      whitelists: whitelists,
+      isOpen: false,
+      guardian: guardian,
+      maxSupply: "10000000000",
+      financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
     var receipt = await res.wait();
