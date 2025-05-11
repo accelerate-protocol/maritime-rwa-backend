@@ -457,11 +457,16 @@ contract Vault is
             offChainWLMap[whitelistAddr],
             "Vault: Address is not in the offChain whitelist"
         );
-        require(balanceOf(whitelistAddr) <= 0, "Vault: Address has balance");
+
+        if(isOpen){
+            require(subBalance[whitelistAddr] <= 0, "Vault: Address has subBalance balance");
+        }else{
+            require(balanceOf(whitelistAddr) <= 0, "Vault: Address has balance");
+        }
         offChainWLMap[whitelistAddr] = false;
         for (uint256 i = 0; i < offChainWL.length; i++) {
             if (offChainWL[i] == whitelistAddr) {
-                offChainWL[i] = offChainWL[onChainWL.length - 1];
+                offChainWL[i] = offChainWL[offChainWL.length - 1];
                 offChainWL.pop();
                 break;
             }
