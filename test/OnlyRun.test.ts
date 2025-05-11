@@ -4637,7 +4637,7 @@ describe("RWA:", function () {
 
         if (i == 2) {
           //认购期内，从线上白名单中删除已经认购资产的账户，删除失败
-          await expect(vaultManager.removeFromOnChainWL(investor1)).to.be.revertedWith("Vault: Address has balance");
+          await expect(vaultManager.removeFromOnChainWL(investor1)).to.be.revertedWith("Vault: Address has subBalance balance");
 
           const investAmount = BigInt(10000000);
           const investSigner = await ethers.getSigner(whitelists[i-1]);
@@ -5113,13 +5113,17 @@ describe("RWA:", function () {
     const Investor1Signer = await ethers.getSigner(investor1);
     await expect(VAULT.connect(Investor1Signer).transfer(investor3,balanceOfInvestor1 )).not.to.be.reverted;
     expect(await VAULT.connect(managerSigner).balanceOf(investor1)).to.equal(0);
-    await expect(VAULT.connect(managerSigner).removeFromOnChainWL(investor1)).not.to.be.reverted;
+    await expect(VAULT.connect(managerSigner).removeFromOnChainWL(investor1)).to.be.revertedWith("Vault: Address has subBalance balance");
 
     //认购期内，把线下白名单账户的资产全部转走，并将其在线下白名单中删除，删除成功
     const balanceOfInvestor2 = await VAULT.connect(managerSigner).balanceOf(investor2);
     const Investor2Signer = await ethers.getSigner(investor2);
     await expect(VAULT.connect(Investor2Signer).transfer(investor4,balanceOfInvestor2 )).not.to.be.reverted;
     expect(await VAULT.connect(managerSigner).balanceOf(investor2)).to.equal(0);
+    
+    //认购期内，从线下白名单中删除已经认购资产的账户，但是认购资产全部转移，删除成功
+    await expect(vaultManager.removeFromOffChainWL(investor2)).not.to.be.reverted;
+
     // await expect(vaultManager.removeFromOffChainWL(investor2)).to.be.revertedWith("Vault: Address has balance");
 
     // await expect(VAULT.connect(managerSigner).removeFromOffChainWL(investor2)).not.to.be.reverted;
@@ -5146,9 +5150,7 @@ describe("RWA:", function () {
     const offlineInvestorSigners = await ethers.getSigner(whitelists[3]);
     await expect(VAULT.connect(offlineInvestorSigners).offChainRedeem()).to.be.revertedWith("Vault: Invalid time");
 
-    //认购期内，从线下白名单中删除已经认购资产的账户，但是认购资产全部转移，删除成功
-    await expect(vaultManager.removeFromOffChainWL(investor2)).not.to.be.reverted;
-
+    
     
     // Create a promise-based delay function
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -5319,7 +5321,7 @@ describe("RWA:", function () {
     await expect(VAULT.connect(offlineInvestorSigners).offChainRedeem()).to.be.revertedWith("Vault: not allowed withdraw");
 
     for (let i = 0; i < whitelists.length; i++) {
-      if (i == 2 || i == 3) {
+      if (i == 0 || i == 2 || i == 3) {
         expect(BigInt(investArr[i]) / BigInt(target) ).to.be.equal(BigInt(incomeArr[i])/ BigInt(totalNav)); 
       }else{
         expect(incomeArr[i]).to.be.equal(0);
@@ -5561,8 +5563,8 @@ describe("RWA:", function () {
   
   });
 
-  //isOpen = true，把线上认购的账户认购的资金完全转移后，从线上白名单中删除该账户，在派息前又把该账户加会线上白名单，该账户派息正常
-  it("tc-71", async function () {
+  //z这里因为修改了合约代码：subBalance等于0才能删除，所以不会删除成功，也不存在再重新添加回来的场景：isOpen = true，把线上认购的账户认购的资金完全转移后，从线下白名单中删除该账户，在派息前又把该账户加会线下白名单，该账户派息正常
+  it.skip("tc-71", async function () {
     const {execute} = deployments;
     const {deployer,guardian,manager,rbfSigner,depositTreasury,feeReceiver,investor1,investor2,investor3,investor4,investor5,rbfSigner2,common,drds,investor6} = await getNamedAccounts();
     const RBFRouter = await deployments.get("RBFRouter");
@@ -5770,13 +5772,16 @@ describe("RWA:", function () {
     const Investor1Signer = await ethers.getSigner(investor1);
     await expect(VAULT.connect(Investor1Signer).transfer(investor3,balanceOfInvestor1 )).not.to.be.reverted;
     expect(await VAULT.connect(managerSigner).balanceOf(investor1)).to.equal(0);
-    await expect(VAULT.connect(managerSigner).removeFromOnChainWL(investor1)).not.to.be.reverted;
+    await expect(VAULT.connect(managerSigner).removeFromOnChainWL(investor1)).to.be.revertedWith("Vault: Address has subBalance balance");
 
     //认购期内，把线下白名单账户的资产全部转走，并将其从在线下白名单中删除
     const balanceOfInvestor2 = await VAULT.connect(managerSigner).balanceOf(investor2);
     const Investor2Signer = await ethers.getSigner(investor2);
     await expect(VAULT.connect(Investor2Signer).transfer(investor4,balanceOfInvestor2 )).not.to.be.reverted;
     expect(await VAULT.connect(managerSigner).balanceOf(investor2)).to.equal(0);
+    //认购期内，从线下白名单中删除已经认购资产的账户，但是认购资产全部转移，删除成功
+    await expect(vaultManager.removeFromOffChainWL(investor2)).not.to.be.reverted;
+
     // await expect(vaultManager.removeFromOffChainWL(investor2)).to.be.revertedWith("Vault: Address has balance");
 
     // await expect(VAULT.connect(managerSigner).removeFromOffChainWL(investor2)).not.to.be.reverted;
@@ -5803,9 +5808,7 @@ describe("RWA:", function () {
     const offlineInvestorSigners = await ethers.getSigner(whitelists[3]);
     await expect(VAULT.connect(offlineInvestorSigners).offChainRedeem()).to.be.revertedWith("Vault: Invalid time");
 
-    //认购期内，从线下白名单中删除已经认购资产的账户，但是认购资产全部转移，删除成功
-    await expect(vaultManager.removeFromOffChainWL(investor2)).not.to.be.reverted;
-
+    
     
     // Create a promise-based delay function
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -5939,8 +5942,8 @@ describe("RWA:", function () {
     const rbfDividendTreasury = await rbfManager.dividendTreasury();
     const vaultDividendTreasury = await vaultManager.dividendTreasury();
 
-     //认购期结束后，把已经删除的线上白名单账户，添加回来，该账户subBalance大于0，执行成功
-     await expect(vaultManager.addToOnChainWL(whitelists[0])).not.to.be.reverted;
+    //  //认购期结束后，把已经删除的线上白名单账户，添加回来，该账户subBalance大于0，执行成功
+    //  await expect(vaultManager.addToOnChainWL(whitelists[0])).not.to.be.reverted;
 
 
     for (let i = 0; i < dividendCountArr.length; i++) {
@@ -6201,17 +6204,26 @@ describe("RWA:", function () {
     const Investor1Signer = await ethers.getSigner(investor1);
     await expect(VAULT.connect(Investor1Signer).transfer(investor3,balanceOfInvestor1 )).not.to.be.reverted;
     expect(await VAULT.connect(managerSigner).balanceOf(investor1)).to.equal(0);
-    await expect(VAULT.connect(managerSigner).removeFromOnChainWL(investor1)).not.to.be.reverted;
+    await expect(VAULT.connect(managerSigner).removeFromOnChainWL(investor1)).to.be.revertedWith("Vault: Address has subBalance balance");
 
     //认购期内，把线下白名单账户的资产全部转走，并将其从在线下白名单中删除
     const balanceOfInvestor2 = await VAULT.connect(managerSigner).balanceOf(investor2);
     const Investor2Signer = await ethers.getSigner(investor2);
     await expect(VAULT.connect(Investor2Signer).transfer(investor4,balanceOfInvestor2 )).not.to.be.reverted;
     expect(await VAULT.connect(managerSigner).balanceOf(investor2)).to.equal(0);
-    // await expect(vaultManager.removeFromOffChainWL(investor2)).to.be.revertedWith("Vault: Address has balance");
 
-    // await expect(VAULT.connect(managerSigner).removeFromOffChainWL(investor2)).not.to.be.reverted;
+    expect(await VAULT.connect(managerSigner).offChainWLMap(investor2)).to.be.equals(true);
+    const offChainLen = await VAULT.connect(managerSigner).getOffChainWLLen();
 
+    console.log("offChainLen:", offChainLen);
+    // for (let i = 0; i < offChainLen; i++) {
+    //   const offChainWLAddress = await VAULT.connect(managerSigner).getOffChainWL(i);
+
+    // }
+
+
+    //认购期内，从线下白名单中删除已经认购资产的账户，但是认购资产全部转移，删除成功
+    await expect(VAULT.connect(managerSigner).removeFromOffChainWL(investor2)).not.to.be.reverted;
 
 
     expectedErrorMessage = `AccessControl: account ${common.toLowerCase()} is missing role ${ethers.keccak256(ethers.toUtf8Bytes("MANAGER_ROLE"))}`;
@@ -6226,6 +6238,9 @@ describe("RWA:", function () {
       ethers.toUtf8Bytes("MANAGER_ROLE")
     )}`;
 
+    
+
+
     //达到融资阈值，认购期内，从线上白名单中删除没有认购资产的账户，删除成功
     await expect(vaultManager.removeFromOnChainWL(investor6)).not.to.be.reverted;
 
@@ -6234,9 +6249,7 @@ describe("RWA:", function () {
     const offlineInvestorSigners = await ethers.getSigner(whitelists[3]);
     await expect(VAULT.connect(offlineInvestorSigners).offChainRedeem()).to.be.revertedWith("Vault: Invalid time");
 
-    //认购期内，从线下白名单中删除已经认购资产的账户，但是认购资产全部转移，删除成功
-    await expect(vaultManager.removeFromOffChainWL(investor2)).not.to.be.reverted;
-
+   
     
     // Create a promise-based delay function
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -6413,7 +6426,7 @@ describe("RWA:", function () {
     await expect(VAULT.connect(offlineInvestorSigners).offChainRedeem()).to.be.revertedWith("Vault: not allowed withdraw");
 
     for (let i = 0; i < whitelists.length; i++) {
-      if (i == 2 || i == 3) {
+      if (i == 0 || i == 2 || i == 3) {
         expect(BigInt(investArr[i]) / BigInt(target) ).to.be.equal(BigInt(incomeArr[i])/ BigInt(totalNav)); 
       }else{
         expect(incomeArr[i]).to.be.equal(0);

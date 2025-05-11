@@ -455,7 +455,7 @@ contract Vault is
         offChainWLMap[whitelistAddr] = false;
         for (uint256 i = 0; i < offChainWL.length; i++) {
             if (offChainWL[i] == whitelistAddr) {
-                offChainWL[i] = offChainWL[onChainWL.length - 1];
+                offChainWL[i] = offChainWL[offChainWL.length - 1];
                 offChainWL.pop();
                 break;
             }
