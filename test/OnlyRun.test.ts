@@ -4298,7 +4298,7 @@ describe("RWA:", function () {
     await expect(VAULT.connect(offlineInvestorSigners).offChainRedeem()).to.be.revertedWith("Vault: Invalid time");
 
     //认购期内，从线下白名单中删除已经认购资产的账户，删除失败
-    await expect(vaultManager.removeFromOffChainWL(investor2)).to.be.revertedWith("Vault: Address has balance");
+    await expect(vaultManager.removeFromOffChainWL(investor2)).to.be.revertedWith("Vault: Address has subBalance balance");
 
     // // Create a promise-based delay function
     // const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -4311,7 +4311,7 @@ describe("RWA:", function () {
     await expect(vaultManager.addToOffChainWL(common)).not.to.be.reverted;
     
     //提前认购完成，但在认购期内，从线下白名单中删除已经认购资产的账户，删除失败
-    await expect(vaultManager.removeFromOffChainWL(investor2)).to.be.revertedWith("Vault: Address has balance");
+    await expect(vaultManager.removeFromOffChainWL(investor2)).to.be.revertedWith("Vault: Address has subBalance balance");
 
     const inverstorSigners = await ethers.getSigner(whitelists[0]);
     const balance = await VAULT.connect(inverstorSigners).balanceOf(whitelists[0]);
@@ -4716,7 +4716,7 @@ describe("RWA:", function () {
     await expect(VAULT.connect(offlineInvestorSigners).offChainRedeem()).to.be.revertedWith("Vault: Invalid time");
 
     //认购期内，从线下白名单中删除已经认购资产的账户，删除失败
-    await expect(vaultManager.removeFromOffChainWL(investor2)).to.be.revertedWith("Vault: Address has balance");
+    await expect(vaultManager.removeFromOffChainWL(investor2)).to.be.revertedWith("Vault: Address has subBalance balance");
 
     
     // Create a promise-based delay function
@@ -5122,7 +5122,7 @@ describe("RWA:", function () {
     expect(await VAULT.connect(managerSigner).balanceOf(investor2)).to.equal(0);
     
     //认购期内，从线下白名单中删除已经认购资产的账户，但是认购资产全部转移，删除成功
-    await expect(vaultManager.removeFromOffChainWL(investor2)).not.to.be.reverted;
+    await expect(vaultManager.removeFromOffChainWL(investor2)).to.be.revertedWith("Vault: Address has subBalance balance");
 
     // await expect(vaultManager.removeFromOffChainWL(investor2)).to.be.revertedWith("Vault: Address has balance");
 
@@ -5321,11 +5321,13 @@ describe("RWA:", function () {
     await expect(VAULT.connect(offlineInvestorSigners).offChainRedeem()).to.be.revertedWith("Vault: not allowed withdraw");
 
     for (let i = 0; i < whitelists.length; i++) {
-      if (i == 0 || i == 2 || i == 3) {
-        expect(BigInt(investArr[i]) / BigInt(target) ).to.be.equal(BigInt(incomeArr[i])/ BigInt(totalNav)); 
-      }else{
-        expect(incomeArr[i]).to.be.equal(0);
-      }
+      expect(BigInt(investArr[i]) / BigInt(target) ).to.be.equal(BigInt(incomeArr[i])/ BigInt(totalNav)); 
+
+      // if (i == 0 || i == 3) {
+      //   expect(BigInt(investArr[i]) / BigInt(target) ).to.be.equal(BigInt(incomeArr[i])/ BigInt(totalNav)); 
+      // }else{
+      //   expect(incomeArr[i]).to.be.equal(0);
+      // }
     }
   });
 
@@ -5547,7 +5549,10 @@ describe("RWA:", function () {
 
     
     //认购期结束后，融资未生效，线下认购者在approve后线下赎回，赎回成功
+    await expect(VAULT.connect(offlineInvestorSigners).redeem()).not.to.be.reverted;
+
     await expect(VAULT.connect(offlineInvestorSigners).offChainRedeem()).not.to.be.reverted;
+
 
 
     //认购期结束后，融资未生效，线上认购者在approve前线上赎回，赎回失败
@@ -5563,7 +5568,7 @@ describe("RWA:", function () {
   
   });
 
-  //z这里因为修改了合约代码：subBalance等于0才能删除，所以不会删除成功，也不存在再重新添加回来的场景：isOpen = true，把线上认购的账户认购的资金完全转移后，从线下白名单中删除该账户，在派息前又把该账户加会线下白名单，该账户派息正常
+  //这里因为修改了合约代码：subBalance等于0才能删除，所以不会删除成功，也不存在再重新添加回来的场景：isOpen = true，把线上认购的账户认购的资金完全转移后，从线下白名单中删除该账户，在派息前又把该账户加会线下白名单，该账户派息正常
   it.skip("tc-71", async function () {
     const {execute} = deployments;
     const {deployer,guardian,manager,rbfSigner,depositTreasury,feeReceiver,investor1,investor2,investor3,investor4,investor5,rbfSigner2,common,drds,investor6} = await getNamedAccounts();
@@ -5996,7 +6001,7 @@ describe("RWA:", function () {
 
 
   //isOpen = true，把线上认购的账户认购的资金完全转移后，从线上白名单中删除该账户，在派息前又把该账户加会线下白名单，添加失败，该账户不会收到派息
-  it("tc-72", async function () {
+  it.skip("tc-72", async function () {
     const {execute} = deployments;
     const {deployer,guardian,manager,rbfSigner,depositTreasury,feeReceiver,investor1,investor2,investor3,investor4,investor5,rbfSigner2,common,drds,investor6} = await getNamedAccounts();
     const RBFRouter = await deployments.get("RBFRouter");
@@ -6223,7 +6228,7 @@ describe("RWA:", function () {
 
 
     //认购期内，从线下白名单中删除已经认购资产的账户，但是认购资产全部转移，删除成功
-    await expect(VAULT.connect(managerSigner).removeFromOffChainWL(investor2)).not.to.be.reverted;
+    await expect(VAULT.connect(managerSigner).removeFromOffChainWL(investor2)).to.be.revertedWith("Vault: Address has subBalance balance");
 
 
     expectedErrorMessage = `AccessControl: account ${common.toLowerCase()} is missing role ${ethers.keccak256(ethers.toUtf8Bytes("MANAGER_ROLE"))}`;
@@ -6426,11 +6431,13 @@ describe("RWA:", function () {
     await expect(VAULT.connect(offlineInvestorSigners).offChainRedeem()).to.be.revertedWith("Vault: not allowed withdraw");
 
     for (let i = 0; i < whitelists.length; i++) {
-      if (i == 0 || i == 2 || i == 3) {
-        expect(BigInt(investArr[i]) / BigInt(target) ).to.be.equal(BigInt(incomeArr[i])/ BigInt(totalNav)); 
-      }else{
-        expect(incomeArr[i]).to.be.equal(0);
-      }
+      expect(BigInt(investArr[i]) / BigInt(target) ).to.be.equal(BigInt(incomeArr[i])/ BigInt(totalNav)); 
+
+      // if (i == 0 || i == 2 || i == 3) {
+      //   expect(BigInt(investArr[i]) / BigInt(target) ).to.be.equal(BigInt(incomeArr[i])/ BigInt(totalNav)); 
+      // }else{
+      //   expect(incomeArr[i]).to.be.equal(0);
+      // }
     }
   });
 
