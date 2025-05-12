@@ -235,9 +235,9 @@ contract Vault is
     function redeem()
         public
         virtual
-        onlyOnChainWL(msg.sender)
         returns (uint256)
     {
+        require(onChainWLMap[msg.sender], "Vault: you are not in onChainWL");
         require(block.timestamp >= subEndTime, "Vault: Invalid time");
         require(
             (maxSupply * fundThreshold) / BPS_DENOMINATOR > totalSupply(),
