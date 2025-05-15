@@ -2684,92 +2684,6 @@ describe("RWA:", function () {
     // const vaultSigner = await ethers.getSigner(vault);
     // await expect(rbfManager.connect(vaultSigner).requestDeposit(maxSupply)).not.to.be.reverted;
     await expect(vaultManager.execStrategy()).to.be.revertedWith("Vault: assetBalance is zero");
-    //
-    // await expect(VAULT.connect(inverstorSigners).transfer(whitelists[1],balance)).not.to.be.reverted;
-
-    // // expect(await USDT.balanceOf(depositTreasury)).to.be.equal(onChainInvest);
-    // // expect(await rbfManager.depositAmount()).to.be.equal(onChainInvest);
-    // await expect(
-    //   rbfManager.grantRole(
-    //     ethers.keccak256(ethers.toUtf8Bytes("MINT_AMOUNT_SETTER_ROLE")),
-    //     drds
-    //   )
-    // ).not.to.be.reverted;
-
-    // const drdsSigner = await ethers.getSigner(drds);
-    // const rbfDrds = await hre.ethers.getContractAt("RBF", rbf, drdsSigner);
-    // const priceFeedDrds = await hre.ethers.getContractAt(
-    //   "PriceFeed",
-    //   priceFeed,
-    //   drdsSigner
-    // );
-
-    // await expect(rbfDrds.setMintAmount(maxSupply)).not.to.be.reverted;
-    // await expect(
-    //   priceFeedDrds.addPrice(financePrice, Math.floor(Date.now() / 1000))
-    // ).not.to.be.reverted;
-    // expect(await rbfDrds.depositMintAmount()).to.be.equal(maxSupply);
-
-    // expect(await rbfManager.balanceOf(vault)).to.be.equal(0);
-    // await expect(rbfManager.claimDeposit()).not.to.be.reverted;
-    // expect(await rbfManager.balanceOf(vault)).to.be.equal(maxSupply);
-    // console.log("rbf总净值:", await rbfManager.getAssetsNav());
-    // console.log("vault价值:", await vaultManager.price());
-    // expect(await rbfManager.getAssetsNav()).to.be.equal(
-    //   (BigInt(maxSupply) * BigInt(financePrice)) / BigInt(1e6)
-    // );
-    // expect(await vaultManager.price()).to.be.equal(financePrice);
-
-    // const randomMultiplier = 1.1 + Math.random() * 0.4;
-    // console.log("派息系数:", randomMultiplier);
-    // const principalInterest = Math.floor(totalSupply * randomMultiplier);
-    // const waitMint = BigInt(Math.floor(principalInterest - totalSupply) * 1e6);
-    // await expect(USDT.mint(depositTreasury, maxSupply+waitMint)).not.to.be.reverted;
-    // const dividendCount = 4;
-    // const dividendCountArr = distributeMoneyWithMinimum(
-    //   principalInterest,
-    //   dividendCount,
-    //   1
-    // );
-    // const totalNav = await USDT.balanceOf(depositTreasury);
-    // console.log("总派息资产:", totalNav.toString());
-
-    // const depositTreasurySigner = await ethers.getSigner(depositTreasury);
-    // const USDTdepositTreasury = await ethers.getContractAt(
-    //   "MockUSDT",
-    //   usdt.address,
-    //   depositTreasurySigner
-    // );
-    // const rbfDividendTreasury = await rbfManager.dividendTreasury();
-    // const vaultDividendTreasury = await vaultManager.dividendTreasury();
-    // for (let i = 0; i < dividendCountArr.length; i++) {
-    //   const dividendAmount = BigInt(Math.floor(dividendCountArr[i] * 1e6));
-    //   console.log("第" + (i + 1) + "次派息:", dividendAmount);
-    //   await expect(
-    //     USDTdepositTreasury.transfer(rbfDividendTreasury, dividendAmount)
-    //   ).not.to.be.reverted;
-    //   await expect(rbfManager.dividend()).not.to.be.reverted;
-    //   await expect(vaultManager.dividend()).not.to.be.reverted;
-    // }
-    // await expect(priceFeedDrds.addPrice(0, Math.floor(Date.now() / 1000))).not
-    //   .to.be.reverted;
-    // console.log("rbf总净值:", await rbfManager.getAssetsNav());
-    // console.log("vault价值:", await vaultManager.price());
-    // expect(await rbfManager.getAssetsNav()).to.be.equal(0);
-    // expect(await vaultManager.price()).to.be.equal(0);
-    // var totalDividend = await USDT.balanceOf(vaultDividendTreasury);
-    // console.log("金库剩余派息金额:", totalDividend.toString());
-    // var investorBalance = await USDT.balanceOf(vaultDividendTreasury);
-    // for (let i = 0; i < whitelists.length; i++) {
-    //   investorBalance = await USDT.balanceOf(whitelists[i]);
-    //   incomeArr.push(investorBalance);
-    //   totalDividend = totalDividend + investorBalance;
-    // }
-    // console.log("总派息额", totalDividend);
-    // console.log(investArr);
-    // console.log(incomeArr);
-    // expect(totalDividend).to.equal(totalNav);
-    // expect(incomeArr[0]).to.equal(BigInt(0)); 
   });
 
   //线上线下混合认购及派息:认购达到阈值
@@ -5549,8 +5463,8 @@ describe("RWA:", function () {
 
     
     //认购期结束后，融资未生效，线下认购者在approve后线下赎回，赎回成功
-    await expect(VAULT.connect(offlineInvestorSigners).redeem()).not.to.be.reverted;
-
+    //线下账户通过线上赎回的方法进行赎回，赎回失败
+    await expect(VAULT.connect(offlineInvestorSigners).redeem()).to.be.revertedWith("Vault: you are not in onChainWL");
     await expect(VAULT.connect(offlineInvestorSigners).offChainRedeem()).not.to.be.reverted;
 
 
@@ -5560,6 +5474,8 @@ describe("RWA:", function () {
     await VAULT.connect(investSigner).approve(vault, totalInvestAmount);
     
     //认购期结束后，融资未生效，线上认购者在approve后线上赎回，赎回成功
+    //线上认购账户通过线下赎回方法赎回，赎回失败
+    await expect(VAULT.connect(investSigner).offChainRedeem()).to.be.revertedWith("Vault: you are not in offChainWL");
     await expect(VAULT.connect(investSigner).redeem()).not.to.be.reverted;
 
     const redeemBalance_0 = await USDT.balanceOf(whitelists[1]);
@@ -6585,6 +6501,168 @@ describe("RWA:", function () {
     await expect(VAULT.connect(investSigner).deposit(10000000)).to.be.revertedWith("Vault: Address is already offChainWL");
     
   });
+
+    //isOpen = true，全线下认购
+    it("tc-74", async function () {
+      const {execute} = deployments;
+      const {deployer,guardian,manager,rbfSigner,depositTreasury,feeReceiver,investor1,investor2,investor3,investor4,investor5,rbfSigner2,common,drds} = await getNamedAccounts();
+      const RBFRouter = await deployments.get("RBFRouter");
+      // 获取 RBFRouter 合约实例
+      const rbfRouter = await hre.ethers.getContractAt("RBFRouter", RBFRouter.address);
+      const rbfId = await rbfRouter.rbfNonce();
+      const abiCoder = new ethers.AbiCoder();
+      const deployData = abiCoder.encode(
+        ["(uint64,string,string,address,address,address,address,address)"],
+        [
+          [rbfId,
+          "RBF-74", "RBF-74",
+          usdt.address,
+          depositTreasury,
+          deployer,
+          manager,
+          guardian,]
+        ]
+      );
+      const deployDataHash = ethers.keccak256(deployData);
+      const signer = await ethers.getSigner(rbfSigner);
+      const signature = await signer.signMessage(ethers.getBytes(deployDataHash));
+      const signer2 = await ethers.getSigner(rbfSigner2);
+      const signature2 = await signer2.signMessage(ethers.getBytes(deployDataHash));
+      const signatures = [signature,signature2];
+      
+      var res = await rbfRouter.deployRBF(deployData, signatures);
+      var receipt = await res.wait();
+      if (!receipt) throw new Error("Transaction failed");
+      expect(receipt.status).to.equal(1);
+  
+      const whitelists = [investor1, investor2, investor3, investor4];
+      const rbfData = await rbfRouter.getRBFInfo(rbfId);
+      const rbf = rbfData.rbf;
+      
+      const VaultRouter = await deployments.get("VaultRouter");
+      const vaultRouter = await hre.ethers.getContractAt(
+              "VaultRouter",
+              VaultRouter.address
+            );
+      const vaultId = await vaultRouter.vaultNonce();
+      const subStartTime = Math.floor(Date.now() / 1000) 
+      const subEndTime = subStartTime + 60;
+      const vaultDeployData = {
+          vaultId: vaultId,
+          name: "RbfVaultForTc74",
+          symbol: "RbfVaultForTc74",
+          assetToken: usdt.address,
+          rbf: rbfData.rbf,
+          subStartTime: subStartTime,
+          subEndTime: subEndTime,
+          duration: "2592000",
+          fundThreshold: "3000",
+          minDepositAmount: "10000000",
+          manageFee: "50",
+          manager: manager,
+          feeReceiver: feeReceiver,
+          dividendEscrow: manager, // 添加这一行
+          whitelists: [investor5],
+          isOpen: true,
+          guardian: guardian,
+          maxSupply: "10000000000",
+          financePrice: "100000000",
+      };
+      var res = await vaultRouter.deployVault(vaultDeployData);
+      var receipt = await res.wait();
+      if (!receipt) throw new Error("Transaction failed");
+      expect(receipt.status).to.equal(1);
+      const vaultData = await vaultRouter.getVaultInfo(vaultId);
+      const vault = vaultData.vault;
+  
+      const VAULT = await ethers.getContractAt("Vault", vault);
+      const maxSupply = await VAULT.maxSupply();
+      const fundThreshold = await VAULT.fundThreshold();
+      const target = maxSupply * fundThreshold / BigInt(10000);
+      // const financePrice = await VAULT.financePrice();
+      const minDepositAmount = await VAULT.minDepositAmount();
+      const totalSupply = Number(target / BigInt(1e6));
+      const minAmount = Number(minDepositAmount / BigInt(1e6));
+  
+      const distribution = distributeMoneyWithMinimum(
+        totalSupply,
+        whitelists.length,
+        minAmount
+      );
+      var vaultInvest: any;
+      var USDT: any;
+  
+    
+      const managerSigner = await ethers.getSigner(manager);
+      const vaultManager = await hre.ethers.getContractAt(
+        "Vault",
+        vault,
+        managerSigner
+      );
+      const rbfManager = await hre.ethers.getContractAt(
+        "RBF",
+        rbf,
+        managerSigner
+      );
+      let investArr = new Array();
+      let incomeArr = new Array();
+      const priceFeed = rbfData.priceFeed;
+      const priceFeedManager = await hre.ethers.getContractAt(
+        "PriceFeed",
+        priceFeed,
+        managerSigner
+      );
+      const deployerSigner = await ethers.getSigner(deployer);
+      USDT = await ethers.getContractAt(
+        "MockUSDT",
+        usdt.address,
+        deployerSigner
+      );
+  
+      expect(
+        await priceFeedManager.grantRole(
+          ethers.keccak256(ethers.toUtf8Bytes("FEEDER_ROLE")),
+          drds
+        )
+      ).not.to.be.reverted;
+      const commonSigner = await ethers.getSigner(common);
+      var expectedErrorMessage = `AccessControl: account ${common.toLowerCase()} is missing role ${ethers.keccak256(ethers.toUtf8Bytes("MANAGER_ROLE"))}`;
+      await expect(VAULT.connect(commonSigner).addToOffChainWL(whitelists[0])).to.be.revertedWith(expectedErrorMessage);
+      await expect(VAULT.connect(commonSigner).addToOnChainWL(whitelists[1])).to.be.revertedWith(expectedErrorMessage);
+  
+      for (let i = 0; i < whitelists.length; i++) {
+        const investSigner = await ethers.getSigner(whitelists[i]);
+        vaultInvest = await hre.ethers.getContractAt(
+          "Vault",
+          vault,
+          investSigner
+        );
+        const investAmount = BigInt(Math.floor(distribution[i] * 1e6));
+        investArr.push(investAmount);
+        await expect(vaultManager.addToOffChainWL(whitelists[i])).not.to.be.reverted;
+        await expect(vaultManager.offChainDepositMint(whitelists[i],investAmount)).not.to.be.reverted;
+        const balance = await vaultInvest.balanceOf(whitelists[i]);
+        expect(balance).to.equal(investAmount);
+      }
+      // expect(await VAULT.assetBalance()).to.equal(onChainInvest);
+      console.log("total deposit balance", await VAULT.assetBalance());
+      console.log("total manageFee Balance", await VAULT.manageFeeBalance());
+      // console.log("total Balance", await USDT.balanceOf(vault));
+  
+      // Create a promise-based delay function
+      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  
+      console.log("开始等待...");
+      await delay(60000);
+      console.log("等待结束");
+  
+      // const inverstorSigners = await ethers.getSigner(whitelists[0]);
+      // const balance = await vaultInvest.balanceOf(whitelists[0]);
+      await expect(rbfManager.setVault(vault)).not.to.be.reverted;
+      // const vaultSigner = await ethers.getSigner(vault);
+      // await expect(rbfManager.connect(vaultSigner).requestDeposit(maxSupply)).not.to.be.reverted;
+      await expect(vaultManager.execStrategy()).to.be.revertedWith("Vault: assetBalance is zero");
+    });
 
 function distributeMoneyWithMinimum(
   total: number,
