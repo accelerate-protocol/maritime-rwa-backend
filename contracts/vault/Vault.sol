@@ -216,7 +216,7 @@ contract Vault is
         _mint(msg.sender, shares);
         if (isOpen) {
             subBalance[msg.sender] = subBalance[msg.sender] + shares;
-            if (!onChainWLMap[msg.sender]) { //部署时设置了白名单，白名单中的账户认购成功；不在线上白名单且不在线下认购白名单的账户线上认购,认购后自动加入到白名单
+            if (!onChainWLMap[msg.sender]) { 
                 _addToOnChainWL(msg.sender);
             }
         }
@@ -370,7 +370,7 @@ contract Vault is
 
     function _addToOnChainWL(address whitelistAddr) internal {
         if (!isOpen) {
-            require(block.timestamp <= subEndTime, "Vault: Invalid time"); //isOpen = true，认购期结束后添加账户到线上白名单，添加成功；//isOpen=true，提前认购完成，但在认购期内，添加账户到线下白名单，添加成功；//isOpen = false，认购期结束,添加账户到线上白名单失败；//isOpen = false，认购期且未完成认购时，添加白名单，添加不在白名单列表中的账户，添加成功；//isOpen = false，融资提前完成后，但在认购期内，添加账户到白名单，成功
+            require(block.timestamp <= subEndTime, "Vault: Invalid time"); 
         }
         require(
             !onChainWLMap[whitelistAddr],
@@ -395,7 +395,7 @@ contract Vault is
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         if (!isOpen) {
-            require(block.timestamp <= subEndTime, "Vault: Invalid time");//isOpen = false，认购期且未完成认购时，删除白名单账户，要删除的账户在白名单中，删除成功；//isOpen = false，融资提前完成后，但在认购期内，删除白名单中的没有认购账户，成功；//isOpen = false，将账户投资的钱转给其他成员，则账户没有投资金额，但是认购期结束，则删除失败；//isOpen = true，提前认购完成，但在认购期内，从线上白名单中删除没有认购资产的账户，删除成功；//isOpen = true，提前认购完成，认购期结束后，从线上白名单中删除没有认购资产的账户，删除成功；//isOpen = true，达到融资阈值，认购期结束后，从线上白名单中删除没有认购资产的账户，删除成功；//isOpen = true，达到融资阈值，认购期内，从线上白名单中删除没有认购资产的账户，删除成功；//isOpen = true，认购期内，把线上白名单账户的资产全部转走，并将其从线上白名单中删除，删除成功
+            require(block.timestamp <= subEndTime, "Vault: Invalid time");
         }
         require(
             onChainWLMap[whitelistAddr],
@@ -628,7 +628,7 @@ contract Vault is
     }
 
     function _checkTransferAuth(address from, address to) internal view {
-        require( //isOpen = true,融资未达到阈值时，线上/线下认购的账户转移认购资产，失败；//isOpen = true,融资达到阈值时，线上/线下认购的账户转移认购资产，成功；//isOpen = false，认购达到阈值，线上/线下认购账户转移认购资产，成功(认购期结束前/后，包括执行策略前后)；//isOpen = false，认购达到阈值，线上/线下认购账户转移认购资产，失败
+        require( 
             (maxSupply * fundThreshold) / BPS_DENOMINATOR <= totalSupply(),
             "Vault: not allowed transfer"
         );
