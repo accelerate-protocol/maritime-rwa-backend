@@ -15,6 +15,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "../vault/Vault.sol";
 import "../interface/AggregatorV3Interface.sol";
 import "../interface/IRBF.sol";
@@ -39,7 +40,8 @@ contract RBF is
     IRBF,
     OwnableUpgradeable,
     ERC20Upgradeable,
-    AccessControlUpgradeable
+    AccessControlUpgradeable,
+    ReentrancyGuardUpgradeable
 {
     using SafeERC20 for IERC20;
     uint256 public constant BPS_DENOMINATOR = 10_000;
@@ -60,12 +62,8 @@ contract RBF is
     address public vault;
     // The amount of assetToken deposited into the depositTreasury.
     uint256 public depositAmount;
-    // The price of RBF tokens minted for each assetToken deposited.
-    uint256 public depositPrice;
     // The amount of RBF tokens minted for assetToken deposited.
     uint256 public depositMintAmount;
-    // Multiplier to adjust decimals between assetToken and RBF token
-    uint256 public decimalsMultiplier;
     // The URI of the rbf token. 
     string public tokenURI;
 
@@ -86,6 +84,7 @@ contract RBF is
      * @param   data  Initialization data containing contract configuration.
      */
     function initialize(RBFInitializeData memory data) public initializer {
+        __ReentrancyGuard_init();
         __ERC20_init(data.name, data.symbol);
         __Ownable_init();
 
@@ -115,14 +114,10 @@ contract RBF is
         );
         manager = data.manager;
 
-        decimalsMultiplier =
-            10 **
-                (decimals() -
-                    IERC20MetadataUpgradeable(data.assetToken).decimals());
-
         _grantRole(DEFAULT_ADMIN_ROLE, data.manager);
         _grantRole(MANAGER_ROLE, data.manager);
         _setRoleAdmin(MINT_AMOUNT_SETTER_ROLE, MANAGER_ROLE);
+        
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -133,7 +128,7 @@ contract RBF is
      * @dev     This function is only callable by the Vault.
      * @param   amount The amount of assetToken to deposit.
      */
-    function requestDeposit(uint256 amount) public onlyVault {
+    function requestDeposit(uint256 amount) public onlyVault nonReentrant {
         require(
             IERC20(assetToken).balanceOf(msg.sender) >= amount,
             "RBF: Insufficient balance"
@@ -168,7 +163,7 @@ contract RBF is
      * @notice  Allows the manager to distribute dividends from the dividend treasury to the vault.
      * @dev     This function calculates the dividend share for the vault and transfers the dividend amount.
      */
-    function dividend() public onlyRole(MANAGER_ROLE) {
+    function dividend() public onlyRole(MANAGER_ROLE) nonReentrant {
         uint256 totalDividend = IERC20(assetToken).balanceOf(dividendTreasury);
         require(totalDividend > 0, "RBF: totalDividend must be greater than 0");
         uint256 totalSupply = totalSupply();
@@ -296,7 +291,4 @@ contract RBF is
         );
     }
 
-    function _scaleUp(uint256 amount) internal view returns (uint256) {
-        return amount * decimalsMultiplier;
-    }
 }
