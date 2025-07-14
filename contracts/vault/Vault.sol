@@ -448,7 +448,7 @@ contract Vault is
         uint256 totalDividend = IERC20(assetToken).balanceOf(dividendTreasury);
         require(totalDividend > 0, "Vault: No dividend to pay");
         uint256 totalSupply = totalSupply();
-        require(totalSupply > 0, "Vault: No rbu to pay");
+        require(totalSupply > 0, "Vault: No rbf to pay");
         for (uint8 i = 0; i < onChainWL.length; i++) {
             if (onChainWLMap[onChainWL[i]]) {
                 if (balanceOf(onChainWL[i]) != 0) {

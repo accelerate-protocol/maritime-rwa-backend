@@ -29,11 +29,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         whiteLists = [drdsAddr];
     }
   
-    const rbuRouter = await deploy('RBFRouter', {
+    const rbfRouter = await deploy('RBFRouter', {
       from: deployer,
       args: [whiteLists,1,rbfFactory.address,escrowFactory.address,priceFeedFactory.address],
     });
-    console.log("RBFRouter:",rbuRouter.address);
+    console.log("RBFRouter:",rbfRouter.address);
 
 
     const vaultRouter = await deploy('VaultRouter', {
