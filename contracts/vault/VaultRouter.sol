@@ -31,15 +31,6 @@ contract VaultRouter is Ownable,IVaultRouter {
         address vaultImpl;
         address dividendTreasury;
     }
-    struct VaultData {
-        string name;
-        string symbol;
-        address assetToken;
-        address rbuManager;
-        address feeEscrow;
-        address dividendTreasury;
-        address manager;
-    }
 
     // Immutable reference to the escrow factory contract.
     IEscrowFactory public immutable escrowFactory;

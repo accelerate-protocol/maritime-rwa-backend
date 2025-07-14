@@ -2,7 +2,8 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-ethers";
 import "hardhat-deploy";
-import { ethers } from "ethers";
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -36,19 +37,36 @@ const config: HardhatUserConfig = {
     investor4: 9,
     investor5: 10,
     drds:11,
-    common: 12,
-    rbfSigner2: 13,
-    investor6:14,
   },
 
   networks: {
     hardhat: {
       allowUnlimitedContractSize: true,
-      accounts: {
-        count: 210,  // 设置测试账户数量
-        accountsBalance: ethers.parseEther("1000000").toString()  // 每个账户的初始余额
-      }
-    }
+    },
+    baseMainnet: {
+      url: "https://mainnet.base.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 8453
+    },
+    baseSepolia: {
+      url: "https://sepolia.base.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 84532
+    },
+    bscTestnet:{
+      url: "https://bsc-testnet.bnbchain.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 97
+    },
+    bscMainnet:{
+      url: "https://bsc-dataseed.bnbchain.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 56 
+    },
+
+
+
+
   },
 };
 

@@ -9,7 +9,6 @@
 */
 pragma solidity 0.8.26;
 
-
 import "../interface/IAuth.sol";
 /// @title  Auth
 /// @notice Simple authentication pattern

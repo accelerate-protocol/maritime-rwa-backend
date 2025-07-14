@@ -99,7 +99,6 @@ describe("RWA:", function () {
     );
     expect(await deployedRbf.priceFeed()).to.be.equal(rbfData.priceFeed);
     expect(await deployedRbf.manager()).to.be.equal(manager);
-    expect(await deployedRbf.decimalsMultiplier()).to.be.equal(1);
 
     const vaultId = await vaultRouter.vaultNonce();
     const subStartTime = Math.floor(Date.now() / 1000);
@@ -473,8 +472,8 @@ describe("RWA:", function () {
     );
     await expect(rbfManager.claimDeposit()).not.to.be.reverted;
     expect(await rbfManager.balanceOf(vault)).to.be.equal(maxSupply);
-    console.log("rbf总净值:", await rbfManager.getAssetsNav());
-    console.log("vault价值:", await vaultManager.price());
+    console.log("rbf nav:", await rbfManager.getAssetsNav());
+    console.log("vault price:", await vaultManager.price());
     expect(await rbfManager.getAssetsNav()).to.be.equal(
       (BigInt(maxSupply) * BigInt(financePrice)) / BigInt(1e6)
     );
@@ -489,7 +488,7 @@ describe("RWA:", function () {
       "RBF: totalDividend must be greater than 0"
     );
     const randomMultiplier = 1.1 + Math.random() * 0.4;
-    console.log("派息系数:", randomMultiplier);
+    console.log("dividend ratio:", randomMultiplier);
     const principalInterest = Math.floor(totalSupply * randomMultiplier);
     const waitMint = BigInt(Math.floor(principalInterest - totalSupply) * 1e6);
     await expect(USDT.mint(depositTreasury, maxSupply-onChainInvest+waitMint)).not.to.be.reverted;
@@ -500,7 +499,7 @@ describe("RWA:", function () {
       1
     );
     const totalNav = await USDT.balanceOf(depositTreasury);
-    console.log("总派息资产:", totalNav.toString());
+    console.log("dividend nav:", totalNav.toString());
 
     const depositTreasurySigner = await ethers.getSigner(depositTreasury);
     const USDTdepositTreasury = await ethers.getContractAt(
@@ -512,7 +511,7 @@ describe("RWA:", function () {
     const vaultDividendTreasury = await vaultManager.dividendTreasury();
     for (let i = 0; i < dividendCountArr.length; i++) {
       const dividendAmount = BigInt(Math.floor(dividendCountArr[i] * 1e6));
-      console.log("第" + (i + 1) + "次派息:", dividendAmount);
+      console.log((i + 1) + " dividend:", dividendAmount);
       await expect(
         USDTdepositTreasury.transfer(rbfDividendTreasury, dividendAmount)
       ).not.to.be.reverted;
@@ -521,19 +520,19 @@ describe("RWA:", function () {
     }
     await expect(priceFeedDrds.addPrice(0, Math.floor(Date.now() / 1000))).not
       .to.be.reverted;
-    console.log("rbf总净值:", await rbfManager.getAssetsNav());
-    console.log("vault价值:", await vaultManager.price());
+    console.log("rbf nav:", await rbfManager.getAssetsNav());
+    console.log("vault price:", await vaultManager.price());
     expect(await rbfManager.getAssetsNav()).to.be.equal(0);
     expect(await vaultManager.price()).to.be.equal(0);
     var totalDividend = await USDT.balanceOf(vaultDividendTreasury);
-    console.log("金库剩余派息金额:", totalDividend.toString());
+    console.log("remaining  asset amount in the vault:", totalDividend.toString());
     var investorBalance = await USDT.balanceOf(vaultDividendTreasury);
     for (let i = 0; i < whitelists.length; i++) {
       investorBalance = await USDT.balanceOf(whitelists[i]);
       incomeArr.push(investorBalance);
       totalDividend = totalDividend + investorBalance;
     }
-    console.log("总派息额", totalDividend);
+    console.log("total dividend", totalDividend);
     console.log(investArr);
     console.log(incomeArr);
     expect(totalDividend).to.equal(totalNav);

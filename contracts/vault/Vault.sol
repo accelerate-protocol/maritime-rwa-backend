@@ -14,6 +14,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "../interface/AggregatorV3Interface.sol";
 import "../interface/IVault.sol";
 import "../rbf/RBF.sol";
@@ -48,7 +49,9 @@ contract Vault is
     IVault,
     ERC20Upgradeable,
     OwnableUpgradeable,
-    AccessControlUpgradeable
+    AccessControlUpgradeable,
+    ReentrancyGuardUpgradeable
+    
 {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     uint256 public constant BPS_DENOMINATOR = 10_000;
@@ -181,7 +184,7 @@ contract Vault is
      */
     function deposit(
         uint256 assets
-    ) public virtual onlyOnChainWL(msg.sender) returns (uint256) {
+    ) public virtual onlyOnChainWL(msg.sender) nonReentrant returns (uint256) {
         require(assets >= minDepositAmount, "Vault: deposit less than min");
         require(
             block.timestamp >= subStartTime && block.timestamp <= subEndTime,
@@ -217,7 +220,7 @@ contract Vault is
     function redeem()
         public
         virtual
-        onlyOnChainWL(msg.sender)
+        onlyOnChainWL(msg.sender) nonReentrant
         returns (uint256)
     {
         require(block.timestamp >= subEndTime, "Vault: Invalid time");
@@ -246,7 +249,7 @@ contract Vault is
      * @notice  OffChain Deposits Mint into the vault during the subscription period 
      * @dev     Ensures that deposits meet the minimum requirement and fall within the allowed period.
      * @param   receiver  The address of the recipient of the minted shares.
-     * @param   amount    The amount of asset tokens to be deposited.
+     * @param   amount    The amount of vault tokens to be minted.
      */
     function offChainDepositMint(address receiver,uint256 amount) public onlyRole(MANAGER_ROLE) {
         require(_getAssetAmountForVault(amount) >= minDepositAmount, "Vault: OffChain deposit less than min");
@@ -289,7 +292,7 @@ contract Vault is
      *      The entire balance of management fees is transferred to the designated
      *      fee receiver.
      */
-    function withdrawManageFee() public onlyRole(MANAGER_ROLE) {
+    function withdrawManageFee() public onlyRole(MANAGER_ROLE) nonReentrant{
         require(endTime != 0, "Vault: Invalid endTime");
         require(block.timestamp >= subEndTime, "Vault: Invalid time");
         require(
@@ -308,7 +311,7 @@ contract Vault is
      *      threshold before proceeding. The function approves the asset transfer and
      *      deposits the assets into the RBF contract.
      */
-    function execStrategy() public onlyRole(MANAGER_ROLE) {
+    function execStrategy() public onlyRole(MANAGER_ROLE) nonReentrant {
         require(assetBalance>0,"Vault: assetBalance is zero");
         require(
             maxSupply == totalSupply() ||
@@ -424,23 +427,28 @@ contract Vault is
         offChainWLMap[whitelistAddr] = false;
         for (uint256 i = 0; i < offChainWL.length; i++) {
             if (offChainWL[i] == whitelistAddr) {
-                offChainWL[i] = offChainWL[onChainWL.length - 1];
+                offChainWL[i] = offChainWL[offChainWL.length - 1];
                 offChainWL.pop();
                 break;
             }
         }
     }
 
+
+    //  todo
+    //  The current project is designed primarily for small-scale whitelist-based fundraising.
+    //  Dividend distribution is handled via on-chain whitelist snapshots. 
+    //  In the future, the platform will be opened to the public, and the distribution mechanism will be updated to a MasterChef-like model.
     /**
      * @notice Distributes dividends to whitelisted users based on their shareholding.
      * @dev The function calculates the dividend amount for each whitelisted user and transfers
      *      the corresponding amount. Only users with a nonzero balance receive dividends.
      */
-    function dividend() public onlyRole(MANAGER_ROLE) {
+    function dividend() public onlyRole(MANAGER_ROLE) nonReentrant {
         uint256 totalDividend = IERC20(assetToken).balanceOf(dividendTreasury);
         require(totalDividend > 0, "Vault: No dividend to pay");
         uint256 totalSupply = totalSupply();
-        require(totalSupply > 0, "Vault: No rbu to pay");
+        require(totalSupply > 0, "Vault: No rbf to pay");
         for (uint8 i = 0; i < onChainWL.length; i++) {
             if (onChainWLMap[onChainWL[i]]) {
                 if (balanceOf(onChainWL[i]) != 0) {
