@@ -1,9 +1,13 @@
 # Accelerate-Protocal
 # Overview
-Accelerate-Protocol is a modular on-chain protocol for tokenized fundraising, asset custody, and dividend distribution. It is built around a Vault-based architecture that supports compliant capital management through a series of upgradeable and composable contracts.
-Each Vault represents an independent fundraising instance with integrated support for whitelist-based subscription, fund collection, share minting, redemption, and revenue distribution. The protocol also introduces RBF contracts for managing asset inflows, dividend allocations, and valuation tracking.
+AXC is a Programmable Private Market RWA Launchpad 
 
-Dividend distributions follow a scheduled model and are processed during asset maturity.
+In short, any enterprise (e.g., BTC mining facilities, AI data centers, etc.) with strong, consistent cash flow can compliantly launch a yield-bearing, revenue-sharing RWA token.
+
+Keys to unlock distribution: 
+a) Compliant: Tokenize RBF (Revenue Sharing) products issued by our licensed exchange partner MCEX (Founded by the Former CEO of Hong Kong Stock Exchange). 
+b) Transparent: Authenticate private enterprises’ RWA data within an open ledger system.
+c) Liquid + Composable: DeFi primitive frameworks to restructure and distribute RWA tokens.
 
 
 # Contracts

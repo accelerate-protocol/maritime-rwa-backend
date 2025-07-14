@@ -8,6 +8,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const {deployer} = await getNamedAccounts();
 
+    
     const EscrowFactory = await deploy('EscrowFactory', {
       from: deployer,
       args: [deployer],
