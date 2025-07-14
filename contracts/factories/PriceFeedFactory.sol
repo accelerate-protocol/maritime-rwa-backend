@@ -42,10 +42,3 @@ contract PriceFeedFactory is Auth, IPriceFeedFactory {
     }
 
 }
-
-
-
-
-
-
-

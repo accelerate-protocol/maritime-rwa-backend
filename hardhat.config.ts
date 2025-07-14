@@ -36,7 +36,7 @@ const config: HardhatUserConfig = {
     investor3: 8,
     investor4: 9,
     investor5: 10,
-    drds:11
+    drds:11,
   },
 
   networks: {
