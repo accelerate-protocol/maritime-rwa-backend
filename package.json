@@ -4,13 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx hardhat test"
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:local": "hardhat deploy --tags v2-templates,v2-factories,v2-creation --reset",
+    "deploy:v2-overview": "hardhat deploy --tags v2-overview",
+    "deploy:v2-templates": "hardhat deploy --tags v2-templates",
+    "deploy:v2-factories": "hardhat deploy --tags v2-factories", 
+    "deploy:v2-creation": "hardhat deploy --tags v2-creation",
+    "deploy:v2-all": "hardhat deploy --tags v2-templates,v2-factories,v2-creation --reset",
+    "extract-abis": "bash scripts/extract-abis.sh"
   },
   "author": "johnsonwyj <hzwyjwork@163.com>",
   "license": "ISC",
   "repository": "git@github.com:accelerate-protocal/accelerate-contract.git",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.9.5",
     "@openzeppelin/contracts-upgradeable": "^4.9.5",
     "dotenv": "^17.2.0",
     "hardhat": "^2.22.17"
@@ -23,7 +30,7 @@
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.0",
-    "@openzeppelin/contracts": "^4.8.3",
+    "@openzeppelin/contracts": "^4.9.6",
     "@typechain/ethers-v6": "^0.5.0",
     "@typechain/hardhat": "^9.0.0",
     "@types/chai": "^4.2.0",
