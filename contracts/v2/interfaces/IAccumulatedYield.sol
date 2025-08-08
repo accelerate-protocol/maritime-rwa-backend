@@ -52,7 +52,7 @@ interface IAccumulatedYield {
         uint256 amount,
         uint256 timestamp,
         address indexed validator,
-        bytes32 indexed messageHash
+        bytes signature
     );
     
     /**
@@ -95,9 +95,9 @@ interface IAccumulatedYield {
     /**
      * @dev 派息接收地址更新事件
      */
-    event DividendReceiverUpdated(
-        address indexed oldReceiver,
-        address indexed newReceiver
+    event DividendTreasuryUpdated(
+        address indexed oldTreasury,
+        address indexed newTreasury
     );
     
 
@@ -114,22 +114,22 @@ interface IAccumulatedYield {
     
     /**
      * @dev 设置派息接收地址
-     * @param _dividendReceiver 新的派息接收地址
+     * @param _dividendTreasury 新的派息接收地址
      */
-    function setDividendReceiver(address _dividendReceiver) external;
+    function setDividendTreasury(address _dividendTreasury) external;
     
     /**
      * @dev 初始化全局收益池
      * @param _vault Vault合约地址
      * @param _manager 管理员地址
-     * @param _dividendReceiver 派息资金的接收地址
+     * @param _dividendTreasury 派息资金的接收地址
      * @param shareToken 份额凭证代币地址
      * @param rewardToken 收益代币地址
      */
     function initGlobalPool(
         address _vault,
         address _manager,
-        address _dividendReceiver,
+        address _dividendTreasury,
         address shareToken,
         address rewardToken
     ) external;
@@ -224,7 +224,7 @@ interface IAccumulatedYield {
      * @dev 查询派息接收地址
      * @return 派息接收地址
      */
-    function getDividendReceiver() external view returns (address);
+    function getDividendTreasury() external view returns (address);
     
     /**
      * @dev 计算用户在指定余额下的累计份额

@@ -7,11 +7,11 @@ describe("AccumulatedYield - 完整流程测试", function () {
     let rewardToken;
     let vault;
     
-    let owner, manager, dividendReceiver, validator;
+    let owner, manager, dividendTreasury, validator;
     let alice, bob, carol;
 
     beforeEach(async function () {
-        [owner, manager, dividendReceiver, validator, alice, bob, carol] = await ethers.getSigners();
+        [owner, manager, dividendTreasury, validator, alice, bob, carol] = await ethers.getSigners();
 
         // 部署Mock代币
         const MockERC20 = await ethers.getContractFactory("MockERC20");
@@ -33,7 +33,7 @@ describe("AccumulatedYield - 完整流程测试", function () {
         await accumulatedYield.initGlobalPool(
             vault.target || vault.address,
             manager.address,
-            dividendReceiver.address,
+            dividendTreasury.address,
             shareToken.target || shareToken.address,
             rewardToken.target || rewardToken.address
         );

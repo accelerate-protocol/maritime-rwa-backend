@@ -138,7 +138,7 @@ describe("Creation部署测试 - 完整的V2架构", function () {
             [
                 ethers.ZeroAddress, // vault会在Creation中设置
                 manager.address,
-                manager.address, // dividendReceiver
+                manager.address, // dividendTreasury
                 ethers.ZeroAddress, // shareToken会在Creation中设置
                 usdt.target || usdt.address // rewardToken
             ]

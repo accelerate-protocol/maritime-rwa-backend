@@ -10,14 +10,14 @@ describe("AccumulatedYield", function () {
     
     let owner: HardhatEthersSigner;
     let manager: HardhatEthersSigner;
-    let dividendReceiver: HardhatEthersSigner;
+    let dividendTreasury: HardhatEthersSigner;
     let validator: HardhatEthersSigner; // 签名验证者
     let alice: HardhatEthersSigner;
     let bob: HardhatEthersSigner;
     let carol: HardhatEthersSigner;
 
     beforeEach(async function () {
-        [owner, manager, dividendReceiver, validator, alice, bob, carol] = await ethers.getSigners();
+        [owner, manager, dividendTreasury, validator, alice, bob, carol] = await ethers.getSigners();
 
         // 部署Mock代币
         const MockERC20 = await ethers.getContractFactory("MockERC20");
@@ -39,7 +39,7 @@ describe("AccumulatedYield", function () {
         await accumulatedYield.initGlobalPool(
             vault.address,
             manager.address,
-            dividendReceiver.address,
+            dividendTreasury.address,
             shareToken.address,
             rewardToken.address
         );

@@ -16,7 +16,7 @@ contract MockAccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     
     address public vault;
     address public manager;
-    address public dividendReceiver;
+    address public dividendTreasury;
     
     modifier onlyManager() {
         require(msg.sender == manager, "MockAccumulatedYield: only manager");
@@ -41,7 +41,7 @@ contract MockAccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     function initGlobalPool(
         address _vault,
         address _manager,
-        address _dividendReceiver,
+        address _dividendTreasury,
         address shareToken,
         address rewardToken
     ) external {
@@ -49,7 +49,7 @@ contract MockAccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         
         vault = _vault;
         manager = _manager;
-        dividendReceiver = _dividendReceiver;
+        dividendTreasury = _dividendTreasury;
         
         globalPool = GlobalPoolInfo({
             totalAccumulatedShares: 0,
@@ -70,10 +70,10 @@ contract MockAccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         emit ManagerUpdated(oldManager, _manager);
     }
     
-    function setDividendReceiver(address _dividendReceiver) external {
-        address oldReceiver = dividendReceiver;
-        dividendReceiver = _dividendReceiver;
-        emit DividendReceiverUpdated(oldReceiver, _dividendReceiver);
+    function setDividendTreasury(address _dividendTreasury) external {
+        address oldTreasury = dividendTreasury;
+        dividendTreasury = _dividendTreasury;
+        emit DividendTreasuryUpdated(oldTreasury, _dividendTreasury);
     }
     
     function updateGlobalPoolStatus(bool isActive) external {
@@ -87,7 +87,7 @@ contract MockAccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     
     function distributeDividend(uint256 dividendAmount, bytes memory signature) external {
         // Mock实现，不包含具体业务逻辑
-        emit DividendDistributed(dividendAmount, block.timestamp, msg.sender, bytes32(0));
+        emit DividendDistributed(dividendAmount, block.timestamp, msg.sender, signature);
     }
     
     function updateUserPoolsOnTransfer(address from, address to, uint256 amount) external {
@@ -119,8 +119,8 @@ contract MockAccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         return manager;
     }
     
-    function getDividendReceiver() external view returns (address) {
-        return dividendReceiver;
+    function getDividendTreasury() external view returns (address) {
+        return dividendTreasury;
     }
     
     function calculateAccumulatedShares(address user, uint256 userBalance) external view returns (uint256) {

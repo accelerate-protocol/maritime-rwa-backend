@@ -24,7 +24,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     
     address public vault;
     address public manager;
-    address public dividendReceiver;
+    address public dividendTreasury;
     
     // 精度常量
     uint256 private constant PRECISION = 1e18;
@@ -77,28 +77,28 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     
     /**
      * @dev 设置派息接收地址
-     * @param _dividendReceiver 新的派息接收地址
+     * @param _dividendTreasury 新的派息接收地址
      */
-    function setDividendReceiver(address _dividendReceiver) external override onlyManager {
-        require(_dividendReceiver != address(0), "AccumulatedYield: invalid dividend receiver");
-        address oldReceiver = dividendReceiver;
-        dividendReceiver = _dividendReceiver;
+    function setDividendTreasury(address _dividendTreasury) external override onlyManager {
+        require(_dividendTreasury != address(0), "AccumulatedYield: invalid dividend treasury");
+        address oldTreasury = dividendTreasury;
+        dividendTreasury = _dividendTreasury;
         
-        emit DividendReceiverUpdated(oldReceiver, _dividendReceiver);
+        emit DividendTreasuryUpdated(oldTreasury, _dividendTreasury);
     }
     
     /**
      * @dev 初始化全局收益池
      * @param _vault Vault合约地址
      * @param _manager 管理员地址
-     * @param _dividendReceiver 派息资金的接收地址
+     * @param _dividendTreasury 派息资金的接收地址
      * @param shareToken 份额凭证代币地址
      * @param rewardToken 收益代币地址
      */
     function initGlobalPool(
         address _vault,
         address _manager,
-        address _dividendReceiver,
+        address _dividendTreasury,
         address shareToken,
         address rewardToken
     ) external override {
@@ -106,14 +106,14 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         require(globalPool.shareToken == address(0), "AccumulatedYield: already initialized");
         require(_vault != address(0), "AccumulatedYield: invalid vault");
         require(_manager != address(0), "AccumulatedYield: invalid manager");
-        require(_dividendReceiver != address(0), "AccumulatedYield: invalid dividend receiver");
+        require(_dividendTreasury != address(0), "AccumulatedYield: invalid dividend treasury");
         require(shareToken != address(0), "AccumulatedYield: invalid share token");
         require(rewardToken != address(0), "AccumulatedYield: invalid reward token");
         
-        // 设置vault和manager和dividendReceiver
+        // 设置vault和manager和dividendTreasury
         vault = _vault;
         manager = _manager;
-        dividendReceiver = _dividendReceiver;
+        dividendTreasury = _dividendTreasury;
         
         // 设置owner为manager
         _transferOwnership(_manager);
@@ -190,9 +190,16 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         address signer = ECDSA.recover(ethSignedMessageHash, signature);
         require(signer == validator, "AccumulatedYield: invalid drds signature");
         
+        // 先转入收益代币（防止重入攻击）
+        IERC20(globalPool.rewardToken).safeTransferFrom(
+            msg.sender,
+            address(this),
+            dividendAmount
+        );
         
         // 获取当前代币总供应量
         uint256 shareTotalSupply = IERC20(globalPool.shareToken).totalSupply();
+        require(shareTotalSupply > 0, "AccumulatedYield: no share tokens in circulation");
         
         // 核心计算公式：收益分配阶段
         // 1: 更新池子总派息
@@ -204,14 +211,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         // 更新时间戳
         globalPool.lastDividendTime = block.timestamp;
         
-        // 转入收益代币
-        IERC20(globalPool.rewardToken).safeTransferFrom(
-            msg.sender,
-            address(this),
-            dividendAmount
-        );
-        
-        emit DividendDistributed(dividendAmount, block.timestamp, validator, ethSignedMessageHash);
+        emit DividendDistributed(dividendAmount, block.timestamp, validator, signature);
     }
     
     // ============ 代币转移相关 ============
@@ -321,8 +321,8 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
      * @dev 查询派息接收地址
      * @return 派息接收地址
      */
-    function getDividendReceiver() external view override returns (address) {
-        return dividendReceiver;
+    function getDividendTreasury() external view override returns (address) {
+        return dividendTreasury;
     }
     
     /**

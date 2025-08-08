@@ -185,10 +185,10 @@ const tokenCalldata = ethers.concat([
 
 ### AccumulatedYield初始化
 ```javascript
-// 函数签名: initGlobalPool(address vault, address manager, address dividendReceiver, address shareToken, address rewardToken)
+// 函数签名: initGlobalPool(address vault, address manager, address dividendTreasury, address shareToken, address rewardToken)
 const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
     ["address", "address", "address", "address", "address"],
-    [vaultAddress, managerAddress, dividendReceiverAddress, shareTokenAddress, rewardTokenAddress]
+    [vaultAddress, managerAddress, dividendTreasuryAddress, shareTokenAddress, rewardTokenAddress]
 );
 
 const yieldCalldata = ethers.concat([
