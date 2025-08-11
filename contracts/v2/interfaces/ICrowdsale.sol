@@ -3,10 +3,32 @@ pragma solidity ^0.8.0;
 
 /**
  * @title ICrowdsale
- * @dev 众筹模块接口
+ * @dev Crowdsale module interface
  */
 interface ICrowdsale {
-    // ============ 事件定义 ============
+    // ============ Struct Definitions ============
+    
+    /**
+     * @dev On-chain signature data structure
+     */
+    struct OnChainSignatureData {
+        string operation;        // Operation name ("deposit", "redeem")
+        uint256 amount;          // Deposit amount
+        address receiver;        // Receiver address
+        uint256 nonce;          // Nonce to prevent replay attacks
+        uint256 chainId;        // Chain ID to prevent cross-chain replay
+        address contractAddress; // Contract address to prevent replay
+    }
+    
+    /**
+     * @dev Off-chain signature data structure
+     */
+    struct OffChainSignatureData {
+        uint256 amount;          // amount
+        address receiver;        // Receiver address
+    }
+    
+    // ============ Events ============
     event Deposit(address indexed user, uint256 amount, address indexed receiver, uint256 shares);
     event Redeem(address indexed user, uint256 amount, address indexed receiver);
     event OffChainDeposit(address indexed manager, address indexed receiver, uint256 amount, bytes signature);
@@ -14,11 +36,10 @@ interface ICrowdsale {
     event FundingAssetsWithdrawn(address indexed receiver, uint256 amount);
     event ManageFeeWithdrawn(address indexed receiver, uint256 amount);
 
-    // ============ 基础字段查询接口 ============
+    // ============ Basic Field Query Interface ============
     function vault() external view returns (address);
     function startTime() external view returns (uint256);
     function endTime() external view returns (uint256);
-    function vaultToken() external view returns (address);
     function assetToken() external view returns (address);
     function maxSupply() external view returns (uint256);
     function softCap() external view returns (uint256);
@@ -32,19 +53,31 @@ interface ICrowdsale {
     function fundingAssets() external view returns (uint256);
     function manageFee() external view returns (uint256);
 
-    // ============ 融资操作接口 ============
-    function deposit(uint256 amount, address receiver) external returns (uint256);
-    function redeem(uint256 amount, address receiver) external;
-    function depositWithSignature(uint256 amount, address receiver, bytes memory signature) external;
+    // ============ Funding Operations Interface ============
+    // User initiated, requires manager signature
+    function deposit(uint256 amount, address receiver, bytes memory signature) external returns (uint256);
+    
+    // User initiated, requires manager signature
+    function redeem(uint256 amount, address receiver, bytes memory signature) external;
+    
+    // Backend manager initiated, requires DRDS signature verification
+    function offDeposit(uint256 amount, address receiver, bytes memory drdsSignature) external;
+    
+    // Backend manager initiated
     function offChainRedeem(uint256 amount, address receiver) external;
 
-    // ============ 资金管理接口 ============
+    // ============ Fund Management Interface ============
     function withdrawFundingAssets() external;
     function withdrawManageFee() external;
 
-    // ============ 状态查询接口 ============
+    // ============ Status Query Interface ============
     function isFundingSuccessful() external view returns (bool);
     function isFundingPeriodActive() external view returns (bool);
     function getTotalRaised() external view returns (uint256);
     function getRemainingSupply() external view returns (uint256);
+    
+    // ============ Signature Query Interface ============
+    function getManagerNonce() external view returns (uint256);
+    function getDepositSignatureMessage(uint256 amount, address receiver, uint256 nonce) external view returns (bytes32);
+    function getRedeemSignatureMessage(uint256 amount, address receiver, uint256 nonce) external view returns (bytes32);
 } 

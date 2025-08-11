@@ -88,6 +88,18 @@ contract MockBasicVault is IVault {
         return tokenPaused;
     }
     
+    function mintToken(address to, uint256 amount) external override onlyManager {
+        // Mock implementation
+    }
+    
+    function burnToken(address from, uint256 amount) external override onlyManager {
+        // Mock implementation
+    }
+    
+    function updateUserPoolsOnTransfer(address from, address to, uint256 amount) external override {
+        // Mock implementation
+    }
+    
     // 设置模块地址
     function setFundingModule(address _fundingModule) external onlyManager {
         fundingModule = _fundingModule;
@@ -101,8 +113,5 @@ contract MockBasicVault is IVault {
         vaultToken = _vaultToken;
     }
     
-    // Mock实现，不包含具体业务逻辑
-    function updateUserPoolsOnTransfer(address from, address to, uint256 amount) external {
-        // Mock实现，保留接口但不包含具体逻辑
-    }
+
 } 

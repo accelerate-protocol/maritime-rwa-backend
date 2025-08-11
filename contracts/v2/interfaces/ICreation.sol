@@ -196,14 +196,12 @@ interface ICreation {
      * @dev 单独部署Fund
      * @param templateId 模板ID
      * @param vault Vault地址
-     * @param token Token地址
      * @param initData 初始化数据（bytes格式）
      * @return fund Fund地址
      */
     function deployFund(
         uint256 templateId,
         address vault,
-        address token,
         bytes memory initData
     ) external returns (address fund);
     

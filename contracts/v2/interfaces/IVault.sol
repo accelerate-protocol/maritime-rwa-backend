@@ -38,4 +38,16 @@ interface IVault {
     function pauseToken() external;
     function unpauseToken() external;
     function isTokenPaused() external view returns (bool);
+    
+    // ============ 代币操作接口 ============
+    function mintToken(address to, uint256 amount) external;
+    function burnToken(address from, uint256 amount) external;
+    
+    // ============ 收益更新接口 ============
+    function updateUserPoolsOnTransfer(address from, address to, uint256 amount) external;
+    
+    // ============ 模块配置接口 ============
+    function setVaultToken(address _vaultToken) external;
+    function setFundingModule(address _funding) external;
+    function setDividendModule(address _dividendModule) external;
 } 

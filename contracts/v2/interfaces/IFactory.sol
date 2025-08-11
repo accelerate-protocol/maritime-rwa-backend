@@ -34,7 +34,7 @@ interface ITokenFactory {
 interface IFundFactory {
     event FundCreated(uint256 indexed templateId, address indexed fund, address indexed vault);
     
-    function createFund(uint256 templateId, address vault, address token, bytes memory initData) external returns (address);
+    function createFund(uint256 templateId, address vault, bytes memory initData) external returns (address);
     function addTemplate(uint256 templateId, address template) external;
     function getTemplate(uint256 templateId) external view returns (address);
     function getTemplateCount() external view returns (uint256);

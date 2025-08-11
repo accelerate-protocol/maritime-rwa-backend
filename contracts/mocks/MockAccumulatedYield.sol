@@ -7,10 +7,15 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../v2/interfaces/IAccumulatedYield.sol";
 
+/**
+ * @title MockAccumulatedYield
+ * @dev Mock implementation of AccumulatedYield for testing
+ */
 contract MockAccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
     
-    // 基本字段
+    // ============ State Variables ============
+    
     GlobalPoolInfo public globalPool;
     mapping(address => UserInfo) public users;
     
@@ -34,10 +39,10 @@ contract MockAccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     }
     
     constructor() {
-        // 构造函数为空，支持Clones模式
+        // Empty constructor, supports Clones pattern
     }
     
-    // 初始化函数（用于Clones模式）
+    // Initialization function (for Clones pattern)
     function initGlobalPool(
         address _vault,
         address _manager,
@@ -63,7 +68,7 @@ contract MockAccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         emit GlobalPoolInitialized(shareToken, rewardToken, block.timestamp);
     }
     
-    // Mock实现，只保留接口，不包含具体业务逻辑
+    // Mock implementation, only keeps interface, no specific business logic
     function setManager(address _manager) external {
         address oldManager = manager;
         manager = _manager;
@@ -81,17 +86,17 @@ contract MockAccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     }
     
     function claimReward() external {
-        // Mock实现，不包含具体业务逻辑
+        // Mock implementation, no specific business logic
         emit RewardClaimed(msg.sender, 0, 0, block.timestamp);
     }
     
     function distributeDividend(uint256 dividendAmount, bytes memory signature) external {
-        // Mock实现，不包含具体业务逻辑
+        // Mock implementation, no specific business logic
         emit DividendDistributed(dividendAmount, block.timestamp, msg.sender, signature);
     }
     
     function updateUserPoolsOnTransfer(address from, address to, uint256 amount) external {
-        // Mock实现，不包含具体业务逻辑
+        // Mock implementation, no specific business logic
     }
     
     function getUserInfo(address user) external view returns (UserInfo memory) {
@@ -103,7 +108,7 @@ contract MockAccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     }
     
     function pendingReward(address user) external view returns (uint256) {
-        // Mock实现，返回0
+        // Mock implementation, returns 0
         return 0;
     }
     
@@ -124,7 +129,7 @@ contract MockAccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     }
     
     function calculateAccumulatedShares(address user, uint256 userBalance) external view returns (uint256) {
-        // Mock实现，返回0
+        // Mock implementation, returns 0
         return 0;
     }
 } 

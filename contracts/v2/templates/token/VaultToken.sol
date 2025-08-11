@@ -1,0 +1,213 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "../../interfaces/IToken.sol";
+import "../../interfaces/IVault.sol";
+
+/**
+ * @title VaultToken
+ * @dev Vault share certificate token, supporting accumulated yield distribution
+ * @notice Inherits ERC20 standard, supports pause functionality, integrates with AccumulatedYield
+ */
+contract VaultToken is ERC20, Pausable, IToken, Ownable {
+    // ============ State Variables ============
+    address public vault;
+    
+    // Token metadata
+    string private _tokenName;
+    string private _tokenSymbol;
+    uint8 private _tokenDecimals;
+    
+    // Initialization state
+    bool private _initialized;
+    
+    // Constants
+    uint8 private constant MAX_DECIMALS = 24;
+    
+    // ============ Modifiers ============
+    
+    modifier onlyVault() {
+        require(msg.sender == vault, "VaultToken: only vault");
+        _;
+    }
+    
+    modifier whenInitialized() {
+        require(_initialized, "VaultToken: not initialized");
+        _;
+    }
+    
+    modifier whenNotInitialized() {
+        require(!_initialized, "VaultToken: already initialized");
+        _;
+    }
+    
+    // ============ Constructor ============
+    
+    constructor() ERC20("", "") {
+        // Empty constructor, supports Clones pattern
+        _transferOwnership(msg.sender);
+    }
+    
+    // ============ Initialization Function ============
+    
+    /**
+     * @dev Initialize token (for Clones pattern)
+     * @param _vault Vault contract address
+     * @param _name Token name
+     * @param _symbol Token symbol
+     * @param _decimals Token decimals
+     */
+    function initToken(
+        address _vault,
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals
+    ) external whenNotInitialized {
+        require(_vault != address(0), "VaultToken: invalid vault address");
+        require(bytes(_name).length > 0, "VaultToken: empty name");
+        require(bytes(_symbol).length > 0, "VaultToken: empty symbol");
+        require(_decimals <= MAX_DECIMALS, "VaultToken: invalid decimals");
+        
+        vault = _vault;
+        _tokenName = _name;
+        _tokenSymbol = _symbol;
+        _tokenDecimals = _decimals;
+        _initialized = true;
+        
+        // Transfer ownership to vault
+        _transferOwnership(_vault);
+    }
+    
+    // ============ IToken Interface Implementation ============
+    
+    /**
+     * @dev Query token name
+     */
+    function name() public view virtual override(ERC20, IToken) returns (string memory) {
+        return _tokenName;
+    }
+    
+    /**
+     * @dev Query token symbol
+     */
+    function symbol() public view virtual override(ERC20, IToken) returns (string memory) {
+        return _tokenSymbol;
+    }
+    
+    /**
+     * @dev Query token decimals
+     */
+    function decimals() public view virtual override(ERC20, IToken) returns (uint8) {
+        return _tokenDecimals;
+    }
+    
+    /**
+     * @dev Query pause status
+     */
+    function paused() public view virtual override(Pausable, IToken) returns (bool) {
+        return Pausable.paused();
+    }
+    
+
+    
+    // ============ Minting and Burning Interface ============
+    
+    /**
+     * @dev Mint function
+     * @param to Recipient address
+     * @param amount Mint amount
+     */
+    function mint(address to, uint256 amount) external override onlyVault whenInitialized {
+        require(to != address(0), "VaultToken: mint to zero address");
+        require(amount > 0, "VaultToken: mint amount must be positive");
+        
+        _mint(to, amount);
+        
+        emit TokenMinted(to, amount);
+    }
+    
+    /**
+     * @dev Burn function
+     * @param account Address to burn from
+     * @param amount Burn amount
+     */
+    function burnFrom(address account, uint256 amount) external override onlyVault whenInitialized {
+        require(account != address(0), "VaultToken: burn from zero address");
+        require(amount > 0, "VaultToken: burn amount must be positive");
+        require(balanceOf(account) >= amount, "VaultToken: insufficient balance");
+        
+        _burn(account, amount);
+        
+        emit TokenBurned(account, amount);
+    }
+    
+    // ============ Pause Control Interface ============
+    
+    /**
+     * @dev Pause token transfers
+     */
+    function pause() external override onlyVault whenInitialized whenNotPaused {
+        _pause();
+        
+        emit TokenPaused();
+    }
+    
+    /**
+     * @dev Resume token transfers
+     */
+    function unpause() external override onlyVault whenInitialized whenPaused {
+        _unpause();
+        
+        emit TokenUnpaused();
+    }
+    
+
+    
+    // ============ Internal Functions ============
+    
+    /**
+     * @dev Pre-transfer checks
+     */
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual override {
+        super._beforeTokenTransfer(from, to, amount);
+        
+        // Check pause status
+        require(!paused(), "VaultToken: token transfer while paused");
+        
+        // Update user's yield before transfer through vault
+        if (from != address(0) && to != address(0)) {
+            IVault(vault).updateUserPoolsOnTransfer(from, to, amount);
+        }
+    }
+    
+    /**
+     * @dev Post-transfer processing
+     */
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual override {
+        super._afterTokenTransfer(from, to, amount);
+        
+        // Post-transfer processing logic (if any)
+    }
+    
+    // ============ Query Interface ============
+    
+    /**
+     * @dev Query if initialized
+     */
+    function isInitialized() external view returns (bool) {
+        return _initialized;
+    }
+    
+
+} 

@@ -38,6 +38,7 @@ contract MockCrowdsale is ICrowdsale, ReentrancyGuard {
     uint256 public totalDeposited;
     bool public isFinalized;
     bool public isSuccessful;
+    uint256 public managerNonce;
     
     modifier onlyManager() {
         require(msg.sender == manager, "MockCrowdsale: only manager");
@@ -89,23 +90,20 @@ contract MockCrowdsale is ICrowdsale, ReentrancyGuard {
         manager = _manager;
     }
     
-    // Mock实现，只保留接口，不包含具体业务逻辑
-    function deposit(uint256 amount, address receiver) external override onlyActive nonReentrant returns (uint256) {
+    // ============ ICrowdsale 接口实现 ============
+    
+    function deposit(uint256 amount, address receiver, bytes memory signature) external override onlyActive nonReentrant returns (uint256) {
         // Mock实现，不包含具体业务逻辑
         emit Deposit(receiver, amount, block.timestamp);
         return amount;
     }
     
-    function redeem(uint256 amount, address receiver) external override onlyManager nonReentrant {
+    function redeem(uint256 amount, address receiver, bytes memory signature) external override onlyManager nonReentrant {
         // Mock实现，不包含具体业务逻辑
         emit Redeem(receiver, amount, block.timestamp);
     }
     
-    function depositWithSignature(
-        uint256 amount, 
-        address receiver, 
-        bytes memory signature
-    ) external override onlyManager {
+    function offDeposit(uint256 amount, address receiver, bytes memory drdsSignature) external override onlyManager {
         // Mock实现，不包含具体业务逻辑
     }
     
@@ -121,6 +119,36 @@ contract MockCrowdsale is ICrowdsale, ReentrancyGuard {
     function withdrawManageFee() external override onlyManager {
         // Mock实现，不包含具体业务逻辑
         emit FeeWithdrawn(manageFeeReceiver, 0);
+    }
+    
+    function isFundingSuccessful() external view override returns (bool) {
+        return isSuccessful;
+    }
+    
+    function isFundingPeriodActive() external view override returns (bool) {
+        return block.timestamp >= startTime && 
+               block.timestamp <= endTime && 
+               !isFinalized;
+    }
+    
+    function getTotalRaised() external view override returns (uint256) {
+        return totalDeposited;
+    }
+    
+    function getRemainingSupply() external view override returns (uint256) {
+        return maxSupply > totalDeposited ? maxSupply - totalDeposited : 0;
+    }
+    
+    function getManagerNonce() external view override returns (uint256) {
+        return managerNonce;
+    }
+    
+    function getDepositSignatureMessage(uint256 amount, address receiver, uint256 nonce) external view override returns (bytes32) {
+        return keccak256(abi.encodePacked("deposit", amount, receiver, nonce));
+    }
+    
+    function getRedeemSignatureMessage(uint256 amount, address receiver, uint256 nonce) external view override returns (bytes32) {
+        return keccak256(abi.encodePacked("redeem", amount, receiver, nonce));
     }
     
     // 辅助函数
@@ -143,25 +171,5 @@ contract MockCrowdsale is ICrowdsale, ReentrancyGuard {
         return block.timestamp >= startTime && 
                block.timestamp <= endTime && 
                !isFinalized;
-    }
-    
-    // ============ ICrowdsale 接口实现 ============
-    
-    function isFundingSuccessful() external view override returns (bool) {
-        return isSuccessful;
-    }
-    
-    function isFundingPeriodActive() external view override returns (bool) {
-        return block.timestamp >= startTime && 
-               block.timestamp <= endTime && 
-               !isFinalized;
-    }
-    
-    function getTotalRaised() external view override returns (uint256) {
-        return totalDeposited;
-    }
-    
-    function getRemainingSupply() external view override returns (uint256) {
-        return maxSupply > totalDeposited ? maxSupply - totalDeposited : 0;
     }
 } 

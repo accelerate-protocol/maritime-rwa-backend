@@ -92,7 +92,7 @@ contract Creation is ICreation, Ownable {
         require(result.token != address(0), "Creation: token creation failed");
         
         // 3. 部署Fund
-        result.fund = fundFactory.createFund(fundTemplateId, result.vault, result.token, fundInitData);
+        result.fund = fundFactory.createFund(fundTemplateId, result.vault, fundInitData);
         require(result.fund != address(0), "Creation: fund creation failed");
         
         // 4. 部署AccumulatedYield
@@ -143,7 +143,7 @@ contract Creation is ICreation, Ownable {
         require(token != address(0), "Creation: token creation failed");
         
         // 3. 部署Fund
-        address fund = fundFactory.createFund(fundTemplateId, vault, token, fundParams);
+        address fund = fundFactory.createFund(fundTemplateId, vault, fundParams);
         require(fund != address(0), "Creation: fund creation failed");
         
         // 4. 部署AccumulatedYield
@@ -179,7 +179,7 @@ contract Creation is ICreation, Ownable {
             (bool success, ) = vault.call(
                 abi.encodeWithSignature("setVaultToken(address)", token)
             );
-            // 静默失败，不影响部署
+            require(success, "Creation: setVaultToken failed");
         }
         
         // 配置Vault的模块地址
@@ -188,22 +188,16 @@ contract Creation is ICreation, Ownable {
                 (bool success, ) = vault.call(
                     abi.encodeWithSignature("setFundingModule(address)", fund)
                 );
-                // 静默失败
+                require(success, "Creation: setFundingModule failed");
             }
             
             if (accumulatedYield != address(0)) {
                 (bool success, ) = vault.call(
                     abi.encodeWithSignature("setDividendModule(address)", accumulatedYield)
                 );
-                // 静默失败
+                require(success, "Creation: setDividendModule failed");
             }
         }
-        
-        // 配置Fund的vault和token
-        // 这些已经在FundFactory中处理了
-        
-        // 配置AccumulatedYield的vault和shareToken
-        // 这些已经在AccumulatedYieldFactory中处理了
     }
     
     // 实现接口的其他方法
@@ -237,14 +231,13 @@ contract Creation is ICreation, Ownable {
     }
     
     function deployToken(uint256 templateId, address vault, bytes memory initData) external override returns (address token) {
-        // 注意：vault参数在这里使用，因为Token的init函数需要vault参数
         token = tokenFactory.createToken(templateId, vault, initData);
         emit TokenCreated(token);
         return token;
     }
     
-    function deployFund(uint256 templateId, address vault, address token, bytes memory initData) external override returns (address fund) {
-        fund = fundFactory.createFund(templateId, vault, token, initData);
+    function deployFund(uint256 templateId, address vault, bytes memory initData) external override returns (address fund) {
+        fund = fundFactory.createFund(templateId, vault, initData);
         emit FundCreated(fund);
         return fund;
     }

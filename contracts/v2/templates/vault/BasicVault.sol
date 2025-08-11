@@ -7,14 +7,13 @@ import "../../interfaces/IVault.sol";
 import "../../interfaces/IToken.sol";
 
 /**
- * @title Vault
- * @dev Vault基础模块实现，提供基础存储功能和权限管理
- * @notice 本合约不包含具体业务逻辑，业务功能由其他模块实现
+ * @title BasicVault
+ * @dev Basic vault template implementation, providing fundamental storage and permission management
+ * @notice This contract does not contain specific business logic, business functions are implemented by other modules
  */
-contract Vault is IVault, Ownable, ReentrancyGuard {
-    // ============ 状态变量 ============
+contract BasicVault is IVault, Ownable, ReentrancyGuard {
+    // ============ State Variables ============
     
-    address public override vaultToken;
     address public override manager;
     bool public override whitelistEnabled;
     mapping(address => bool) public override isWhitelisted;
@@ -22,70 +21,82 @@ contract Vault is IVault, Ownable, ReentrancyGuard {
     bytes public override dataHash;
     bytes public override signature;
     
-    // 白名单数组，方便遍历
+    // Cross-contract addresses
+    address public accumulatedYield;
+    address public override vaultToken;
+    address public funding;
+    
+    // Whitelist array for easy iteration
     address[] public whitelistArray;
     
-    // 初始化标志
-    bool private initialized;
+    // Initialization state
+    bool private _initialized;
     
-    // ============ 修饰符 ============
+    // ============ Modifiers ============
     
     modifier onlyManager() {
-        require(msg.sender == manager, "Vault: only manager");
+        require(msg.sender == manager, "BasicVault: only manager");
+        _;
+    }
+    
+    modifier onlyFunding() {
+        require(msg.sender == funding, "BasicVault: only funding");
         _;
     }
     
     modifier onlyVaultToken() {
-        require(msg.sender == vaultToken, "Vault: only vault token");
+        require(msg.sender == vaultToken, "BasicVault: only vault token");
         _;
     }
     
     modifier whenWhitelistEnabled() {
         if (whitelistEnabled) {
-            require(isWhitelisted[msg.sender], "Vault: not whitelisted");
+            require(isWhitelisted[msg.sender], "BasicVault: not whitelisted");
         }
         _;
     }
     
-    modifier onlyInitialized() {
-        require(initialized, "Vault: not initialized");
+    modifier whenInitialized() {
+        require(_initialized, "BasicVault: not initialized");
         _;
     }
     
-    // ============ 构造函数 ============
-    
-    /**
-     * @dev 构造函数（用于直接部署）
-     */
-    constructor() {
-        // 空构造函数，支持Clones模式
+    modifier whenNotInitialized() {
+        require(!_initialized, "BasicVault: already initialized");
+        _;
     }
     
-    // ============ 初始化函数 ============
+    // ============ Constructor ============
+    
+    constructor() {
+        // Empty constructor, supports Clones pattern
+        _transferOwnership(msg.sender);
+    }
+    
+    // ============ Initialization Function ============
     
     /**
-     * @dev 初始化函数（用于Clones模式）
-     * @param _manager 管理员地址
-     * @param _validator 验证器地址
-     * @param _whitelistEnabled 是否启用白名单
-     * @param _initialWhitelist 初始白名单地址
+     * @dev Initialize vault (for Clones pattern)
+     * @param _manager Manager address
+     * @param _validator Validator address
+     * @param _whitelistEnabled Whether to enable whitelist
+     * @param _initialWhitelist Initial whitelist addresses
      */
     function initVault(
         address _manager,
         address _validator,
         bool _whitelistEnabled,
         address[] memory _initialWhitelist
-    ) external {
-        require(!initialized, "Vault: already initialized");
-        require(_manager != address(0), "Vault: invalid manager");
-        require(_validator != address(0), "Vault: invalid validator");
+    ) external whenNotInitialized {
+        require(_manager != address(0), "BasicVault: invalid manager");
+        require(_validator != address(0), "BasicVault: invalid validator");
         
         manager = _manager;
         validator = _validator;
         whitelistEnabled = _whitelistEnabled;
-        initialized = true;
+        _initialized = true;
         
-        // 添加初始白名单
+        // Add initial whitelist
         for (uint256 i = 0; i < _initialWhitelist.length; i++) {
             _addToWhitelist(_initialWhitelist[i]);
         }
@@ -93,38 +104,26 @@ contract Vault is IVault, Ownable, ReentrancyGuard {
         _transferOwnership(_manager);
     }
     
-    // ============ Vault Token 设置 ============
+    // ============ IVault Interface Implementation ============
     
     /**
-     * @dev 设置vault token地址（只能设置一次）
-     * @param _vaultToken vault token地址
+     * @dev Add address to whitelist
+     * @param _addr Address to add
      */
-    function setVaultToken(address _vaultToken) external onlyOwner onlyInitialized {
-        require(vaultToken == address(0), "Vault: token already set");
-        require(_vaultToken != address(0), "Vault: invalid token address");
-        vaultToken = _vaultToken;
-    }
-    
-    // ============ 白名单管理 ============
-    
-    /**
-     * @dev 添加地址到白名单
-     * @param _addr 要添加的地址
-     */
-    function addToWhitelist(address _addr) external override onlyManager onlyInitialized {
+    function addToWhitelist(address _addr) external override onlyManager whenInitialized {
         _addToWhitelist(_addr);
     }
     
     /**
-     * @dev 从白名单移除地址
-     * @param _addr 要移除的地址
+     * @dev Remove address from whitelist
+     * @param _addr Address to remove
      */
-    function removeFromWhitelist(address _addr) external override onlyManager onlyInitialized {
-        require(isWhitelisted[_addr], "Vault: not whitelisted");
+    function removeFromWhitelist(address _addr) external override onlyManager whenInitialized {
+        require(isWhitelisted[_addr], "BasicVault: not whitelisted");
         
         isWhitelisted[_addr] = false;
         
-        // 从数组中移除
+        // Remove from array
         for (uint256 i = 0; i < whitelistArray.length; i++) {
             if (whitelistArray[i] == _addr) {
                 whitelistArray[i] = whitelistArray[whitelistArray.length - 1];
@@ -137,74 +136,70 @@ contract Vault is IVault, Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev 启用白名单
+     * @dev Enable whitelist
      */
-    function enableWhitelist() external override onlyManager onlyInitialized {
+    function enableWhitelist() external override onlyManager whenInitialized {
         whitelistEnabled = true;
         emit WhitelistStatusChanged(true);
     }
     
     /**
-     * @dev 禁用白名单
+     * @dev Disable whitelist
      */
-    function disableWhitelist() external override onlyManager onlyInitialized {
+    function disableWhitelist() external override onlyManager whenInitialized {
         whitelistEnabled = false;
         emit WhitelistStatusChanged(false);
     }
     
     /**
-     * @dev 检查是否启用白名单
-     * @return 是否启用白名单
+     * @dev Check if whitelist is enabled
+     * @return Whether whitelist is enabled
      */
     function isWhiteList() external view override returns (bool) {
         return whitelistEnabled;
     }
     
-    // ============ 验证功能 ============
-    
     /**
-     * @dev 验证数据（简单实现，实际应用中需要更复杂的验证逻辑）
-     * @return 验证结果
+     * @dev Verify data (simple implementation, actual applications need more complex verification logic)
+     * @return Verification result
      */
     function verify() external pure override returns (bool) {
-        // 简单的验证逻辑，实际实现需要根据具体需求
+        // Simple verification logic, actual implementation needs to be based on specific requirements
         return true;
     }
     
     /**
-     * @dev 更新验证数据
-     * @param hash 数据哈希
-     * @param _signature 签名数据
+     * @dev Update verification data
+     * @param hash Data hash
+     * @param _signature Signature data
      */
-    function updateVerifyData(bytes memory hash, bytes memory _signature) external override onlyManager onlyInitialized {
+    function updateVerifyData(bytes memory hash, bytes memory _signature) external override onlyManager whenInitialized {
         dataHash = hash;
         signature = _signature;
         emit VerifyDataUpdated(hash, _signature);
     }
     
-    // ============ 代币控制功能 ============
-    
     /**
-     * @dev 暂停代币
+     * @dev Pause token
      */
-    function pauseToken() external override onlyManager onlyInitialized {
-        require(vaultToken != address(0), "Vault: token not set");
+    function pauseToken() external override onlyManager whenInitialized {
+        require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).pause();
         emit TokenPaused();
     }
     
     /**
-     * @dev 取消暂停代币
+     * @dev Unpause token
      */
-    function unpauseToken() external override onlyManager onlyInitialized {
-        require(vaultToken != address(0), "Vault: token not set");
+    function unpauseToken() external override onlyManager whenInitialized {
+        require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).unpause();
         emit TokenUnpaused();
     }
     
     /**
-     * @dev 检查代币是否暂停
-     * @return 代币是否暂停
+     * @dev Check if token is paused
+     * @return Whether token is paused
      */
     function isTokenPaused() external view override returns (bool) {
         if (vaultToken == address(0)) {
@@ -213,47 +208,147 @@ contract Vault is IVault, Ownable, ReentrancyGuard {
         return IToken(vaultToken).paused();
     }
     
-    // ============ 查询功能 ============
+    /**
+     * @dev Mint tokens through vault
+     * @param to Recipient address
+     * @param amount Amount to mint
+     */
+    function mintToken(address to, uint256 amount) external override onlyFunding whenInitialized {
+        require(vaultToken != address(0), "BasicVault: token not set");
+        IToken(vaultToken).mint(to, amount);
+    }
     
     /**
-     * @dev 获取白名单长度
-     * @return 白名单长度
+     * @dev Burn tokens through vault
+     * @param from Address to burn from
+     * @param amount Amount to burn
+     */
+    function burnToken(address from, uint256 amount) external override onlyFunding whenInitialized {
+        require(vaultToken != address(0), "BasicVault: token not set");
+        IToken(vaultToken).burnFrom(from, amount);
+    }
+    
+    /**
+     * @dev Update user pools on transfer through vault
+     * @param from From address
+     * @param to To address
+     * @param amount Transfer amount
+     */
+    function updateUserPoolsOnTransfer(address from, address to, uint256 amount) external override whenInitialized {
+        require(msg.sender == vaultToken, "BasicVault: only token can call");
+        if (accumulatedYield != address(0) && from != address(0) && to != address(0)) {
+            (bool success, ) = accumulatedYield.call(
+                abi.encodeWithSignature(
+                    "updateUserPoolsOnTransfer(address,address,uint256)",
+                    from,
+                    to,
+                    amount
+                )
+            );
+            if (!success) {
+                revert("BasicVault: updateUserPoolsOnTransfer failed");
+            }
+        }
+    }
+    
+    // ============ Vault Token Management ============
+    
+    /**
+     * @dev Set vault token address (can only be set once)
+     * @param _vaultToken Vault token address
+     */
+    function setVaultToken(address _vaultToken) external override onlyOwner whenInitialized {
+        require(vaultToken == address(0), "BasicVault: token already set");
+        require(_vaultToken != address(0), "BasicVault: invalid token address");
+        vaultToken = _vaultToken;
+    }
+    
+    /**
+     * @dev Set funding module address (can only be set once)
+     * @param _funding Funding module address
+     */
+    function setFundingModule(address _funding) external override onlyOwner whenInitialized {
+        require(funding == address(0), "BasicVault: funding already set");
+        require(_funding != address(0), "BasicVault: invalid funding address");
+        funding = _funding;
+    }
+    
+    /**
+     * @dev Set dividend module address (can only be set once)
+     * @param _dividendModule Dividend module address
+     */
+    function setDividendModule(address _dividendModule) external override onlyOwner whenInitialized {
+        require(accumulatedYield == address(0), "BasicVault: dividend module already set");
+        require(_dividendModule != address(0), "BasicVault: invalid dividend module address");
+        accumulatedYield = _dividendModule;
+    }
+    
+    // ============ Query Functions ============
+    
+    /**
+     * @dev Get whitelist length
+     * @return Whitelist length
      */
     function getWhitelistLength() external view returns (uint256) {
         return whitelistArray.length;
     }
     
     /**
-     * @dev 获取白名单地址
-     * @param index 索引
-     * @return 白名单地址
+     * @dev Get whitelist address
+     * @param index Index
+     * @return Whitelist address
      */
     function getWhitelistAddress(uint256 index) external view returns (address) {
-        require(index < whitelistArray.length, "Vault: index out of bounds");
+        require(index < whitelistArray.length, "BasicVault: index out of bounds");
         return whitelistArray[index];
     }
     
     /**
-     * @dev 获取完整白名单
-     * @return 白名单地址数组
+     * @dev Get complete whitelist
+     * @return Whitelist address array
      */
     function getWhitelist() external view returns (address[] memory) {
         return whitelistArray;
     }
     
-    // ============ 内部函数 ============
+    /**
+     * @dev Get funding module address
+     * @return Funding module address
+     */
+    function getFundingModule() external view returns (address) {
+        return funding;
+    }
     
     /**
-     * @dev 内部添加白名单函数
-     * @param _addr 要添加的地址
+     * @dev Get dividend module address
+     * @return Dividend module address
+     */
+    function getDividendModule() external view returns (address) {
+        return accumulatedYield;
+    }
+    
+    // ============ Internal Functions ============
+    
+    /**
+     * @dev Internal add to whitelist function
+     * @param _addr Address to add
      */
     function _addToWhitelist(address _addr) internal {
-        require(_addr != address(0), "Vault: invalid address");
-        require(!isWhitelisted[_addr], "Vault: already whitelisted");
+        require(_addr != address(0), "BasicVault: invalid address");
+        require(!isWhitelisted[_addr], "BasicVault: already whitelisted");
         
         isWhitelisted[_addr] = true;
         whitelistArray.push(_addr);
         
         emit WhitelistAdded(_addr);
+    }
+    
+    // ============ Query Interface ============
+    
+    /**
+     * @dev Query if initialized
+     */
+    function isInitialized() external view returns (bool) {
+        return _initialized;
     }
 } 

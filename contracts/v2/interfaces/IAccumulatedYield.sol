@@ -3,41 +3,41 @@ pragma solidity ^0.8.26;
 
 /**
  * @title IAccumulatedYield
- * @dev 参考sushiswap的masterchef算法实现的收益合约接口
+ * @dev Accumulated yield contract interface based on sushiswap's masterchef algorithm
  */
 interface IAccumulatedYield {
-    // ============ 结构体定义 ============
+    // ============ Struct Definitions ============
     
     /**
-     * @dev 全局收益池信息结构
+     * @dev Global pool information structure
      */
     struct GlobalPoolInfo {
-        uint256 totalAccumulatedShares;     // 收益池累积总份额
-        uint256 lastDividendTime;          // 最后派息时间
-        uint256 totalDividend;             // 总派息金额
-        bool isActive;                     // 收益池是否激活
-        address shareToken;                // 用户持有的份额凭证的token地址
-        address rewardToken;               // 收益代币 (USDT等稳定币)地址
+        uint256 totalAccumulatedShares;     // Total accumulated shares in the yield pool
+        uint256 lastDividendTime;          // Last dividend distribution time
+        uint256 totalDividend;             // Total dividend amount distributed
+        bool isActive;                     // Whether the yield pool is active
+        address shareToken;                // Address of the share token (user's share certificate)
+        address rewardToken;               // Address of the reward token (USDT and other stablecoins)
     }
     
     /**
-     * @dev 用户信息结构
+     * @dev User information structure
      */
     struct UserInfo {
-        uint256 accumulatedShares;         // 用户当前持有的累计份额
-        uint256 lastClaimTime;             // 最后领取时间
-        uint256 lastClaimDividend;         // 最后一次派息的总金额
-        uint256 totalClaimed;              // 总领取金额
+        uint256 accumulatedShares;         // User's current accumulated shares
+        uint256 lastClaimTime;             // Last claim time
+        uint256 lastClaimDividend;         // Total dividend amount at last claim
+        uint256 totalClaimed;              // Total claimed amount
     }
     
 
     
 
     
-    // ============ 事件定义 ============
+    // ============ Event Definitions ============
     
     /**
-     * @dev 全局池子初始化事件
+     * @dev Global pool initialization event
      */
     event GlobalPoolInitialized(
         address indexed shareToken,
@@ -46,7 +46,7 @@ interface IAccumulatedYield {
     );
     
     /**
-     * @dev 收益分配事件
+     * @dev Dividend distribution event
      */
     event DividendDistributed(
         uint256 amount,
@@ -56,7 +56,7 @@ interface IAccumulatedYield {
     );
     
     /**
-     * @dev 收益领取事件
+     * @dev Reward claim event
      */
     event RewardClaimed(
         address indexed user,
@@ -66,7 +66,7 @@ interface IAccumulatedYield {
     );
     
     /**
-     * @dev 用户池更新事件
+     * @dev User pool update event
      */
     event UserPoolUpdated(
         address indexed user,
@@ -75,7 +75,7 @@ interface IAccumulatedYield {
     );
     
     /**
-     * @dev 代币转移事件（用于跟踪影响收益的转移）
+     * @dev Token transfer event (for tracking transfers that affect yield)
      */
     event ShareTokenTransferred(
         address indexed from,
@@ -85,7 +85,7 @@ interface IAccumulatedYield {
     );
     
     /**
-     * @dev 管理员更新事件
+     * @dev Manager update event
      */
     event ManagerUpdated(
         address indexed oldManager,
@@ -93,7 +93,7 @@ interface IAccumulatedYield {
     );
     
     /**
-     * @dev 派息接收地址更新事件
+     * @dev Dividend treasury update event
      */
     event DividendTreasuryUpdated(
         address indexed oldTreasury,
@@ -104,27 +104,27 @@ interface IAccumulatedYield {
     
 
     
-    // ============ 全局池子管理接口 ============
+    // ============ Global Pool Management Interface ============
     
     /**
-     * @dev 设置管理员
-     * @param _manager 新的管理员地址
+     * @dev Set manager
+     * @param _manager New manager address
      */
     function setManager(address _manager) external;
     
     /**
-     * @dev 设置派息接收地址
-     * @param _dividendTreasury 新的派息接收地址
+     * @dev Set dividend treasury address
+     * @param _dividendTreasury New dividend treasury address
      */
     function setDividendTreasury(address _dividendTreasury) external;
     
     /**
-     * @dev 初始化全局收益池
-     * @param _vault Vault合约地址
-     * @param _manager 管理员地址
-     * @param _dividendTreasury 派息资金的接收地址
-     * @param shareToken 份额凭证代币地址
-     * @param rewardToken 收益代币地址
+     * @dev Initialize global yield pool
+     * @param _vault Vault contract address
+     * @param _manager Manager address
+     * @param _dividendTreasury Dividend treasury address
+     * @param shareToken Share token address
+     * @param rewardToken Reward token address
      */
     function initGlobalPool(
         address _vault,
@@ -135,42 +135,42 @@ interface IAccumulatedYield {
     ) external;
     
     /**
-     * @dev 更新全局池子状态
-     * @param isActive 是否激活
+     * @dev Update global pool status
+     * @param isActive Whether to activate
      */
     function updateGlobalPoolStatus(
         bool isActive
     ) external;
     
-    // ============ 用户操作接口 ============
+    // ============ User Operation Interface ============
     
     /**
-     * @dev 用户领取收益
+     * @dev User claim rewards
      */
     function claimReward() external;
     
-    // ============ 收益分配接口 ============
+    // ============ Yield Distribution Interface ============
     
     /**
-     * @dev 向全局池子派息
-     * @param dividendAmount 分配数量
-     * @param signature 派息签名
+     * @dev Distribute dividend to global pool
+     * @param dividendAmount Distribution amount
+     * @param signature Dividend signature
      */
     function distributeDividend(
         uint256 dividendAmount,
         bytes memory signature
     ) external;
     
-    // ============ 代币转移相关接口 ============
+    // ============ Token Transfer Related Interface ============
     
     /**
-     * @dev 在代币转移时更新用户池（核心功能）
-     * @param from 转出地址
-     * @param to 转入地址
-     * @param amount 转移数量
+     * @dev Update user pools on token transfer (core functionality)
+     * @param from Transfer from address
+     * @param to Transfer to address
+     * @param amount Transfer amount
      * 
-     * 说明：此函数应在以下情况被调用：
-     * - 用户间转账
+     * Note: This function should be called in the following cases:
+     * - User-to-user transfers
      */
     function updateUserPoolsOnTransfer(
         address from,
@@ -178,59 +178,59 @@ interface IAccumulatedYield {
         uint256 amount
     ) external;
     
-    // ============ 查询接口 ============
+    // ============ Query Interface ============
     
     /**
-     * @dev 查询全局池子信息
-     * @return 全局池子信息结构体
+     * @dev Query global pool information
+     * @return Global pool information structure
      */
     function getGlobalPoolInfo() external view returns (GlobalPoolInfo memory);
     
     /**
-     * @dev 查询用户信息
-     * @param user 用户地址
-     * @return 用户信息结构体
+     * @dev Query user information
+     * @param user User address
+     * @return User information structure
      */
     function getUserInfo(address user) external view returns (UserInfo memory);
     
     /**
-     * @dev 查询用户待领取收益
-     * @param user 用户地址
-     * @return 待领取收益数量
+     * @dev Query user's pending rewards
+     * @param user User address
+     * @return Pending reward amount
      */
     function pendingReward(address user) external view returns (uint256);
     
 
     
     /**
-     * @dev 查询全局池子总派息数量
-     * @return 总派息数量
+     * @dev Query global pool total dividend amount
+     * @return Total dividend amount
      */
     function totalDividend() external view returns (uint256);
     
     /**
-     * @dev 查询全局池子总累积份额
-     * @return 总累积份额
+     * @dev Query global pool total accumulated shares
+     * @return Total accumulated shares
      */
     function totalAccumulatedShares() external view returns (uint256);
     
     /**
-     * @dev 查询当前管理员
-     * @return 管理员地址
+     * @dev Query current manager
+     * @return Manager address
      */
     function getManager() external view returns (address);
     
     /**
-     * @dev 查询派息接收地址
-     * @return 派息接收地址
+     * @dev Query dividend treasury address
+     * @return Dividend treasury address
      */
     function getDividendTreasury() external view returns (address);
     
     /**
-     * @dev 计算用户在指定余额下的累计份额
-     * @param user 用户地址
-     * @param userBalance 指定的用户余额
-     * @return 累计份额
+     * @dev Calculate user's accumulated shares at specified balance
+     * @param user User address
+     * @param userBalance Specified user balance
+     * @return Accumulated shares
      */
     function calculateAccumulatedShares(address user, uint256 userBalance) external view returns (uint256);
     

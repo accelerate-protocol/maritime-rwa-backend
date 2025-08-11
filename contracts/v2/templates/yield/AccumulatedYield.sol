@@ -11,13 +11,13 @@ import "../../interfaces/IVault.sol";
 
 /**
  * @title AccumulatedYield
- * @dev 累积收益模版实现，提供基于持币量的收益分配功能
- * @notice 支持累积收益和实时领取，类似于MasterChef设计
+ * @dev Accumulated yield template implementation, providing yield distribution based on token holdings
+ * @notice Supports accumulated yield and real-time claiming, similar to MasterChef design
  */
 contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
     
-    // ============ 状态变量 ============
+    // ============ State Variables ============
     
     GlobalPoolInfo public globalPool;
     mapping(address => UserInfo) public users;
@@ -26,10 +26,10 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     address public manager;
     address public dividendTreasury;
     
-    // 精度常量
+    // Precision constant
     uint256 private constant PRECISION = 1e18;
     
-    // ============ 修饰符 ============
+    // ============ Modifiers ============
     
     modifier onlyManager() {
         require(msg.sender == manager, "AccumulatedYield: only manager");
@@ -46,28 +46,28 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         _;
     }
     
-    // ============ 构造函数 ============
+    // ============ Constructor ============
     
     /**
-     * @dev 构造函数 
+     * @dev Constructor
      */
     constructor() {
-        // onwer 默认为deployer
+        // Owner defaults to deployer
         _transferOwnership(msg.sender);
     }
     
-    // ============ 全局池子管理 ============
+    // ============ Global Pool Management ============
     
     /**
-     * @dev 设置管理员
-     * @param _manager 新的管理员地址
+     * @dev Set manager
+     * @param _manager New manager address
      */
     function setManager(address _manager) external override onlyOwner {
         require(_manager != address(0), "AccumulatedYield: invalid manager");
         address oldManager = manager;
         manager = _manager;
         
-        // 如果需要，可以转移所有权给新manager
+        // If needed, transfer ownership to new manager
         if (owner() == oldManager) {
             _transferOwnership(_manager);
         }
@@ -76,8 +76,8 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     }
     
     /**
-     * @dev 设置派息接收地址
-     * @param _dividendTreasury 新的派息接收地址
+     * @dev Set dividend treasury address
+     * @param _dividendTreasury New dividend treasury address
      */
     function setDividendTreasury(address _dividendTreasury) external override onlyManager {
         require(_dividendTreasury != address(0), "AccumulatedYield: invalid dividend treasury");
@@ -88,12 +88,12 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     }
     
     /**
-     * @dev 初始化全局收益池
-     * @param _vault Vault合约地址
-     * @param _manager 管理员地址
-     * @param _dividendTreasury 派息资金的接收地址
-     * @param shareToken 份额凭证代币地址
-     * @param rewardToken 收益代币地址
+     * @dev Initialize global yield pool
+     * @param _vault Vault contract address
+     * @param _manager Manager address
+     * @param _dividendTreasury Dividend treasury address
+     * @param shareToken Share token address
+     * @param rewardToken Reward token address
      */
     function initGlobalPool(
         address _vault,
@@ -102,7 +102,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         address shareToken,
         address rewardToken
     ) external override {
-        // 默认只初始化一次，不能重新初始化
+        // Can only initialize once, cannot re-initialize
         require(globalPool.shareToken == address(0), "AccumulatedYield: already initialized");
         require(_vault != address(0), "AccumulatedYield: invalid vault");
         require(_manager != address(0), "AccumulatedYield: invalid manager");
@@ -110,12 +110,12 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         require(shareToken != address(0), "AccumulatedYield: invalid share token");
         require(rewardToken != address(0), "AccumulatedYield: invalid reward token");
         
-        // 设置vault和manager和dividendTreasury
+        // Set vault, manager and dividendTreasury
         vault = _vault;
         manager = _manager;
         dividendTreasury = _dividendTreasury;
         
-        // 设置owner为manager
+        // Set owner as manager
         _transferOwnership(_manager);
         
         globalPool = GlobalPoolInfo({
@@ -131,8 +131,8 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     }
     
     /**
-     * @dev 更新全局池子状态
-     * @param isActive 是否激活
+     * @dev Update global pool status
+     * @param isActive Whether to activate
      */
     function updateGlobalPoolStatus(
         bool isActive
@@ -140,13 +140,13 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         globalPool.isActive = isActive;
     }
     
-    // ============ 用户操作 ============
+    // ============ User Operations ============
     
     /**
-     * @dev 用户领取收益
+     * @dev User claim rewards
      */
     function claimReward() external override onlyActivePool whenInitialized nonReentrant {
-        // 先更新用户池信息
+        // First update user pool information
         _updateUserPool(msg.sender);
         
         UserInfo storage user = users[msg.sender];
@@ -155,23 +155,23 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         
         require(pending > 0, "AccumulatedYield: no pending reward");
         
-        // 核心计算公式：收益计算阶段
-        // 3: 更新已领取金额
+        // Core calculation formula: reward calculation phase
+        // 3: Update claimed amount
         user.totalClaimed += pending;
         user.lastClaimTime = block.timestamp;
         
-        // 转移收益
+        // Transfer rewards
         IERC20(globalPool.rewardToken).safeTransfer(msg.sender, pending);
         
         emit RewardClaimed(msg.sender, pending, pending, block.timestamp);
     }
     
-    // ============ 收益分配 ============
+    // ============ Yield Distribution ============
     
     /**
-     * @dev 向全局池子派息
-     * @param dividendAmount 分配数量
-     * @param signature 派息签名
+     * @dev Distribute dividend to global pool
+     * @param dividendAmount Distribution amount
+     * @param signature Dividend signature
      */
     function distributeDividend(
         uint256 dividendAmount,
@@ -179,54 +179,40 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     ) external override onlyManager onlyActivePool whenInitialized nonReentrant {
         require(dividendAmount > 0, "AccumulatedYield: invalid dividend amount");
         
-        // 从Vault获取validator地址
+        // Get validator address from Vault
         address validator = IVault(vault).validator();
         require(validator != address(0), "AccumulatedYield: validator not set");
         
-        // verify signature
+        // Verify signature
         bytes32 payload = keccak256(abi.encodePacked(vault, dividendAmount));
         bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(payload);
         
         address signer = ECDSA.recover(ethSignedMessageHash, signature);
-        require(signer == validator, "AccumulatedYield: invalid drds signature");
+        require(signer == validator, "AccumulatedYield: invalid signature");
         
-        // 先转入收益代币（防止重入攻击）
-        IERC20(globalPool.rewardToken).safeTransferFrom(
-            msg.sender,
-            address(this),
-            dividendAmount
-        );
+        // Transfer dividend from manager to this contract
+        IERC20(globalPool.rewardToken).safeTransferFrom(msg.sender, address(this), dividendAmount);
         
-        // 获取当前代币总供应量
-        uint256 shareTotalSupply = IERC20(globalPool.shareToken).totalSupply();
-        require(shareTotalSupply > 0, "AccumulatedYield: no share tokens in circulation");
-        
-        // 核心计算公式：收益分配阶段
-        // 1: 更新池子总派息
+        // Update global pool
         globalPool.totalDividend += dividendAmount;
-        
-        // 2: 更新池子总累积份额
-        globalPool.totalAccumulatedShares += shareTotalSupply * dividendAmount;
-        
-        // 更新时间戳
         globalPool.lastDividendTime = block.timestamp;
         
         emit DividendDistributed(dividendAmount, block.timestamp, validator, signature);
     }
     
-    // ============ 代币转移相关 ============
+    // ============ Token Transfer Related ============
     
     /**
-     * @dev 在代币转移时更新用户池（核心功能）
-     * @param from 转出地址
-     * @param to 转入地址
-     * @param amount 转移数量
+     * @dev Update user pools on token transfer (core functionality)
+     * @param from Transfer from address
+     * @param to Transfer to address
+     * @param amount Transfer amount
      */
     function updateUserPoolsOnTransfer(
         address from,
         address to,
         uint256 amount
-    ) external override whenInitialized {
+    ) external override {
         require(msg.sender == globalPool.shareToken, "AccumulatedYield: only share token");
         
         if (from != address(0)) {
@@ -240,96 +226,76 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         emit ShareTokenTransferred(from, to, amount, block.timestamp);
     }
     
-    /**
-     * @dev 强制更新单个用户的池信息
-     * @param user 用户地址
-     */
-    function updateUserPool(
-        address user
-    ) external whenInitialized {
-        _updateUserPool(user);
-    }
+    // ============ Query Interface ============
     
     /**
-     * @dev 批量更新多个用户的池信息
-     * @param userList 用户地址数组
-     */
-    function batchUpdateUserPools(
-        address[] calldata userList
-    ) external whenInitialized {
-        for (uint256 i = 0; i < userList.length; i++) {
-            _updateUserPool(userList[i]);
-        }
-    }
-    
-    // ============ 查询接口 ============
-    
-    /**
-     * @dev 查询全局池子信息
-     * @return 全局池子信息结构体
+     * @dev Query global pool information
+     * @return Global pool information structure
      */
     function getGlobalPoolInfo() external view override returns (GlobalPoolInfo memory) {
         return globalPool;
     }
     
     /**
-     * @dev 查询用户信息
-     * @param user 用户地址
-     * @return 用户信息结构体
+     * @dev Query user information
+     * @param user User address
+     * @return User information structure
      */
     function getUserInfo(address user) external view override returns (UserInfo memory) {
         return users[user];
     }
     
     /**
-     * @dev 查询用户待领取收益
-     * @param user 用户地址
-     * @return 待领取收益数量
+     * @dev Query user's pending rewards
+     * @param user User address
+     * @return Pending reward amount
      */
     function pendingReward(address user) external view override returns (uint256) {
+        if (globalPool.shareToken == address(0)) {
+            return 0;
+        }
+        
         uint256 currentBalance = IERC20(globalPool.shareToken).balanceOf(user);
         return _calculatePendingRewardAt(user, currentBalance);
     }
     
-
-    
     /**
-     * @dev 查询全局池子总派息数量
-     * @return 总派息数量
+     * @dev Query global pool total dividend amount
+     * @return Total dividend amount
      */
     function totalDividend() external view override returns (uint256) {
         return globalPool.totalDividend;
     }
     
     /**
-     * @dev 查询全局池子总累积份额
-     * @return 总累积份额
+     * @dev Query global pool total accumulated shares
+     * @return Total accumulated shares
      */
     function totalAccumulatedShares() external view override returns (uint256) {
         return globalPool.totalAccumulatedShares;
     }
     
     /**
-     * @dev 查询当前管理员
-     * @return 管理员地址
+     * @dev Query current manager
+     * @return Manager address
      */
     function getManager() external view override returns (address) {
         return manager;
     }
     
     /**
-     * @dev 查询派息接收地址
-     * @return 派息接收地址
+     * @dev Query dividend treasury address
+     * @return Dividend treasury address
      */
     function getDividendTreasury() external view override returns (address) {
         return dividendTreasury;
     }
     
     /**
-     * @dev 计算用户在指定余额下的累计份额
-     * @param user 用户地址
-     * @param userBalance 指定的用户余额
-     * @return 累计份额
+     * @dev Calculate user's accumulated shares at specified balance
+     * @param user User address
+     * @param userBalance Specified user balance
+     * @return Accumulated shares
      */
     function calculateAccumulatedShares(address user, uint256 userBalance) external view override returns (uint256) {
         if (globalPool.shareToken == address(0)) {
@@ -338,10 +304,10 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         
         UserInfo memory userInfo = users[user];
         
-        // 计算增量派息
+        // Calculate dividend delta
         uint256 deltaDiv = globalPool.totalDividend - userInfo.lastClaimDividend;
         
-        // 累计份额 = 用户现有累计份额 + 指定余额 * 增量派息
+        // Accumulated shares = user's current accumulated shares + specified balance * dividend delta
         uint256 accumulatedShares = userInfo.accumulatedShares + userBalance * deltaDiv;
         
         return accumulatedShares;
@@ -349,11 +315,11 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     
 
     
-    // ============ 内部函数 ============
+    // ============ Internal Functions ============
     
     /**
-     * @dev 更新用户池信息
-     * @param user 用户地址
+     * @dev Update user pool information
+     * @param user User address
      */
     function _updateUserPool(address user) internal {
         if (globalPool.shareToken == address(0)) {
@@ -363,16 +329,16 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         UserInfo storage userInfo = users[user];
         uint256 currentBalance = IERC20(globalPool.shareToken).balanceOf(user);
         
-        // 核心计算公式：用户操作阶段
-        // 1: 计算增量派息 
+        // Core calculation formula: user operation phase
+        // 1: Calculate dividend delta
         uint256 deltaDiv = globalPool.totalDividend - userInfo.lastClaimDividend;
         
         if (deltaDiv > 0) {
-            // 2: 更新用户累积份额 
+            // 2: Update user accumulated shares
             userInfo.accumulatedShares += currentBalance * deltaDiv;
         }
         
-        // 3: 更新用户检查点 
+        // 3: Update user checkpoint
         userInfo.lastClaimDividend = globalPool.totalDividend;
         
         emit UserPoolUpdated(user, userInfo.accumulatedShares, block.timestamp);
@@ -381,10 +347,10 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
 
     
     /**
-     * @dev 计算用户在指定余额下的待领取收益
-     * @param user 用户地址
-     * @param userBalance 用户余额
-     * @return 待领取收益数量
+     * @dev Calculate user's pending rewards at specified balance
+     * @param user User address
+     * @param userBalance User balance
+     * @return Pending reward amount
      */
     function _calculatePendingRewardAt(address user, uint256 userBalance) internal view returns (uint256) {
         if (globalPool.shareToken == address(0) || globalPool.totalAccumulatedShares == 0) {
@@ -393,7 +359,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         
         UserInfo memory userInfo = users[user];
         
-        // 模拟用户池更新，计算最新的累积份额
+        // Simulate user pool update, calculate latest accumulated shares
         uint256 simulatedAccumulatedShares = userInfo.accumulatedShares;
         uint256 deltaDiv = globalPool.totalDividend - userInfo.lastClaimDividend;
         
@@ -405,11 +371,11 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
             return 0;
         }
         
-        // 核心计算公式：收益计算阶段
-        // 1: 计算用户应得总收益
+        // Core calculation formula: reward calculation phase
+        // 1: Calculate user's total reward
         uint256 totalReward = (simulatedAccumulatedShares * globalPool.totalDividend) / globalPool.totalAccumulatedShares;
         
-        // 2: 计算待领取收益
+        // 2: Calculate pending reward
         uint256 pending = totalReward > userInfo.totalClaimed ? totalReward - userInfo.totalClaimed : 0;
         
         return pending;

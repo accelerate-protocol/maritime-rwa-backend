@@ -21,7 +21,7 @@ contract FundFactory is IFundFactory, Ownable {
         }
     }
     
-    function createFund(uint256 templateId, address vault, address token, bytes memory initData) external override returns (address fund) {
+    function createFund(uint256 templateId, address vault, bytes memory initData) external override returns (address fund) {
         address template = templates[templateId];
         require(template != address(0), "FundFactory: template not found");
         
@@ -33,10 +33,10 @@ contract FundFactory is IFundFactory, Ownable {
          address manageFeeReceiver, uint256 decimalsMultiplier) = 
             abi.decode(initData, (uint256, uint256, address, uint256, uint256, uint256, uint256, uint256, address, address, uint256));
         
-        // 构造完整的初始化数据，包含vault和token
+        // 构造完整的初始化数据，包含vault
         bytes memory fullInitData = abi.encodeWithSignature(
-            "initCrowdsale(address,address,uint256,uint256,address,uint256,uint256,uint256,uint256,uint256,address,address,uint256,address)",
-            vault, token, startTime, endTime, assetToken, maxSupply, softCap, sharePrice, minDepositAmount, manageFeeBps, fundingReceiver, manageFeeReceiver, decimalsMultiplier, msg.sender
+            "initCrowdsale(address,uint256,uint256,address,uint256,uint256,uint256,uint256,uint256,address,address,uint256,address)",
+            vault, startTime, endTime, assetToken, maxSupply, softCap, sharePrice, minDepositAmount, manageFeeBps, fundingReceiver, manageFeeReceiver, decimalsMultiplier, msg.sender
         );
         
         // 调用初始化函数

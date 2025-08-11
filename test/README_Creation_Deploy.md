@@ -1,319 +1,284 @@
-# Creation合约部署测试文档
+# Creation Contract Deployment Guide
 
-## 概述
+## Overview
 
-这个测试套件提供了完整的V2架构Creation合约部署验证，专门为后端调用测试而设计。
+This guide demonstrates how to deploy and test the V2 Creation contract, which provides a one-click deployment solution for the complete V2 architecture.
 
-## 测试文件结构
+## Prerequisites
 
-```
-test/
-├── Creation.deploy.test.js          # 主要的Creation部署测试
-├── AccumulatedYield.simple.test.js  # AccumulatedYield功能测试
-└── README_Creation_Deploy.md        # 本文档
-```
+1. Node.js and npm installed
+2. Hardhat development environment set up
+3. Local blockchain network running (Hardhat Network, Ganache, etc.)
 
-## V2架构组件
+## Deployment Steps
 
-### 核心合约
-- **Creation.sol** - 一键部署器，协调所有模块的部署
-- **VaultFactory.sol** - Vault模块工厂
-- **TokenFactory.sol** - Token模块工厂  
-- **AccumulatedYieldFactory.sol** - 收益分配模块工厂
-- **FundFactory.sol** - 融资模块工厂（可选）
+### 1. Deploy Templates
 
-### 模板合约
-- **MockBasicVault.sol** - Vault模板实现
-- **MockStandardToken.sol** - Token模板实现
-- **AccumulatedYield.sol** - 收益分配模板实现
-- **MockCrowdsale.sol** - 融资模板实现（测试版本）
+First, deploy all template contracts:
 
-## 部署流程
-
-### 步骤1: 部署模板合约
 ```javascript
-// 部署所有模板
-const vaultTemplate = await MockBasicVault.deploy();
-const tokenTemplate = await MockStandardToken.deploy();
-const yieldTemplate = await AccumulatedYield.deploy();
+// Deploy token template
+const TokenFactory = await ethers.getContractFactory("VaultToken");
+const tokenTemplate = await TokenFactory.deploy();
+
+// Deploy vault template  
+const VaultFactory = await ethers.getContractFactory("BasicVault");
+const vaultTemplate = await VaultFactory.deploy();
+
+// Deploy yield template
+const YieldFactory = await ethers.getContractFactory("AccumulatedYield");
+const yieldTemplate = await YieldFactory.deploy();
+
+// Deploy funding template
+const FundingFactory = await ethers.getContractFactory("Crowdsale");
+const fundingTemplate = await FundingFactory.deploy();
 ```
 
-### 步骤2: 部署工厂合约
+### 2. Deploy Factories
+
+Deploy factory contracts that will clone the templates:
+
 ```javascript
-// 部署所有工厂
-const vaultFactory = await VaultFactory.deploy();
-const tokenFactory = await TokenFactory.deploy();
-const yieldFactory = await AccumulatedYieldFactory.deploy();
+// Deploy token factory
+const TokenFactoryContract = await ethers.getContractFactory("TokenFactory");
+const tokenFactory = await TokenFactoryContract.deploy(tokenTemplate.address);
+
+// Deploy vault factory
+const VaultFactoryContract = await ethers.getContractFactory("VaultFactory");
+const vaultFactory = await VaultFactoryContract.deploy(vaultTemplate.address);
+
+// Deploy yield factory
+const YieldFactoryContract = await ethers.getContractFactory("AccumulatedYieldFactory");
+const yieldFactory = await YieldFactoryContract.deploy(yieldTemplate.address);
+
+// Deploy funding factory
+const FundingFactoryContract = await ethers.getContractFactory("FundFactory");
+const fundingFactory = await FundingFactoryContract.deploy(fundingTemplate.address);
 ```
 
-### 步骤3: 注册模板到工厂
-```javascript
-// 注册模板（templateId = 0）
-await vaultFactory.addTemplate(0, vaultTemplate.address);
-await tokenFactory.addTemplate(0, tokenTemplate.address);
-await yieldFactory.addTemplate(0, yieldTemplate.address);
-```
+### 3. Deploy Creation Contract
 
-### 步骤4: 部署Creation合约
+Deploy the main Creation contract that orchestrates everything:
+
 ```javascript
-// 部署Creation并设置工厂地址
-const creation = await Creation.deploy();
-await creation.setFactories(
-    vaultFactory.address,
+const CreationFactory = await ethers.getContractFactory("Creation");
+const creation = await CreationFactory.deploy(
     tokenFactory.address,
-    ethers.ZeroAddress, // fundFactory (可选)
-    yieldFactory.address
+    vaultFactory.address,
+    yieldFactory.address,
+    fundingFactory.address
 );
 ```
 
-### 步骤5: 一键部署项目
-```javascript
-// 准备初始化数据
-const vaultInitData = ethers.AbiCoder.defaultAbiCoder().encode(...);
-const tokenInitData = ethers.AbiCoder.defaultAbiCoder().encode(...);
-const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(...);
+### 4. Set Factory Addresses
 
-// 执行一键部署
-const result = await creation.deployAll(
-    0, vaultInitData,  // vault templateId和初始化数据
-    0, tokenInitData,  // token templateId和初始化数据
-    0, fundInitData,   // fund templateId和初始化数据
-    0, yieldInitData   // yield templateId和初始化数据
-);
+Configure the Creation contract with factory addresses:
+
+```javascript
+await creation.setTokenFactory(tokenFactory.address);
+await creation.setVaultFactory(vaultFactory.address);
+await creation.setYieldFactory(yieldFactory.address);
+await creation.setFundingFactory(fundingFactory.address);
 ```
 
-## 后端API接口
+## One-Click Project Deployment
 
-### 1. 查询接口
+### Basic Project Deployment
 
-#### 获取工厂地址
+Deploy a complete project with minimal configuration:
+
 ```javascript
-const factories = await creation.getFactories();
-// 返回: [vaultFactory, tokenFactory, fundFactory, yieldFactory]
+const projectData = {
+    name: "My Test Project",
+    symbol: "MTP",
+    decimals: 18,
+    assetToken: usdt.address, // USDT address
+    manager: manager.address,
+    validator: validator.address
+};
+
+const tx = await creation.deployProject(projectData);
+const receipt = await tx.wait();
+
+// Get deployed contract addresses from events
+const event = receipt.events?.find(e => e.event === "ProjectDeployed");
+const deployedAddresses = event.args;
 ```
 
-#### 获取模板数量
+### Advanced Project Deployment
+
+Deploy with custom configuration:
+
 ```javascript
-const vaultTemplateCount = await vaultFactory.getTemplateCount();
-const tokenTemplateCount = await tokenFactory.getTemplateCount();
-const yieldTemplateCount = await yieldFactory.getTemplateCount();
+const advancedProjectData = {
+    name: "Advanced Project",
+    symbol: "ADV",
+    decimals: 18,
+    assetToken: usdt.address,
+    manager: manager.address,
+    validator: validator.address,
+    // Custom parameters
+    customParams: {
+        vaultParams: {
+            // Vault specific parameters
+        },
+        yieldParams: {
+            // Yield specific parameters  
+        },
+        fundingParams: {
+            // Funding specific parameters
+        }
+    }
+};
+
+const tx = await creation.deployAdvancedProject(advancedProjectData);
 ```
 
-#### 获取模板地址
+## Contract Initialization
+
+### Token Initialization
+
 ```javascript
-const vaultTemplate = await vaultFactory.getTemplate(templateId);
-const tokenTemplate = await tokenFactory.getTemplate(templateId);
-const yieldTemplate = await yieldFactory.getTemplate(templateId);
-```
-
-### 2. 管理接口
-
-#### 添加新模板（仅owner）
-```javascript
-await vaultFactory.addTemplate(templateId, templateAddress);
-await tokenFactory.addTemplate(templateId, templateAddress);
-await yieldFactory.addTemplate(templateId, templateAddress);
-```
-
-#### 设置工厂地址（仅owner）
-```javascript
-await creation.setFactories(
-    vaultFactoryAddress,
-    tokenFactoryAddress,
-    fundFactoryAddress,
-    yieldFactoryAddress
-);
-```
-
-### 3. 部署接口
-
-#### 单独部署模块
-```javascript
-// 部署Vault
-const vaultAddress = await vaultFactory.createVault(templateId, initData);
-
-// 部署Token
-const tokenAddress = await tokenFactory.createToken(templateId, vaultAddress, initData);
-
-// 部署AccumulatedYield
-const yieldAddress = await yieldFactory.createAccumulatedYield(templateId, vaultAddress, tokenAddress, initData);
-```
-
-#### 一键部署完整项目
-```javascript
-const deployResult = await creation.deployAll(
-    vaultTemplateId, vaultInitData,
-    tokenTemplateId, tokenInitData,
-    fundTemplateId, fundInitData,
-    yieldTemplateId, yieldInitData
-);
-
-// 解析事件获取部署的合约地址
-const events = deployResult.logs;
-```
-
-## 初始化数据格式
-
-### Vault初始化
-```javascript
-// 函数签名: initVault(address manager, address validator, bool whitelistEnabled)
-const vaultInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-    ["address", "address", "bool"],
-    [managerAddress, validatorAddress, false]
-);
-
-// 完整calldata
-const vaultCalldata = ethers.concat([
-    "0x8129fc1c", // initVault函数选择器
-    vaultInitData
-]);
-```
-
-### Token初始化
-```javascript
-// 函数签名: initToken(address vault, string name, string symbol, uint8 decimals)
+// Function signature: initToken(address vault, string name, string symbol, uint8 decimals)
 const tokenInitData = ethers.AbiCoder.defaultAbiCoder().encode(
     ["address", "string", "string", "uint8"],
-    [vaultAddress, "Token Name", "SYMBOL", 18]
+    [vaultAddress, "Project Token", "PTK", 18]
 );
-
-const tokenCalldata = ethers.concat([
-    "0x4cd88b76", // initToken函数选择器
-    tokenInitData
-]);
 ```
 
-### AccumulatedYield初始化
+### Vault Initialization
+
 ```javascript
-// 函数签名: initGlobalPool(address vault, address manager, address dividendTreasury, address shareToken, address rewardToken)
+// Function signature: initVault(address assetToken, address manager, address validator)
+const vaultInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+    ["address", "address", "address"],
+    [assetTokenAddress, managerAddress, validatorAddress]
+);
+```
+
+### Yield Initialization
+
+```javascript
+// Function signature: initGlobalPool(address vault, address manager, address dividendTreasury, address shareToken, address rewardToken)
 const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
     ["address", "address", "address", "address", "address"],
     [vaultAddress, managerAddress, dividendTreasuryAddress, shareTokenAddress, rewardTokenAddress]
 );
-
-const yieldCalldata = ethers.concat([
-    "0x696a437e", // initGlobalPool函数选择器
-    yieldInitData
-]);
 ```
 
-## 函数选择器参考
+## Testing
 
-```javascript
-// 获取正确的函数选择器
-const initVaultSelector = ethers.id("initVault(address,address,bool)").substring(0, 10);
-const initTokenSelector = ethers.id("initToken(address,string,string,uint8)").substring(0, 10);
-const initGlobalPoolSelector = ethers.id("initGlobalPool(address,address,address,address,address)").substring(0, 10);
+### Run All Tests
 
-console.log("initVault:", initVaultSelector);     // 0x8129fc1c
-console.log("initToken:", initTokenSelector);     // 0x4cd88b76  
-console.log("initGlobalPool:", initGlobalPoolSelector); // 0x696a437e
-```
-
-## 运行测试
-
-### 环境要求
 ```bash
-npm install @openzeppelin/contracts
-npm install @nomicfoundation/hardhat-ethers
-npm install ethers@^6.0.0
-npm install chai
+npx hardhat test
 ```
 
-### 执行测试
+### Run Specific Test
+
 ```bash
-# 运行Creation部署测试
 npx hardhat test test/Creation.deploy.test.js
-
-# 运行所有V2测试
-npx hardhat test test/Creation.deploy.test.js test/AccumulatedYield.simple.test.js
 ```
 
-### 期望输出
-```
-=== 开始部署V2架构 ===
+### Test Individual Components
 
-步骤1: 部署模板合约
-✓ VaultTemplate部署: 0x1234...
-✓ TokenTemplate部署: 0x5678...
-✓ AccumulatedYieldTemplate部署: 0x9abc...
+```bash
+# Test token functionality
+npx hardhat test test/VaultToken.test.ts
 
-步骤2: 部署工厂合约
-✓ VaultFactory部署: 0xdef0...
-✓ TokenFactory部署: 0x1234...
-✓ AccumulatedYieldFactory部署: 0x5678...
+# Test yield functionality  
+npx hardhat test test/AccumulatedYield.test.ts
 
-步骤3: 注册模板到工厂
-✓ BasicVault模板注册为ID 0
-✓ StandardToken模板注册为ID 0
-✓ AccumulatedYield模板注册为ID 0
-
-步骤4: 部署Creation合约
-✓ Creation部署: 0x9abc...
-✓ 工厂地址设置完成
-
-=== V2架构部署完成 ===
+# Test vault functionality
+npx hardhat test test/BasicVault.test.ts
 ```
 
-## 事件监听
+## Verification
 
-### 重要事件
+### Verify Contract Deployment
+
 ```javascript
-// VaultFactory事件
-event VaultCreated(uint256 indexed templateId, address indexed vault, address indexed creator);
+// Check if all factories are set
+const tokenFactory = await creation.tokenFactory();
+const vaultFactory = await creation.vaultFactory();
+const yieldFactory = await creation.yieldFactory();
+const fundingFactory = await creation.fundingFactory();
 
-// TokenFactory事件  
-event TokenCreated(uint256 indexed templateId, address indexed token, address indexed creator);
-
-// AccumulatedYieldFactory事件
-event AccumulatedYieldCreated(uint256 indexed templateId, address indexed accumulatedYield, address indexed creator);
-
-// Creation事件
-event FullDeployment(address indexed deployer, address vault, address token, address fund, address accumulatedYield);
+console.log("Token Factory:", tokenFactory);
+console.log("Vault Factory:", vaultFactory);
+console.log("Yield Factory:", yieldFactory);
+console.log("Funding Factory:", fundingFactory);
 ```
 
-### 监听示例
+### Verify Project Deployment
+
 ```javascript
-// 监听创建事件
-creation.on("FullDeployment", (deployer, vault, token, fund, accumulatedYield) => {
-    console.log("新项目部署:", {
-        deployer,
-        vault,
-        token,
-        fund,
-        accumulatedYield
-    });
+// Get deployed project addresses
+const projectAddresses = await creation.getProjectAddresses(projectId);
+
+console.log("Token:", projectAddresses.token);
+console.log("Vault:", projectAddresses.vault);
+console.log("Yield:", projectAddresses.yield);
+console.log("Funding:", projectAddresses.funding);
+```
+
+## Error Handling
+
+### Common Errors
+
+1. **Factory not set**: Ensure all factory addresses are set before deployment
+2. **Invalid parameters**: Check that all required parameters are provided
+3. **Permission denied**: Ensure the caller has the required permissions
+4. **Template not found**: Verify that template contracts are deployed and accessible
+
+### Debugging
+
+```javascript
+// Enable detailed logging
+const tx = await creation.deployProject(projectData, { gasLimit: 5000000 });
+const receipt = await tx.wait();
+
+// Check for events
+receipt.events?.forEach(event => {
+    console.log("Event:", event.event, event.args);
 });
 ```
 
-## 错误处理
+## Best Practices
 
-### 常见错误
-1. **"template not found"** - 模板ID不存在
-2. **"initialization failed"** - 初始化数据格式错误
-3. **"OwnableUnauthorizedAccount"** - 权限不足
-4. **"template already exists"** - 模板ID重复
+1. **Always test on local network first**
+2. **Use proper error handling**
+3. **Verify all contract addresses**
+4. **Check gas limits for complex deployments**
+5. **Monitor events for deployment status**
 
-### 调试建议
-1. 验证函数选择器正确性
-2. 检查初始化参数类型和顺序
-3. 确认调用者权限
-4. 验证模板合约部署状态
+## Security Considerations
 
-## 生产环境注意事项
+1. **Validate all input parameters**
+2. **Use proper access controls**
+3. **Test with different account roles**
+4. **Verify contract interactions**
+5. **Monitor for unexpected behavior**
 
-1. **权限管理**: 确保只有授权地址能添加模板和设置工厂
-2. **Gas优化**: 考虑批量操作减少交易费用
-3. **升级策略**: 预留模板升级机制
-4. **监控告警**: 设置关键事件监听
-5. **备份恢复**: 保存关键配置和地址信息
+## Troubleshooting
 
-## 扩展功能
+### Deployment Fails
 
-未来可以添加的功能：
-- 多版本模板支持
-- 模板权限控制
-- 批量部署接口
-- 部署状态查询
-- Gas费用优化
-- 跨链部署支持 
+1. Check if all templates are deployed
+2. Verify factory addresses are correct
+3. Ensure sufficient gas for deployment
+4. Check network connectivity
+
+### Initialization Fails
+
+1. Verify contract addresses are valid
+2. Check parameter types and values
+3. Ensure proper permissions
+4. Review error messages
+
+### Integration Issues
+
+1. Verify contract interfaces match
+2. Check event signatures
+3. Ensure proper function calls
+4. Validate data encoding 
