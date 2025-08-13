@@ -345,7 +345,7 @@
       },
       {
         "internalType": "address",
-        "name": "token",
+        "name": "vaultToken",
         "type": "address"
       },
       {

@@ -21,18 +21,17 @@ contract YieldFactory is IYieldFactory, Ownable {
         }
     }
     
-    function createYield(uint256 templateId, address vault, address token, bytes memory initData) external override returns (address accumulatedYield) {
+    function createYield(uint256 templateId, address vault, address vaultToken, bytes memory initData) external override returns (address accumulatedYield) {
         address template = templates[templateId];
         require(template != address(0), "YieldFactory: template not found");
         
         accumulatedYield = template.clone();
         
-        // 使用统一的 initiate(address, bytes) 接口
-        // 将 vault 和 token 信息编码到 initData 中
         bytes memory fullInitData = abi.encodeWithSignature(
-            "initiate(address,bytes)",
+            "initiate(address,address,bytes)",
             vault, 
-            abi.encode(token, initData)
+            vaultToken,
+            initData
         );
         
         // 调用初始化函数

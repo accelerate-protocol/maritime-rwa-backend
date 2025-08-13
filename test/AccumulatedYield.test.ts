@@ -106,15 +106,11 @@ describe("AccumulatedYield", function () {
         const YieldFactory = await ethers.getContractFactory("AccumulatedYield");
         const newAccumulatedYield = await YieldFactory.deploy();
         
-        const originalInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+        const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
             ["address", "address", "address"],
             [await rewardToken.getAddress(), manager.address, dividendTreasury.address]
         );
-        const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-            ["address", "bytes"],
-            [await newShareToken.getAddress(), originalInitData]
-        );
-        await newAccumulatedYield.initiate(await newVault.getAddress(), yieldInitData);
+        await newAccumulatedYield.initiate(await newVault.getAddress(), await newShareToken.getAddress(), yieldInitData);
         
         // Set modules in vault (using manager as owner)
         await newVault.connect(manager).setVaultToken(await newShareToken.getAddress());
@@ -138,15 +134,11 @@ describe("AccumulatedYield", function () {
         });
 
         it("should initialize global pool correctly", async function () {
-            const originalInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+            const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
                 ["address", "address", "address"],
                 [await rewardToken.getAddress(), manager.address, dividendTreasury.address]
             );
-            const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-                ["address", "bytes"],
-                [await shareToken.getAddress(), originalInitData]
-            );
-            await accumulatedYield.initiate(await vault.getAddress(), yieldInitData);
+            await accumulatedYield.initiate(await vault.getAddress(), await shareToken.getAddress(), yieldInitData);
 
             const globalPool = await accumulatedYield.getGlobalPoolInfo();
             expect(globalPool.shareToken).to.equal(await shareToken.getAddress());
@@ -159,46 +151,34 @@ describe("AccumulatedYield", function () {
         });
 
         it("should reject duplicate initialization", async function () {
-            const originalInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+            const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
                 ["address", "address", "address"],
                 [await rewardToken.getAddress(), manager.address, dividendTreasury.address]
             );
-            const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-                ["address", "bytes"],
-                [await shareToken.getAddress(), originalInitData]
-            );
-            await accumulatedYield.initiate(await vault.getAddress(), yieldInitData);
+            await accumulatedYield.initiate(await vault.getAddress(), await shareToken.getAddress(), yieldInitData);
 
             await expect(
-                accumulatedYield.connect(manager).initiate(await vault.getAddress(), yieldInitData)
+                accumulatedYield.connect(manager).initiate(await vault.getAddress(), await shareToken.getAddress(), yieldInitData)
             ).to.be.revertedWith("AccumulatedYield: already initialized");
         });
 
         it("should reject invalid initialization parameters", async function () {
             // Invalid vault address
-            const originalInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+            const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
                 ["address", "address", "address"],
                 [await rewardToken.getAddress(), manager.address, dividendTreasury.address]
             );
-            const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-                ["address", "bytes"],
-                [await shareToken.getAddress(), originalInitData]
-            );
             await expect(
-                accumulatedYield.initiate(ethers.ZeroAddress, yieldInitData)
+                accumulatedYield.initiate(ethers.ZeroAddress, await shareToken.getAddress(), yieldInitData)
             ).to.be.revertedWith("AccumulatedYield: invalid vault");
 
             // Invalid manager address
-            const invalidManagerInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+            const invalidManagerYieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
                 ["address", "address", "address"],
                 [await rewardToken.getAddress(), ethers.ZeroAddress, dividendTreasury.address]
             );
-            const invalidManagerYieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-                ["address", "bytes"],
-                [await shareToken.getAddress(), invalidManagerInitData]
-            );
             await expect(
-                accumulatedYield.initiate(await vault.getAddress(), invalidManagerYieldInitData)
+                accumulatedYield.initiate(await vault.getAddress(), await shareToken.getAddress(), invalidManagerYieldInitData)
             ).to.be.revertedWith("AccumulatedYield: invalid manager");
         });
     });

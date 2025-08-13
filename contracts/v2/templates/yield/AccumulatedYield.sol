@@ -132,20 +132,18 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     /**
      * @dev Unified initialization interface
      * @param _vault Vault address
+     * @param _vaultToken Vault token address
      * @param _initData Encoded initialization data (contains token and original initData)
      */
-    function initiate(address _vault, bytes memory _initData) external override {
+    function initiate(address _vault, address _vaultToken, bytes memory _initData) external override {
         require(_vault != address(0), "AccumulatedYield: invalid vault");
-        
-        // 解码初始化数据：token 和原始的 initData
-        (address token, bytes memory originalInitData) = abi.decode(_initData, (address, bytes));
         
         // 解码原始的初始化数据
         (address rewardToken, address rewardManager, address dividendTreasuryAddr) = 
-            abi.decode(originalInitData, (address, address, address));
+            abi.decode(_initData, (address, address, address));
         
         // 调用原有的初始化逻辑
-        _initGlobalPool(_vault, rewardManager, dividendTreasuryAddr, token, rewardToken);
+        _initGlobalPool(_vault, rewardManager, dividendTreasuryAddr, _vaultToken, rewardToken);
     }
     
     /**

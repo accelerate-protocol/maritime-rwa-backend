@@ -45,6 +45,7 @@ contract Creation is ICreation, Ownable {
     struct AccumulatedYieldUserParams {
         address rewardToken;
         address rewardManager;
+        address dividendTreasury;
     }
     
     // 项目结构
@@ -235,8 +236,8 @@ contract Creation is ICreation, Ownable {
         return fund;
     }
     
-    function deployDividend(uint256 templateId, address vault, address token, bytes memory initData) external override returns (address dividend) {
-        dividend = yieldFactory.createYield(templateId, vault, token, initData);
+    function deployDividend(uint256 templateId, address vault, address vaultToken, bytes memory initData) external override returns (address dividend) {
+        dividend = yieldFactory.createYield(templateId, vault, vaultToken, initData);
         emit YieldCreated(dividend);
         return dividend;
     }

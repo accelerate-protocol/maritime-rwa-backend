@@ -424,6 +424,11 @@
         "type": "address"
       },
       {
+        "internalType": "address",
+        "name": "_vaultToken",
+        "type": "address"
+      },
+      {
         "internalType": "bytes",
         "name": "_initData",
         "type": "bytes"

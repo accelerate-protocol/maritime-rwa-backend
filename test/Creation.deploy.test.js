@@ -264,6 +264,19 @@ describe("Creation部署测试 - 完整的V2架构", function () {
 
         // 测试YieldFactory
         try {
+            // 先创建vault和token作为参数
+            const vaultInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["address", "address", "bool", "address[]"],
+                [manager.address, validator.address, false, []]
+            );
+            const vaultAddress = await vaultFactory.createVault.staticCall(0, vaultInitData);
+            
+            const tokenInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["string", "string", "uint8"],
+                ["Test Token", "TT", 18]
+            );
+            const tokenAddress = await tokenFactory.createToken.staticCall(0, vaultAddress, tokenInitData);
+            
             const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
                 ["address", "address", "address"],
                 [
@@ -273,7 +286,7 @@ describe("Creation部署测试 - 完整的V2架构", function () {
                 ]
             );
             
-            const yieldAddress = await YieldFactory.createYield.staticCall(0, user1.address, user2.address, yieldInitData);
+            const yieldAddress = await YieldFactory.createYield.staticCall(0, vaultAddress, tokenAddress, yieldInitData);
             console.log(`✓ YieldFactory测试通过，预计部署地址: ${yieldAddress}`);
         } catch (error) {
             console.log("⚠️ YieldFactory测试失败:", error.message.substring(0, 100));

@@ -44,14 +44,7 @@ describe("VaultToken", function () {
                 manager.address // dividendTreasury
             ]
         );
-        const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-            ["address", "bytes"],
-            [
-                await vaultToken.getAddress(), // token (shareToken)
-                originalYieldInitData
-            ]
-        );
-        await accumulatedYield.initiate(await basicVault.getAddress(), yieldInitData);
+        await accumulatedYield.initiate(await basicVault.getAddress(), await vaultToken.getAddress(), originalYieldInitData);
         
         // Set modules in BasicVault
         await basicVault.connect(manager).setVaultToken(await vaultToken.getAddress());
