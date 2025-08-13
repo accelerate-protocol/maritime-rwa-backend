@@ -293,7 +293,24 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     
     // ============ Query Functions ============
     
-    
+    /**
+     * @dev Check if funding is successful by querying the funding module
+     * @return Whether funding is successful
+     */
+    function isFundingSuccessful() external view override returns (bool) {
+        require(funding != address(0), "BasicVault: funding module not set");
+        
+        // Call the funding module to check if funding is successful
+        (bool success, bytes memory data) = funding.staticcall(
+            abi.encodeWithSignature("isFundingSuccessful()")
+        );
+        
+        if (!success) {
+            revert("BasicVault: failed to query funding status");
+        }
+        
+        return abi.decode(data, (bool));
+    }
     
     /**
      * @dev Get funding module address

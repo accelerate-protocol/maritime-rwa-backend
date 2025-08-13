@@ -332,7 +332,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
      * @param receiver Receiver address
      * @param drdsSignature DRDS signature data
      */
-    function offDeposit(uint256 amount, address receiver, bytes memory drdsSignature) 
+    function offChainDeposit(uint256 amount, address receiver, bytes memory drdsSignature) 
         external 
         override 
         onlyManager 
@@ -353,7 +353,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         require(validator != address(0), "Crowdsale: validator not set");
         
         bytes32 messageHash = keccak256(abi.encodePacked(
-            "offDeposit",
+            "offChainDeposit",
             sigData.amount,
             sigData.receiver,
             block.chainid,
@@ -413,9 +413,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         
         // Burn all tokens through vault
         IVault(vault).burnToken(receiver, userShares);
-        
-        // Refund assets (including management fee)
-        IERC20(assetToken).safeTransfer(receiver, assetAmount);
                 
         emit OffChainRedeem(receiver, assetAmount);
     }

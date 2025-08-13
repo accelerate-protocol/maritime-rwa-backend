@@ -120,7 +120,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
             totalAccumulatedShares: 0,
             lastDividendTime: block.timestamp,
             totalDividend: 0,
-            isActive: true,
+            isActive: false,
             shareToken: shareToken,
             rewardToken: rewardToken
         });
@@ -152,6 +152,10 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     function updateGlobalPoolStatus(
         bool isActive
     ) external override onlyManager whenInitialized {
+        if (isActive) {
+            // 只有在激活时才检查融资状态
+            require(IVault(vault).isFundingSuccessful(), "AccumulatedYield: funding not successful");
+        }
         globalPool.isActive = isActive;
     }
     

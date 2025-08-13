@@ -267,6 +267,12 @@ describe("V2 架构完整业务流程测试", function () {
     }
 
     async function distributeDividend() {
+        // 激活收益模块（如果还没有激活）
+        const globalPool = await accumulatedYield.getGlobalPoolInfo();
+        if (!globalPool.isActive) {
+            await accumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+        }
+        
         const dividendAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
         const signature = await prepareDividendSignature(dividendAmount);
         await usdt.connect(manager).approve(await accumulatedYield.getAddress(), dividendAmount);
@@ -297,6 +303,56 @@ describe("V2 架构完整业务流程测试", function () {
             expect(await token.symbol()).to.equal("TVT");
             expect(await token.decimals()).to.equal(TEST_CONFIG.VAULT_TOKEN_DECIMALS);
             expect(await token.vault()).to.equal(await vault.getAddress());
+        });
+
+        it("应该正确设置收益模块初始状态", async function () {
+            const globalPool = await accumulatedYield.getGlobalPoolInfo();
+            expect(globalPool.isActive).to.be.false; // 初始化时应该为false
+            expect(globalPool.shareToken).to.equal(await token.getAddress());
+            expect(globalPool.rewardToken).to.equal(await usdt.getAddress());
+        });
+
+        it("应该能够查询融资状态", async function () {
+            // 初始状态：融资未成功
+            expect(await vault.isFundingSuccessful()).to.be.false;
+            
+            // 进行大额deposit使融资成功
+            await performLargeDeposit(TEST_CONFIG.ABOVE_SOFT_CAP_AMOUNT);
+            
+            // 等待融资期结束
+            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            await ethers.provider.send("evm_mine", []);
+            
+            // 现在融资应该成功
+            expect(await vault.isFundingSuccessful()).to.be.true;
+        });
+
+        it("应该能够激活收益模块", async function () {
+            // 验证初始状态为false
+            let globalPool = await accumulatedYield.getGlobalPoolInfo();
+            expect(globalPool.isActive).to.be.false;
+            
+            // 在融资成功之前，无法激活收益模块
+            await expect(
+                accumulatedYield.connect(manager).updateGlobalPoolStatus(true)
+            ).to.be.revertedWith("AccumulatedYield: funding not successful");
+            
+            // 进行大额deposit使融资成功
+            await performLargeDeposit(TEST_CONFIG.ABOVE_SOFT_CAP_AMOUNT);
+            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            await ethers.provider.send("evm_mine", []);
+            
+            // 现在可以激活收益模块
+            await accumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            
+            // 验证状态已更新为true
+            globalPool = await accumulatedYield.getGlobalPoolInfo();
+            expect(globalPool.isActive).to.be.true;
+            
+            // 测试非管理员无法激活
+            await expect(
+                accumulatedYield.connect(user1).updateGlobalPoolStatus(true)
+            ).to.be.revertedWith("AccumulatedYield: only manager");
         });
     });
 
@@ -451,11 +507,16 @@ describe("V2 架构完整业务流程测试", function () {
 
     describe("5. Dividend 操作测试", function () {
         it("应该成功分发分红", async function () {
-            // 先进行deposit让用户持有代币
-            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
-            const signature = await prepareDepositSignature(user1, depositAmount, user1.address);
-            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-            await fund.connect(user1).deposit(depositAmount, user1.address, signature);
+            // 先进行大额deposit让融资成功
+            await performLargeDeposit(TEST_CONFIG.ABOVE_SOFT_CAP_AMOUNT);
+            
+            // 等待融资期结束并解锁代币
+            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            await ethers.provider.send("evm_mine", []);
+            await fund.connect(manager).unpauseTokenOnFundingSuccess();
+            
+            // 激活收益模块
+            await accumulatedYield.connect(manager).updateGlobalPoolStatus(true);
             
             const dividendAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
             const signature2 = await prepareDividendSignature(dividendAmount);
@@ -476,6 +537,9 @@ describe("V2 架构完整业务流程测试", function () {
             await ethers.provider.send("evm_mine", []);
             await fund.connect(manager).unpauseTokenOnFundingSuccess();
             
+            // 激活收益模块
+            await accumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            
             // 先分发分红
             await distributeDividend();
             
@@ -494,11 +558,16 @@ describe("V2 架构完整业务流程测试", function () {
 
     describe("6. Claim 操作测试", function () {
         it("应该成功领取分红", async function () {
-            // 先进行deposit
-            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
-            const signature = await prepareDepositSignature(user1, depositAmount, user1.address);
-            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-            await fund.connect(user1).deposit(depositAmount, user1.address, signature);
+            // 先进行大额deposit让融资成功
+            await performLargeDeposit(TEST_CONFIG.ABOVE_SOFT_CAP_AMOUNT);
+            
+            // 等待融资期结束并解锁代币
+            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            await ethers.provider.send("evm_mine", []);
+            await fund.connect(manager).unpauseTokenOnFundingSuccess();
+            
+            // 激活收益模块
+            await accumulatedYield.connect(manager).updateGlobalPoolStatus(true);
             
             // 分发分红
             await distributeDividend();

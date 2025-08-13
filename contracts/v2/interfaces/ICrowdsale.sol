@@ -62,7 +62,7 @@ interface ICrowdsale {
     function redeem(address receiver, bytes memory signature) external;
     
     // Backend manager initiated, requires DRDS signature verification
-    function offDeposit(uint256 amount, address receiver, bytes memory drdsSignature) external;
+    function offChainDeposit(uint256 amount, address receiver, bytes memory drdsSignature) external;
     
     // Backend manager initiated - redeems all user shares
     function offChainRedeem(address receiver) external;

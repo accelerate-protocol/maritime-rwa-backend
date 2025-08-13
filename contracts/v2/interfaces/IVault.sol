@@ -51,6 +51,9 @@ interface IVault {
     function setFundingModule(address _funding) external;
     function setDividendModule(address _dividendModule) external;
     
+    // ============ 融资状态查询接口 ============
+    function isFundingSuccessful() external view returns (bool);
+    
     // ============ 统一初始化接口 ============
     function initiate(bytes memory _initData) external;
 } 
