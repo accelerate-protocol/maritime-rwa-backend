@@ -307,7 +307,7 @@ describe("Crowdsale", function () {
             
             // Verify event emission
             await expect(tx).to.emit(crowdsale, "Deposit")
-              .withArgs(user1.address, receiver, depositAmount, expectedManageFee, balance);
+              .withArgs(receiver, depositAmount, expectedManageFee, balance);
         });
 
         it("should reject deposit with invalid signature", async function () {
@@ -419,16 +419,16 @@ describe("Crowdsale", function () {
             const balance = await vaultToken.balanceOf(receiver);
             expect(balance).to.be.gt(0);
             
-            // Calculate expected values after fee deduction
-            const expectedManageFee = (depositAmount * BigInt(manageFeeBps)) / BigInt(10000);
-            const expectedFundingAssets = depositAmount - expectedManageFee;
+            // For off-chain deposits, no management fee is deducted and no fundingAssets update
+            const expectedManageFee = 0n;
+            const expectedFundingAssets = 0n; // No fundingAssets update for off-chain deposits
             
             expect(await crowdsale.fundingAssets()).to.equal(expectedFundingAssets);
             expect(await crowdsale.manageFee()).to.equal(expectedManageFee);
             
             // Verify event emission
             await expect(tx).to.emit(crowdsale, "OffChainDeposit")
-              .withArgs(manager.address, receiver, depositAmount, expectedManageFee, balance, drdsSignature);
+              .withArgs(receiver, depositAmount, balance, drdsSignature);
         });
 
         it("should reject off-chain deposit with invalid DRDS signature", async function () {
@@ -518,7 +518,11 @@ describe("Crowdsale", function () {
             await resetEVMTime();
             
             // Set independent time for this test suite
-            const baseTime = Math.floor(Date.now() / 1000) + 120;
+            const currentBlock = await ethers.provider.getBlock("latest");
+            if (!currentBlock) {
+                throw new Error("Cannot get latest block");
+            }
+            const baseTime = currentBlock.timestamp + 120;
             startTime = baseTime + 60;
             endTime = startTime + 86400;
             
@@ -544,8 +548,8 @@ describe("Crowdsale", function () {
             testCrowdsale = newCrowdsale;
 
             // Move to funding period for deposit
-            const currentTime = Math.floor(Date.now() / 1000);
-            const timeToFunding = Math.max(0, startTime + 60 - currentTime);
+            const currentBlockTime = await ethers.provider.getBlock("latest").then(block => block?.timestamp || 0);
+            const timeToFunding = Math.max(0, startTime + 60 - currentBlockTime);
             await ethers.provider.send("evm_increaseTime", [timeToFunding]);
             await ethers.provider.send("evm_mine", []);
             
@@ -562,40 +566,160 @@ describe("Crowdsale", function () {
             await testCrowdsale.connect(user1).deposit(depositAmount, user1.address, signature);
 
             // Move time to after funding period for redeem operations
-            const timeToAfterFunding = Math.max(0, endTime + 3600 - Math.floor(Date.now() / 1000));
+            const currentBlockTimeAfterDeposit = await ethers.provider.getBlock("latest").then(block => block?.timestamp || 0);
+            const timeToAfterFunding = Math.max(0, endTime + 3600 - currentBlockTimeAfterDeposit);
             await ethers.provider.send("evm_increaseTime", [timeToAfterFunding]);
             await ethers.provider.send("evm_mine", []);
         });
 
         it("should allow redeem with valid signature when funding fails", async function () {
-            const redeemAmount = ethers.parseUnits("500", TOKEN_DECIMALS);
             const receiver = user1.address;
-            const nonce = await testCrowdsale.getManagerNonce();
-
-            // Generate signature
-            const messageHash = await testCrowdsale.getRedeemSignatureMessage(
-                redeemAmount,
-                receiver,
-                nonce
-            );
-            const signature = await manager.signMessage(ethers.getBytes(messageHash));
-
+            
             // Check initial balance
             const initialBalance = await testVaultToken.balanceOf(user1.address);
             console.log("Initial balance:", initialBalance.toString());
             
+            // Generate signature for all shares (amount parameter is ignored but needed for signature)
+            const nonce = await testCrowdsale.getManagerNonce();
+            const messageHash = await testCrowdsale.getRedeemSignatureMessage(
+                initialBalance, // Use actual balance for signature
+                receiver,
+                nonce
+            );
+            const signature = await manager.signMessage(ethers.getBytes(messageHash));
+            
+            // Calculate expected values for event verification
+            const sharePrice = await testCrowdsale.sharePrice();
+            const decimalsMultiplier = await testCrowdsale.decimalsMultiplier();
+            const manageFeeBps = await testCrowdsale.manageFeeBps();
+            
+            // Calculate asset amount: shares * sharePrice / SHARE_PRICE_DENOMINATOR / decimalsMultiplier
+            const expectedAssetAmount = (initialBalance * BigInt(sharePrice)) / (10n ** 8n) / BigInt(decimalsMultiplier);
+            const expectedFeeAmount = (expectedAssetAmount * BigInt(manageFeeBps)) / 10000n;
+            
             // Approve vault to burn tokens (required for redeem operation)
             await testVaultToken.connect(user1).approve(await testVault.getAddress(), initialBalance);
             
-            // Perform redeem
+            // Perform redeem (will redeem all shares)
             await expect(
-                testCrowdsale.connect(user1).redeem(redeemAmount, receiver, signature)
-            ).to.emit(testCrowdsale, "Redeem")
-                .withArgs(user1.address, redeemAmount, receiver);
+                testCrowdsale.connect(user1).redeem(receiver, signature)
+            ).to.emit(testCrowdsale, "FundFailRedeem")
+                .withArgs(receiver, initialBalance, expectedAssetAmount, expectedFeeAmount);
 
-            // User should have remaining balance after redeeming 500 shares
-            const expectedRemainingBalance = initialBalance - redeemAmount;
-            expect(await testVaultToken.balanceOf(user1.address)).to.equal(expectedRemainingBalance);
+            // User should have no remaining balance after redeeming all shares
+            expect(await testVaultToken.balanceOf(user1.address)).to.equal(0);
+        });
+
+        it("should allow off-chain redeem with valid manager", async function () {
+            const receiver = user1.address;
+            
+            // Check initial balance
+            const initialBalance = await testVaultToken.balanceOf(receiver);
+            expect(initialBalance).to.be.gt(0);
+            
+            // Approve vault to burn tokens (required for offChainRedeem operation)
+            await testVaultToken.connect(user1).approve(await testVault.getAddress(), initialBalance);
+            
+            // Calculate expected values for event verification
+            const sharePrice = await testCrowdsale.sharePrice();
+            const decimalsMultiplier = await testCrowdsale.decimalsMultiplier();
+            
+            // Calculate asset amount: shares * sharePrice / SHARE_PRICE_DENOMINATOR / decimalsMultiplier
+            const expectedAssetAmount = (initialBalance * BigInt(sharePrice)) / (10n ** 8n) / BigInt(decimalsMultiplier);
+            
+            // Perform off-chain redeem (manager can redeem for any user)
+            await expect(
+                testCrowdsale.connect(manager).offChainRedeem(receiver)
+            ).to.emit(testCrowdsale, "OffChainRedeem")
+                .withArgs(receiver, expectedAssetAmount);
+
+            // User should have no remaining balance after redeeming all shares
+            expect(await testVaultToken.balanceOf(receiver)).to.equal(0);
+        });
+
+        it("should reject off-chain redeem from non-manager", async function () {
+            const receiver = user1.address;
+            
+            // Non-manager should not be able to call offChainRedeem
+            await expect(
+                testCrowdsale.connect(user2).offChainRedeem(receiver)
+            ).to.be.revertedWith("Crowdsale: only manager");
+        });
+
+        it("should reject off-chain redeem when funding is successful", async function () {
+            // Create a new crowdsale setup where funding is successful
+            const currentBlock = await ethers.provider.getBlock("latest");
+            if (!currentBlock) {
+                throw new Error("Cannot get latest block");
+            }
+            
+            // Set fresh time for this test
+            const freshBaseTime = currentBlock.timestamp + 120;
+            const freshStartTime = freshBaseTime + 60;
+            const freshEndTime = freshStartTime + 86400;
+            
+            const { newVault, newVaultToken, newCrowdsale } = await createNewVaultAndCrowdsale(
+                assetToken,
+                fundingReceiver,
+                manageFeeReceiver,
+                manager,
+                validator,
+                freshStartTime,
+                freshEndTime,
+                maxSupply,
+                softCap,
+                sharePrice,
+                minDepositAmount,
+                manageFeeBps,
+                decimalsMultiplier
+            );
+            
+            // Move to funding period
+            const currentTime = await ethers.provider.getBlock("latest").then(block => block?.timestamp || 0);
+            const timeToFunding = Math.max(0, freshStartTime + 60 - currentTime);
+            await ethers.provider.send("evm_increaseTime", [timeToFunding]);
+            await ethers.provider.send("evm_mine", []);
+            
+            // Make funding successful by depositing enough to reach soft cap
+            const depositAmount = ethers.parseUnits("6000", TOKEN_DECIMALS);
+            const nonce = await newCrowdsale.getManagerNonce();
+            const messageHash = await newCrowdsale.getDepositSignatureMessage(
+                depositAmount,
+                user1.address,
+                nonce
+            );
+            const signature = await manager.signMessage(ethers.getBytes(messageHash));
+            await assetToken.connect(user1).approve(await newCrowdsale.getAddress(), ethers.parseUnits("100000", TOKEN_DECIMALS));
+            await newCrowdsale.connect(user1).deposit(depositAmount, user1.address, signature);
+
+            // Move time to after funding period
+            const timeToAfterFunding = Math.max(0, freshEndTime + 3600 - await ethers.provider.getBlock("latest").then(block => block?.timestamp || 0));
+            await ethers.provider.send("evm_increaseTime", [timeToAfterFunding]);
+            await ethers.provider.send("evm_mine", []);
+            
+            // Verify funding is successful
+            expect(await newCrowdsale.isFundingSuccessful()).to.be.true;
+            
+            // Should reject off-chain redeem when funding is successful
+            await expect(
+                newCrowdsale.connect(manager).offChainRedeem(user1.address)
+            ).to.be.revertedWith("Crowdsale: funding was successful");
+        });
+
+        it("should reject off-chain redeem for user with no shares", async function () {
+            const receiver = user2.address; // user2 has no shares
+            
+            // Should reject off-chain redeem for user with no shares
+            await expect(
+                testCrowdsale.connect(manager).offChainRedeem(receiver)
+            ).to.be.revertedWith("Crowdsale: no shares to redeem");
+        });
+
+        it("should reject off-chain redeem with zero address receiver", async function () {
+            // Should reject off-chain redeem with zero address
+            await expect(
+                testCrowdsale.connect(manager).offChainRedeem(ethers.ZeroAddress)
+            ).to.be.revertedWith("Crowdsale: invalid receiver");
         });
     });
 

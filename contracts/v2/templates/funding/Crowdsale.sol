@@ -221,20 +221,56 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         address signer = ethSignedMessageHash.recover(signature);
         require(signer == manager, "Crowdsale: invalid signature");
         
-        // Process deposit using shared logic
-        (uint256 actualAmount, uint256 manageFeeAmount, uint256 sharesAmount) = _processDeposit(amount, receiver, true);
+        // Calculate shares for the requested amount (with fee deduction for on-chain)
+        uint256 feeAmount = (amount * manageFeeBps) / BPS_DENOMINATOR;
+        uint256 netAmount = amount - feeAmount;
+        uint256 requestedShares = _getSharesForAssets(netAmount);
         
-        emit Deposit(msg.sender, receiver, actualAmount, manageFeeAmount, sharesAmount);
-        return shares;
+        uint256 currentSupply = IToken(IVault(vault).vaultToken()).totalSupply();
+        uint256 remainingSupply = maxSupply - currentSupply;
+        
+        // Check if we can fulfill the full request
+        uint256 actualAmount;
+        uint256 actualShares;
+        if (requestedShares > remainingSupply) {
+            // Calculate actual amount that can be deposited
+            actualShares = remainingSupply;
+            uint256 actualNetAmount = _getAssetsForShares(remainingSupply);
+            actualAmount = (actualNetAmount * BPS_DENOMINATOR) / (BPS_DENOMINATOR - manageFeeBps); // Convert back to gross amount
+            require(actualAmount >= minDepositAmount, "Crowdsale: remaining amount below minimum");
+        } else {
+            actualShares = requestedShares;
+            actualAmount = amount;
+        }
+        
+        // Calculate management fee based on actual amount
+        uint256 manageFeeAmount = (actualAmount * manageFeeBps) / BPS_DENOMINATOR;
+        
+        // Update state
+        manageFee += manageFeeAmount;
+        uint256 netAmountForFunding = actualAmount - manageFeeAmount;
+        fundingAssets += netAmountForFunding; // Only net amount goes to funding
+        
+        // Transfer assets (user pays the full actual amount, fee is deducted)
+        IERC20(assetToken).safeTransferFrom(
+            msg.sender,
+            address(this),
+            actualAmount
+        );
+        
+        // Mint tokens through vault
+        IVault(vault).mintToken(receiver, actualShares);
+        
+        emit Deposit(receiver, actualAmount, manageFeeAmount, actualShares);
+        return actualShares;
     }
     
     /**
-     * @dev Redeem shares (user initiated, requires manager signature)
-     * @param amount Number of shares to redeem
+     * @dev Redeem all shares (user initiated, requires manager signature)
      * @param receiver Receiver address
      * @param signature Manager signature
      */
-    function redeem(uint256 amount, address receiver, bytes memory signature) 
+    function redeem(address receiver, bytes memory signature) 
         external 
         override 
         onlyAfterFunding 
@@ -243,15 +279,18 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         nonReentrant 
     {
         require(!isFundingSuccessful(), "Crowdsale: funding was successful");
-        require(amount > 0, "Crowdsale: invalid amount");
         require(receiver != address(0), "Crowdsale: invalid receiver");
+        
+        // Get user's total balance (redeem all shares)
+        uint256 userShares = IToken(IVault(vault).vaultToken()).balanceOf(msg.sender);
+        require(userShares > 0, "Crowdsale: no shares to redeem");
         
         // Verify signature using OnChainSignatureData structure
         uint256 nonce = managerNonce++;
         
         ICrowdsale.OnChainSignatureData memory sigData = ICrowdsale.OnChainSignatureData({
             operation: "redeem",
-            amount: amount,
+            amount: userShares,
             receiver: receiver,
             nonce: nonce,
             chainId: block.chainid,
@@ -270,15 +309,12 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         address signer = ethSignedMessageHash.recover(signature);
         require(signer == manager, "Crowdsale: invalid signature");
         
-        uint256 userBalance = IToken(IVault(vault).vaultToken()).balanceOf(msg.sender);
-        require(userBalance >= amount, "Crowdsale: insufficient balance");
-        
-        // Calculate refund assets
-        uint256 assetAmount = _getAssetsForShares(amount);
+        // Calculate refund assets for all shares
+        uint256 assetAmount = _getAssetsForShares(userShares);
         uint256 feeAmount = (assetAmount * manageFeeBps) / BPS_DENOMINATOR;
         
-        // Burn tokens through vault
-        IVault(vault).burnToken(msg.sender, amount);
+        // Burn all tokens through vault
+        IVault(vault).burnToken(msg.sender, userShares);
         
         // Update state
         fundingAssets -= assetAmount;
@@ -287,7 +323,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         // Refund assets (including management fee)
         IERC20(assetToken).safeTransfer(receiver, assetAmount + feeAmount);
         
-        emit Redeem(msg.sender, amount, receiver);
+        emit FundFailRedeem(receiver, userShares, assetAmount, feeAmount);
     }
     
     /**
@@ -327,19 +363,38 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         address signer = ethSignedMessageHash.recover(drdsSignature);
         require(signer == validator, "Crowdsale: invalid drds signature");
         
-        // Process off-chain deposit using shared logic
-        (uint256 actualAmount, uint256 manageFeeAmount, uint256 sharesAmount) = _processDeposit(amount, receiver, false);
+        // Calculate shares for the requested amount (no fee deduction for off-chain)
+        uint256 requestedShares = _getSharesForAssets(amount);
         
-        // todo: 链下质押的是否支持部分质押呢？
-        emit OffChainDeposit(msg.sender, receiver, actualAmount, manageFeeAmount, sharesAmount, drdsSignature);
+        uint256 currentSupply = IToken(IVault(vault).vaultToken()).totalSupply();
+        uint256 remainingSupply = maxSupply - currentSupply;
+        
+        // Check if we can fulfill the full request
+        uint256 actualAmount;
+        uint256 actualShares;
+        if (requestedShares > remainingSupply) {
+            // Calculate actual amount that can be deposited
+            actualShares = remainingSupply;
+            actualAmount = _getAssetsForShares(remainingSupply);
+            require(actualAmount >= minDepositAmount, "Crowdsale: remaining amount below minimum");
+        } else {
+            actualShares = requestedShares;
+            actualAmount = amount;
+        }
+        
+        // No management fee for off-chain deposits
+        
+        // Mint tokens through vault
+        IVault(vault).mintToken(receiver, actualShares);
+        
+        emit OffChainDeposit(receiver, actualAmount, actualShares, drdsSignature);
     }
     
     /**
-     * @dev Off-chain redeem (only manager can call)
-     * @param amount Number of shares to redeem
+     * @dev Off-chain redeem all shares (only manager can call)
      * @param receiver Receiver address
      */
-    function offChainRedeem(uint256 amount, address receiver) 
+    function offChainRedeem(address receiver) 
         external 
         override 
         onlyManager 
@@ -347,24 +402,22 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         whenInitialized
     {
         require(!isFundingSuccessful(), "Crowdsale: funding was successful");
-        require(amount > 0, "Crowdsale: invalid amount");
         require(receiver != address(0), "Crowdsale: invalid receiver");
         
-        uint256 userBalance = IToken(IVault(vault).vaultToken()).balanceOf(receiver);
-        require(userBalance >= amount, "Crowdsale: insufficient balance");
+        // Get user's total balance (redeem all shares)
+        uint256 userShares = IToken(IVault(vault).vaultToken()).balanceOf(receiver);
+        require(userShares > 0, "Crowdsale: no shares to redeem");
         
-        // Calculate refund assets
-        uint256 assetAmount = _getAssetsForShares(amount);
-        uint256 feeAmount = (assetAmount * manageFeeBps) / BPS_DENOMINATOR;
+        // Calculate refund assets for all shares
+        uint256 assetAmount = _getAssetsForShares(userShares);
         
-        // Burn tokens through vault
-        IVault(vault).burnToken(receiver, amount);
+        // Burn all tokens through vault
+        IVault(vault).burnToken(receiver, userShares);
         
-        // Update state
-        fundingAssets -= assetAmount;
-        manageFee -= feeAmount;
+        // Refund assets (including management fee)
+        IERC20(assetToken).safeTransfer(receiver, assetAmount);
                 
-        emit OffChainRedeem(msg.sender, receiver, amount);
+        emit OffChainRedeem(receiver, assetAmount);
     }
     
     // ============ Fund Management ============
@@ -552,58 +605,5 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         return messageHash;
     }
     
-    /**
-     * @dev Internal function to process deposit logic (shared between deposit and offDeposit)
-     * @param amount Deposit amount
-     * @param receiver Receiver address
-     * @param isOnChain Whether this is an on-chain deposit (true) or off-chain deposit (false)
-     * @return actualAmount Actual amount processed
-     * @return manageFeeAmount Management fee amount
-     * @return shares Number of shares minted
-     */
-    function _processDeposit(uint256 amount, address receiver, bool isOnChain) 
-        internal 
-        returns (uint256 actualAmount, uint256 manageFeeAmount, uint256 shares) 
-    {
-        // Calculate shares for the requested amount (both on-chain and off-chain use the same logic)
-        uint256 feeAmount = (amount * manageFeeBps) / BPS_DENOMINATOR;
-        uint256 netAmount = amount - feeAmount;
-        uint256 requestedShares = _getSharesForAssets(netAmount);
-        
-        uint256 currentSupply = IToken(IVault(vault).vaultToken()).totalSupply();
-        uint256 remainingSupply = maxSupply - currentSupply;
-        
-        // Check if we can fulfill the full request
-        if (requestedShares > remainingSupply) {
-            // Calculate actual amount that can be deposited
-            shares = remainingSupply;
-            uint256 actualNetAmount = _getAssetsForShares(remainingSupply);
-            actualAmount = (actualNetAmount * BPS_DENOMINATOR) / (BPS_DENOMINATOR - manageFeeBps); // Convert back to gross amount
-            require(actualAmount >= minDepositAmount, "Crowdsale: remaining amount below minimum");
-        } else {
-            shares = requestedShares;
-            actualAmount = amount;
-        }
-        
-        // Calculate management fee based on actual amount
-        manageFeeAmount = (actualAmount * manageFeeBps) / BPS_DENOMINATOR;
-        
-        // Update state
-        manageFee += manageFeeAmount;
-        uint256 netAmountForFunding = actualAmount - manageFeeAmount;
-        fundingAssets += netAmountForFunding; // Only net amount goes to funding
-        
-        if (isOnChain) {
-            // Transfer assets (user pays the full actual amount, fee is deducted)
-            IERC20(assetToken).safeTransferFrom(
-                msg.sender,
-                address(this),
-                actualAmount
-            );
-        }
-        // For off-chain deposits, assets are assumed to be received off-chain
-        
-        // Mint tokens through vault
-        IVault(vault).mintToken(receiver, shares);
-    }
+
 } 

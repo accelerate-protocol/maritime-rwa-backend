@@ -441,7 +441,7 @@ describe("V2 架构完整业务流程测试", function () {
             await token.connect(user1).approve(await vault.getAddress(), userBalance);
             
             const initialUsdtBalance = await usdt.balanceOf(user1.address);
-            const tx = await fund.connect(user1).redeem(userBalance, user1.address, redeemSignature);
+            const tx = await fund.connect(user1).redeem(user1.address, redeemSignature);
             
             // 验证资产返还
             const finalUsdtBalance = await usdt.balanceOf(user1.address);

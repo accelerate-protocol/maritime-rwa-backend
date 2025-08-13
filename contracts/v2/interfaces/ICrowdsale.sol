@@ -29,10 +29,10 @@ interface ICrowdsale {
     }
     
     // ============ Events ============
-    event Deposit(address indexed user, address indexed receiver, uint256 costAmount, uint256 manageFee, uint256 shares);
-    event Redeem(address indexed user, uint256 amount, address indexed receiver);
-    event OffChainDeposit(address indexed manager, address indexed receiver, uint256 costAmount, uint256 manageFee, uint256 shares, bytes signature);
-    event OffChainRedeem(address indexed manager, address indexed receiver, uint256 amount);
+    event Deposit(address indexed receiver, uint256 assertAmount, uint256 manageFee, uint256 shares);
+    event FundFailRedeem(address redeemer,uint256 shares,uint256 assetAmount,uint256 feeAmount);
+    event OffChainDeposit(address indexed receiver, uint256 assertAmount, uint256 shares, bytes signature);
+    event OffChainRedeem(address indexed receiver, uint256 assertAmount);
     event FundingAssetsWithdrawn(address indexed receiver, uint256 amount);
     event ManageFeeWithdrawn(address indexed receiver, uint256 amount);
     event TokenUnpausedOnFundingSuccess();
@@ -58,14 +58,14 @@ interface ICrowdsale {
     // User initiated, requires manager signature
     function deposit(uint256 amount, address receiver, bytes memory signature) external returns (uint256);
     
-    // User initiated, requires manager signature
-    function redeem(uint256 amount, address receiver, bytes memory signature) external;
+    // User initiated, requires manager signature - redeems all user shares
+    function redeem(address receiver, bytes memory signature) external;
     
     // Backend manager initiated, requires DRDS signature verification
     function offDeposit(uint256 amount, address receiver, bytes memory drdsSignature) external;
     
-    // Backend manager initiated
-    function offChainRedeem(uint256 amount, address receiver) external;
+    // Backend manager initiated - redeems all user shares
+    function offChainRedeem(address receiver) external;
 
     // ============ Fund Management Interface ============
     function withdrawFundingAssets() external;
