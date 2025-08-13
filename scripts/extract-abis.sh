@@ -24,53 +24,53 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}📁 创建目录结构...${NC}"
 
 # ==============================================
-# 1. 提取模板合约ABI和Bytecode (Mock版本)
+# 1. 提取模板合约ABI和Bytecode (真实版本)
 # ==============================================
 
-echo -e "${YELLOW}📄 1. 提取模板合约ABI和Bytecode (Mock版本)...${NC}"
+echo -e "${YELLOW}📄 1. 提取模板合约ABI和Bytecode (真实版本)...${NC}"
 
-# 1.1 MockBasicVault -> MockBasicVault
-if [ -f "artifacts/contracts/mocks/MockBasicVault.sol/MockBasicVault.json" ]; then
+# 1.1 BasicVault -> BasicVault
+if [ -f "artifacts/contracts/v2/templates/vault/BasicVault.sol/BasicVault.json" ]; then
     # 提取ABI
-    jq '.abi' artifacts/contracts/mocks/MockBasicVault.sol/MockBasicVault.json > abis/templates/MockBasicVault.json
+    jq '.abi' artifacts/contracts/v2/templates/vault/BasicVault.sol/BasicVault.json > abis/templates/BasicVault.json
     # 提取Bytecode
-    jq '.bytecode' artifacts/contracts/mocks/MockBasicVault.sol/MockBasicVault.json > abis/templates/MockBasicVault.bytecode
-    echo -e "${GREEN}✅ MockBasicVault.json + MockBasicVault.bytecode${NC}"
+    jq '.bytecode' artifacts/contracts/v2/templates/vault/BasicVault.sol/BasicVault.json > abis/templates/BasicVault.bytecode
+    echo -e "${GREEN}✅ BasicVault.json + BasicVault.bytecode${NC}"
 else
-    echo "❌ MockBasicVault artifact not found"
+    echo "❌ BasicVault artifact not found"
 fi
 
-# 1.2 MockERC20 -> MockERC20
-if [ -f "artifacts/contracts/mocks/MockERC20.sol/MockERC20.json" ]; then
+# 1.2 VaultToken -> VaultToken
+if [ -f "artifacts/contracts/v2/templates/token/VaultToken.sol/VaultToken.json" ]; then
     # 提取ABI
-    jq '.abi' artifacts/contracts/mocks/MockERC20.sol/MockERC20.json > abis/templates/MockERC20.json
+    jq '.abi' artifacts/contracts/v2/templates/token/VaultToken.sol/VaultToken.json > abis/templates/VaultToken.json
     # 提取Bytecode
-    jq '.bytecode' artifacts/contracts/mocks/MockERC20.sol/MockERC20.json > abis/templates/MockERC20.bytecode
-    echo -e "${GREEN}✅ MockERC20.json + MockERC20.bytecode${NC}"
+    jq '.bytecode' artifacts/contracts/v2/templates/token/VaultToken.sol/VaultToken.json > abis/templates/VaultToken.bytecode
+    echo -e "${GREEN}✅ VaultToken.json + VaultToken.bytecode${NC}"
 else
-    echo "❌ MockERC20 artifact not found"
+    echo "❌ VaultToken artifact not found"
 fi
 
-# 1.3 MockCrowdsale -> MockCrowdsale
-if [ -f "artifacts/contracts/mocks/MockCrowdsale.sol/MockCrowdsale.json" ]; then
+# 1.3 Crowdsale -> Crowdsale
+if [ -f "artifacts/contracts/v2/templates/funding/Crowdsale.sol/Crowdsale.json" ]; then
     # 提取ABI
-    jq '.abi' artifacts/contracts/mocks/MockCrowdsale.sol/MockCrowdsale.json > abis/templates/MockCrowdsale.json
+    jq '.abi' artifacts/contracts/v2/templates/funding/Crowdsale.sol/Crowdsale.json > abis/templates/Crowdsale.json
     # 提取Bytecode
-    jq '.bytecode' artifacts/contracts/mocks/MockCrowdsale.sol/MockCrowdsale.json > abis/templates/MockCrowdsale.bytecode
-    echo -e "${GREEN}✅ MockCrowdsale.json + MockCrowdsale.bytecode${NC}"
+    jq '.bytecode' artifacts/contracts/v2/templates/funding/Crowdsale.sol/Crowdsale.json > abis/templates/Crowdsale.bytecode
+    echo -e "${GREEN}✅ Crowdsale.json + Crowdsale.bytecode${NC}"
 else
-    echo "❌ MockCrowdsale artifact not found"
+    echo "❌ Crowdsale artifact not found"
 fi
 
-# 1.4 MockAccumulatedYield -> MockAccumulatedYield
-if [ -f "artifacts/contracts/mocks/MockAccumulatedYield.sol/MockAccumulatedYield.json" ]; then
+# 1.4 AccumulatedYield -> AccumulatedYield
+if [ -f "artifacts/contracts/v2/templates/yield/AccumulatedYield.sol/AccumulatedYield.json" ]; then
     # 提取ABI
-    jq '.abi' artifacts/contracts/mocks/MockAccumulatedYield.sol/MockAccumulatedYield.json > abis/templates/MockAccumulatedYield.json
+    jq '.abi' artifacts/contracts/v2/templates/yield/AccumulatedYield.sol/AccumulatedYield.json > abis/templates/AccumulatedYield.json
     # 提取Bytecode
-    jq '.bytecode' artifacts/contracts/mocks/MockAccumulatedYield.sol/MockAccumulatedYield.json > abis/templates/MockAccumulatedYield.bytecode
-    echo -e "${GREEN}✅ MockAccumulatedYield.json + MockAccumulatedYield.bytecode${NC}"
+    jq '.bytecode' artifacts/contracts/v2/templates/yield/AccumulatedYield.sol/AccumulatedYield.json > abis/templates/AccumulatedYield.bytecode
+    echo -e "${GREEN}✅ AccumulatedYield.json + AccumulatedYield.bytecode${NC}"
 else
-    echo "❌ MockAccumulatedYield artifact not found"
+    echo "❌ AccumulatedYield artifact not found"
 fi
 
 # ==============================================
@@ -169,27 +169,27 @@ cat > abis/index.json << EOF
   "version": "2.0.0",
   "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
   "deployment_flow": [
-    "1. 模板合约 (Mock版本)",
+    "1. 模板合约 (真实版本)",
     "2. 工厂合约", 
     "3. Creation合约"
   ],
   "contracts": {
     "templates": {
-      "MockBasicVault": {
-        "abi": "templates/MockBasicVault.json",
-        "bytecode": "templates/MockBasicVault.bytecode"
+      "BasicVault": {
+        "abi": "templates/BasicVault.json",
+        "bytecode": "templates/BasicVault.bytecode"
       },
-      "MockERC20": {
-        "abi": "templates/MockERC20.json",
-        "bytecode": "templates/MockERC20.bytecode"
+      "VaultToken": {
+        "abi": "templates/VaultToken.json",
+        "bytecode": "templates/VaultToken.bytecode"
       },
-      "MockCrowdsale": {
-        "abi": "templates/MockCrowdsale.json",
-        "bytecode": "templates/MockCrowdsale.bytecode"
+      "Crowdsale": {
+        "abi": "templates/Crowdsale.json",
+        "bytecode": "templates/Crowdsale.bytecode"
       },
-      "MockAccumulatedYield": {
-        "abi": "templates/MockAccumulatedYield.json",
-        "bytecode": "templates/MockAccumulatedYield.bytecode"
+      "AccumulatedYield": {
+        "abi": "templates/AccumulatedYield.json",
+        "bytecode": "templates/AccumulatedYield.bytecode"
       }
     },
     "factories": {
@@ -225,10 +225,10 @@ cat > abis/index.json << EOF
   },
   "deployment_addresses": {
     "hardhat_local": {
-      "MockBasicVault": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-      "MockERC20": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-      "MockCrowdsale": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-      "MockAccumulatedYield": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      "BasicVault": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "VaultToken": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      "Crowdsale": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      "AccumulatedYield": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
       "MockUSDT": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
       "VaultFactory": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
       "TokenFactory": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
@@ -262,11 +262,11 @@ cat > abis/README.md << 'EOF'
 ## 📋 部署流程
 
 ```
-1. 📄 模板合约 (Mock版本)
-   ├── MockBasicVault.json + MockBasicVault.bytecode
-   ├── MockERC20.json + MockERC20.bytecode
-   ├── MockCrowdsale.json + MockCrowdsale.bytecode
-   └── MockAccumulatedYield.json + MockAccumulatedYield.bytecode
+1. 📄 模板合约 (真实版本)
+   ├── BasicVault.json + BasicVault.bytecode
+   ├── VaultToken.json + VaultToken.bytecode
+   ├── Crowdsale.json + Crowdsale.bytecode
+   └── AccumulatedYield.json + AccumulatedYield.bytecode
 
 2. 🏭 工厂合约
    ├── VaultFactory.json + VaultFactory.bytecode
@@ -282,15 +282,15 @@ cat > abis/README.md << 'EOF'
 
 ```
 abis/
-├── templates/          # 模板合约ABI和Bytecode (Mock版本)
-│   ├── MockBasicVault.json
-│   ├── MockBasicVault.bytecode
-│   ├── MockERC20.json
-│   ├── MockERC20.bytecode
-│   ├── MockCrowdsale.json
-│   ├── MockCrowdsale.bytecode
-│   ├── MockAccumulatedYield.json
-│   └── MockAccumulatedYield.bytecode
+├── templates/          # 模板合约ABI和Bytecode (真实版本)
+│   ├── BasicVault.json
+│   ├── BasicVault.bytecode
+│   ├── VaultToken.json
+│   ├── VaultToken.bytecode
+│   ├── Crowdsale.json
+│   ├── Crowdsale.bytecode
+│   ├── AccumulatedYield.json
+│   └── AccumulatedYield.bytecode
 ├── factories/          # 工厂合约ABI和Bytecode
 │   ├── VaultFactory.json
 │   ├── VaultFactory.bytecode
@@ -317,15 +317,15 @@ abis/
 ```javascript
 // 使用ethers.js v6
 import { ethers } from 'ethers';
-import MockBasicVaultABI from './abis/templates/MockBasicVault.json';
-import MockBasicVaultBytecode from './abis/templates/MockBasicVault.bytecode';
+import BasicVaultABI from './abis/templates/BasicVault.json';
+import BasicVaultBytecode from './abis/templates/BasicVault.bytecode';
 
 const provider = new ethers.JsonRpcProvider('http://localhost:8545');
 
 // 创建合约实例
 const vaultContract = new ethers.Contract(
   '0x5FbDB2315678afecb367f032d93F642f64180aa3',
-  MockBasicVaultABI,
+  BasicVaultABI,
   provider
 );
 
@@ -334,7 +334,7 @@ const manager = await vaultContract.manager();
 console.log('Manager:', manager);
 
 // 部署新合约
-const factory = new ethers.ContractFactory(MockBasicVaultABI, MockBasicVaultBytecode, signer);
+const factory = new ethers.ContractFactory(BasicVaultABI, BasicVaultBytecode, signer);
 const newVault = await factory.deploy();
 ```
 
@@ -342,14 +342,14 @@ const newVault = await factory.deploy();
 
 ```javascript
 import Web3 from 'web3';
-import MockBasicVaultABI from './abis/templates/MockBasicVault.json';
-import MockBasicVaultBytecode from './abis/templates/MockBasicVault.bytecode';
+import BasicVaultABI from './abis/templates/BasicVault.json';
+import BasicVaultBytecode from './abis/templates/BasicVault.bytecode';
 
 const web3 = new Web3('http://localhost:8545');
 
 // 创建合约实例
 const vaultContract = new web3.eth.Contract(
-  MockBasicVaultABI,
+  BasicVaultABI,
   '0x5FbDB2315678afecb367f032d93F642f64180aa3'
 );
 
@@ -358,8 +358,8 @@ const manager = await vaultContract.methods.manager().call();
 console.log('Manager:', manager);
 
 // 部署新合约
-const newVault = await web3.eth.contract(MockBasicVaultABI).deploy({
-  data: MockBasicVaultBytecode,
+const newVault = await web3.eth.contract(BasicVaultABI).deploy({
+  data: BasicVaultBytecode,
   arguments: []
 }).send({ from: deployer });
 ```
@@ -374,10 +374,10 @@ import json
 w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
 
 # 加载ABI和Bytecode
-with open('abis/templates/MockBasicVault.json', 'r') as f:
+with open('abis/templates/BasicVault.json', 'r') as f:
     vault_abi = json.load(f)
 
-with open('abis/templates/MockBasicVault.bytecode', 'r') as f:
+with open('abis/templates/BasicVault.bytecode', 'r') as f:
     vault_bytecode = f.read().strip('"')
 
 # 创建合约实例
@@ -399,10 +399,10 @@ tx_hash = new_vault.constructor().transact({'from': deployer})
 
 ### Hardhat本地网络 (模板合约)
 
-- **MockBasicVault**: `0x5FbDB2315678afecb367f032d93F642f64180aa3`
-- **MockERC20**: `0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512`
-- **MockCrowdsale**: `0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0`
-- **MockAccumulatedYield**: `0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9`
+- **BasicVault**: `0x5FbDB2315678afecb367f032d93F642f64180aa3`
+- **VaultToken**: `0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512`
+- **Crowdsale**: `0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0`
+- **AccumulatedYield**: `0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9`
 - **MockUSDT**: `0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9`
 
 ### 工厂合约
@@ -433,7 +433,7 @@ bash scripts/extract-abis.sh
 
 ## 📝 注意事项
 
-1. **模板合约**: 使用Mock版本作为模板，简化开发和测试
+1. **模板合约**: 使用真实版本作为模板，用于生产环境部署
 2. **工厂合约**: 负责部署和管理模板合约的克隆实例
 3. **Creation合约**: 统一的项目部署入口，自动处理合约间依赖关系
 4. **Mock合约**: 只保留MockUSDT作为独立的测试代币
@@ -445,7 +445,7 @@ bash scripts/extract-abis.sh
 - 在前端项目中，建议将这些ABI和Bytecode文件复制到前端项目的`src/abis/`目录下
 - 使用TypeScript时，可以生成类型定义文件以获得更好的开发体验
 - 建议为不同的网络环境维护不同的合约地址配置文件
-- 模板合约使用Mock版本，便于快速开发和测试
+- 模板合约使用真实版本，适用于生产环境部署
 - Bytecode文件可用于合约验证和重新部署
 EOF
 
@@ -470,6 +470,6 @@ echo -e "${BLUE}📋 索引文件: ./abis/index.json${NC}"
 echo -e "${BLUE}📖 使用说明: ./abis/README.md${NC}"
 echo ""
 echo -e "${YELLOW}📋 部署流程顺序：${NC}"
-echo "1. 📄 模板合约 (Mock版本)"
+echo "1. 📄 模板合约 (真实版本)"
 echo "2. 🏭 工厂合约"
 echo "3. 🚀 Creation合约" 
