@@ -26,7 +26,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const YieldFactory = await ethers.getContractAt("contracts/v2/factories/YieldFactory.sol:YieldFactory", YieldFactoryDeployment.address);
   
   const mockUSDTDeployment = await get("MockUSDT");
-  const mockUSDT = await ethers.getContractAt("contracts/v1/MockUSDT.sol:MockUSDT", mockUSDTDeployment.address);
+      const mockUSDT = await ethers.getContractAt("contracts/v2/mocks/MockUSDT.sol:MockUSDT", mockUSDTDeployment.address);
 
   console.log("📦 已获取工厂合约和MockUSDT");
 

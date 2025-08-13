@@ -52,7 +52,6 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
      * @dev Constructor
      */
     constructor() {
-        // 在 Clones 模式下，owner 将在 initGlobalPool 中设置
     }
     
     // ============ Global Pool Management ============
@@ -138,11 +137,11 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     function initiate(address _vault, address _vaultToken, bytes memory _initData) external override {
         require(_vault != address(0), "AccumulatedYield: invalid vault");
         
-        // 解码原始的初始化数据
+        // decode initData
         (address rewardToken, address rewardManager, address dividendTreasuryAddr) = 
             abi.decode(_initData, (address, address, address));
         
-        // 调用原有的初始化逻辑
+        // init global pool 
         _initGlobalPool(_vault, rewardManager, dividendTreasuryAddr, _vaultToken, rewardToken);
     }
     

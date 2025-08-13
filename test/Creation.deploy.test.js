@@ -95,7 +95,7 @@ describe("Creation部署测试 - 完整的V2架构", function () {
         // ==================== 5. 部署测试代币 ====================
         console.log("\n步骤5: 部署测试代币");
         
-        const MockUSDT = await ethers.getContractFactory("contracts/mocks/MockUSDT.sol:MockUSDT");
+        const MockUSDT = await ethers.getContractFactory("contracts/v2/mocks/MockUSDT.sol:MockUSDT");
         usdt = await MockUSDT.deploy("USDT", "USDT");
         console.log(`✓ USDT测试代币部署: ${usdt.target || usdt.address}`);
 
@@ -173,6 +173,7 @@ describe("Creation部署测试 - 完整的V2架构", function () {
         
         try {
             const tx = await creation.deployAll(
+                "TestProject",     // projectName
                 0, vaultInitData,  // vaultTemplateId, vaultInitData
                 0, tokenInitData,  // tokenTemplateId, tokenInitData
                 0, fundInitData,   // fundTemplateId, fundInitData

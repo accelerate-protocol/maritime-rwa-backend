@@ -48,18 +48,16 @@ contract Creation is ICreation, Ownable {
         address dividendTreasury;
     }
     
-    // 项目结构
-    struct Project {
-        address vault;
-        address token;
-        address fund;
-        address accumulatedYield;
-        uint256 createdAt;
-    }
+
     
-    Project[] public projects;
+    // 项目映射：项目名称 => 项目详情
+    mapping(string => Project) public projects;
     
-    event ProjectCreated(uint256 indexed projectId, address vault, address token, address fund, address accumulatedYield);
+    // 用户项目映射：deployer => projectName[]
+    mapping(address => string[]) public userProjects;
+    
+
+
     
     constructor(
         address _vaultFactory,
@@ -78,6 +76,7 @@ contract Creation is ICreation, Ownable {
     
     // 实现接口的deployAll方法
     function deployAll(
+        string memory projectName,
         uint256 vaultTemplateId,
         bytes memory vaultInitData,
         uint256 tokenTemplateId,
@@ -87,6 +86,41 @@ contract Creation is ICreation, Ownable {
         uint256 dividendTemplateId,
         bytes memory dividendInitData
     ) external override returns (DeploymentResult memory result) {
+        // 参数合法性校验
+        require(bytes(projectName).length > 0, "Creation: project name cannot be empty");
+        require(bytes(projects[projectName].name).length == 0, "Creation: project name already exists");
+        
+        // 校验 Vault 初始化数据
+        require(vaultInitData.length > 0, "Creation: vault init data cannot be empty");
+        try this.validateVaultInitData(vaultInitData) {
+            // 验证通过
+        } catch {
+            revert("Creation: invalid vault init data format");
+        }
+        
+        // 校验 Token 初始化数据
+        require(tokenInitData.length > 0, "Creation: token init data cannot be empty");
+        try this.validateTokenInitData(tokenInitData) {
+            // 验证通过
+        } catch {
+            revert("Creation: invalid token init data format");
+        }
+        
+        // 校验 Fund 初始化数据
+        require(fundInitData.length > 0, "Creation: fund init data cannot be empty");
+        try this.validateFundInitData(fundInitData) {
+            // 验证通过
+        } catch {
+            revert("Creation: invalid fund init data format");
+        }
+        
+        // 校验 Dividend 初始化数据
+        require(dividendInitData.length > 0, "Creation: dividend init data cannot be empty");
+        try this.validateDividendInitData(dividendInitData) {
+            // 验证通过
+        } catch {
+            revert("Creation: invalid dividend init data format");
+        }
         // 1. 部署Vault
         address vault = vaultFactory.createVault(vaultTemplateId, vaultInitData);
         require(vault != address(0), "Creation: vault creation failed");
@@ -111,15 +145,18 @@ contract Creation is ICreation, Ownable {
         // 5. 配置模块间的依赖关系
         _configureModules(vault, token, fund, accumulatedYield);
         
-        // 6. 创建项目记录
-        uint256 projectId = projects.length;
-        projects.push(Project({
+        // 6. 创建项目记录        
+        projects[projectName] = Project({
+            name: projectName,
             vault: vault,
             token: token,
             fund: fund,
             accumulatedYield: accumulatedYield,
-            createdAt: block.timestamp
-        }));
+            createdAt: block.timestamp,
+            deployer: msg.sender
+        });
+        
+        userProjects[msg.sender].push(projectName);
         
         // 7. 构造返回结果
         result = DeploymentResult({
@@ -129,60 +166,75 @@ contract Creation is ICreation, Ownable {
             accumulatedYield: accumulatedYield
         });
         
-        emit ProjectCreated(projectId, vault, token, fund, accumulatedYield);
-        emit FullDeployment(msg.sender, vault, token, fund, accumulatedYield);
+        emit ProjectCreated(projectName, vault, token, fund, accumulatedYield, msg.sender);
         
         return result;
     }
     
-    // 新增：使用用户参数结构体的deployAll方法
-    function deployAllWithUserParams(
-        uint256 vaultTemplateId,
-        bytes memory vaultParams,
-        uint256 tokenTemplateId,
-        bytes memory tokenParams,
-        uint256 fundTemplateId,
-        bytes memory fundParams,
-        uint256 accumulatedYieldTemplateId,
-        bytes memory accumulatedYieldParams
-    ) external returns (uint256 projectId) {
-        // 1. 部署Vault
-        address vault = vaultFactory.createVault(vaultTemplateId, vaultParams);
-        require(vault != address(0), "Creation: vault creation failed");
+    // 验证 Vault 初始化数据格式
+    function validateVaultInitData(bytes memory vaultInitData) external pure {
+        (address manager, address validator, bool whitelistEnabled, address[] memory initialWhitelist) =
+            abi.decode(vaultInitData, (address, address, bool, address[]));
         
-        // 2. 部署Token（需要vault参数）
-        address token = tokenFactory.createToken(tokenTemplateId, vault, tokenParams);
-        require(token != address(0), "Creation: token creation failed");
+        require(manager != address(0), "Creation: vault manager cannot be zero address");
+        require(validator != address(0), "Creation: vault validator cannot be zero address");
         
-        // 3. 部署Fund
-        address fund = fundFactory.createFund(fundTemplateId, vault, fundParams);
-        require(fund != address(0), "Creation: fund creation failed");
+        // 如果启用白名单，检查初始白名单
+        if (whitelistEnabled) {
+            require(initialWhitelist.length > 0, "Creation: initial whitelist cannot be empty when whitelist is enabled");
+            for (uint256 i = 0; i < initialWhitelist.length; i++) {
+                require(initialWhitelist[i] != address(0), "Creation: whitelist address cannot be zero");
+            }
+        }
+    }
+    
+    // 验证 Token 初始化数据格式
+    function validateTokenInitData(bytes memory tokenInitData) external pure {
+        (string memory name, string memory symbol, uint8 decimals) =
+            abi.decode(tokenInitData, (string, string, uint8));
         
-        // 4. 部署AccumulatedYield
-        address accumulatedYield = yieldFactory.createYield(
-            accumulatedYieldTemplateId,
-            vault,
-            token,
-            accumulatedYieldParams
-        );
-        require(accumulatedYield != address(0), "Creation: accumulatedYield creation failed");
+        require(bytes(name).length > 0, "Creation: token name cannot be empty");
+        require(bytes(symbol).length > 0, "Creation: token symbol cannot be empty");
+        require(decimals <= 18, "Creation: token decimals cannot exceed 18");
+    }
+    
+    // 验证 Fund 初始化数据格式
+    function validateFundInitData(bytes memory fundInitData) external pure {
+        (
+            uint256 startTime,
+            uint256 endTime,
+            address assetToken,
+            uint256 maxSupply,
+            uint256 softCap,
+            uint256 sharePrice,
+            uint256 minDepositAmount,
+            uint256 manageFeeBps,
+            address fundingReceiver,
+            address manageFeeReceiver,
+            uint256 decimalsMultiplier
+        ) = abi.decode(fundInitData, (uint256, uint256, address, uint256, uint256, uint256, uint256, uint256, address, address, uint256));
         
-        // 5. 配置模块间的依赖关系
-        _configureModules(vault, token, fund, accumulatedYield);
+        require(startTime > 0, "Creation: start time must be greater than 0");
+        require(endTime > startTime, "Creation: end time must be after start time");
+        require(assetToken != address(0), "Creation: asset token cannot be zero address");
+        require(maxSupply > 0, "Creation: max supply must be greater than 0");
+        require(softCap > 0 && softCap <= maxSupply, "Creation: soft cap must be greater than 0 and not exceed max supply");
+        require(sharePrice > 0, "Creation: share price must be greater than 0");
+        require(minDepositAmount > 0, "Creation: min deposit amount must be greater than 0");
+        require(manageFeeBps <= 10000, "Creation: manage fee cannot exceed 100%");
+        require(fundingReceiver != address(0), "Creation: funding receiver cannot be zero address");
+        require(manageFeeReceiver != address(0), "Creation: manage fee receiver cannot be zero address");
+        require(decimalsMultiplier > 0, "Creation: decimals multiplier must be greater than 0");
+    }
+    
+    // 验证 Dividend 初始化数据格式
+    function validateDividendInitData(bytes memory dividendInitData) external pure {
+        (address rewardToken, address rewardManager, address dividendTreasury) =
+            abi.decode(dividendInitData, (address, address, address));
         
-        // 6. 创建项目记录
-        projectId = projects.length;
-        projects.push(Project({
-            vault: vault,
-            token: token,
-            fund: fund,
-            accumulatedYield: accumulatedYield,
-            createdAt: block.timestamp
-        }));
-        
-        emit ProjectCreated(projectId, vault, token, fund, accumulatedYield);
-        
-        return projectId;
+        require(rewardToken != address(0), "Creation: reward token cannot be zero address");
+        require(rewardManager != address(0), "Creation: reward manager cannot be zero address");
+        require(dividendTreasury != address(0), "Creation: dividend treasury cannot be zero address");
     }
     
     function _configureModules(address vault, address token, address fund, address accumulatedYield) internal {
@@ -242,35 +294,44 @@ contract Creation is ICreation, Ownable {
         return dividend;
     }
     
-    function getProjectCount() external view override returns (uint256) {
-        return projects.length;
+
+    
+
+    
+    // 根据项目名称获取项目详情
+    function getProjectByName(string memory projectName) external view returns (Project memory) {
+        Project memory project = projects[projectName];
+        require(bytes(project.name).length > 0, "Creation: project not found");
+        return project;
     }
     
-    function getProject(uint256 index) external view override returns (DeploymentResult memory result) {
-        require(index < projects.length, "Creation: project not found");
-        Project memory project = projects[index];
-        return DeploymentResult({
-            vault: project.vault,
-            token: project.token,
-            fund: project.fund,
-            accumulatedYield: project.accumulatedYield
-        });
-    }
-    
-    function getUserProjects(address user) external view override returns (DeploymentResult[] memory userProjects) {
-        // 简化实现：返回所有项目
-        // 实际应该根据用户地址过滤
-        uint256 count = this.getProjectCount();
-        userProjects = new DeploymentResult[](count);
-        for (uint256 i = 0; i < count; i++) {
-            userProjects[i] = this.getProject(i);
+    // 获取用户的所有项目详情
+    function getUserProjectDetails(address user) external view returns (Project[] memory) {
+        string[] memory projectNames = userProjects[user];
+        Project[] memory userProjectDetails = new Project[](projectNames.length);
+        
+        for (uint256 i = 0; i < projectNames.length; i++) {
+            userProjectDetails[i] = projects[projectNames[i]];
         }
-        return userProjects;
+        
+        return userProjectDetails;
     }
     
-    // 新增：获取项目详情的方法
-    function getProjectDetails(uint256 projectId) external view returns (Project memory) {
-        require(projectId < projects.length, "Creation: project not found");
-        return projects[projectId];
+    // 获取用户的所有项目（返回 DeploymentResult 数组）
+    function getUserProjects(address user) external view override returns (DeploymentResult[] memory result) {
+        string[] memory projectNames = userProjects[user];
+        result = new DeploymentResult[](projectNames.length);
+        
+        for (uint256 i = 0; i < projectNames.length; i++) {
+            Project memory project = projects[projectNames[i]];
+            result[i] = DeploymentResult({
+                vault: project.vault,
+                token: project.token,
+                fund: project.fund,
+                accumulatedYield: project.accumulatedYield
+            });
+        }
+        
+        return result;
     }
 } 

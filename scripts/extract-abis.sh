@@ -147,11 +147,11 @@ fi
 echo -e "${YELLOW}🧪 4. 提取Mock合约ABI和Bytecode (只保留MockUSDT)...${NC}"
 
 # 4.1 MockUSDT合约 (独立的测试代币)
-if [ -f "artifacts/contracts/v1/MockUSDT.sol/MockUSDT.json" ]; then
+if [ -f "artifacts/contracts/v2/mocks/MockUSDT.sol/MockUSDT.json" ]; then
     # 提取ABI
-    jq '.abi' artifacts/contracts/v1/MockUSDT.sol/MockUSDT.json > abis/mocks/MockUSDT.json
+    jq '.abi' artifacts/contracts/v2/mocks/MockUSDT.sol/MockUSDT.json > abis/mocks/MockUSDT.json
     # 提取Bytecode
-    jq '.bytecode' artifacts/contracts/v1/MockUSDT.sol/MockUSDT.json > abis/mocks/MockUSDT.bytecode
+    jq '.bytecode' artifacts/contracts/v2/mocks/MockUSDT.sol/MockUSDT.json > abis/mocks/MockUSDT.bytecode
     echo -e "${GREEN}✅ MockUSDT.json + MockUSDT.bytecode${NC}"
 else
     echo "❌ MockUSDT artifact not found"

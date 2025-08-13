@@ -50,7 +50,7 @@ describe("AccumulatedYield", function () {
         await shareToken.initiate(await vault.getAddress(), tokenInitData);
 
         // Deploy mock reward token (MockUSDT)
-        const MockUSDTFactory = await ethers.getContractFactory("contracts/mocks/MockUSDT.sol:MockUSDT");
+        const MockUSDTFactory = await ethers.getContractFactory("contracts/v2/mocks/MockUSDT.sol:MockUSDT");
         rewardToken = await MockUSDTFactory.deploy("Test USDT", "USDT");
 
         // Mint initial tokens

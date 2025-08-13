@@ -61,19 +61,34 @@ interface ICreation {
         address accumulatedYield;
     }
     
+    /**
+     * @dev 项目结构体
+     */
+    struct Project {
+        string name;
+        address vault;
+        address token;
+        address fund;
+        address accumulatedYield;
+        uint256 createdAt;
+        address deployer;
+    }
+    
     // ============ 事件定义 ============
     
     event VaultCreated(address indexed vault);
     event TokenCreated(address indexed token);
     event FundCreated(address indexed fund);
-    event YieldCreated(address indexed accumulatedYield);
+    event YieldCreated(address indexed yield);
     
-    event FullDeployment(
-        address indexed deployer,
+    
+    event ProjectCreated(
+        string name,
         address vault,
         address token,
         address fund,
-        address accumulatedYield
+        address yield,
+        address deployer
     );
     
     event FactoriesUpdated(
@@ -117,6 +132,7 @@ interface ICreation {
     
     /**
      * @dev 核心部署函数（使用bytes数据，推荐使用）
+     * @param projectName 项目名称
      * @param vaultTemplateId Vault模板ID
      * @param vaultInitData Vault初始化数据（bytes格式）
      * @param tokenTemplateId Token模板ID
@@ -128,6 +144,9 @@ interface ICreation {
      * @return result 部署结果
      */
     function deployAll(
+        // 项目名称
+        string memory projectName,
+        
         // Vault参数
         uint256 vaultTemplateId,
         bytes memory vaultInitData,
@@ -145,28 +164,7 @@ interface ICreation {
         bytes memory dividendInitData
     ) external returns (DeploymentResult memory result);
     
-    /**
-     * @dev 使用bytes参数的部署函数
-     * @param vaultTemplateId Vault模板ID
-     * @param vaultParams Vault参数（bytes格式）
-     * @param tokenTemplateId Token模板ID
-     * @param tokenParams Token参数（bytes格式）
-     * @param fundTemplateId Fund模板ID
-     * @param fundParams Fund参数（bytes格式）
-     * @param accumulatedYieldTemplateId AccumulatedYield模板ID
-     * @param accumulatedYieldParams AccumulatedYield参数（bytes格式）
-     * @return projectId 项目ID
-     */
-    function deployAllWithUserParams(
-        uint256 vaultTemplateId,
-        bytes memory vaultParams,
-        uint256 tokenTemplateId,
-        bytes memory tokenParams,
-        uint256 fundTemplateId,
-        bytes memory fundParams,
-        uint256 accumulatedYieldTemplateId,
-        bytes memory accumulatedYieldParams
-    ) external returns (uint256 projectId);
+
     
     /**
      * @dev 单独部署Vault
@@ -222,18 +220,7 @@ interface ICreation {
     
     // ============ 查询接口 ============
     
-    /**
-     * @dev 查询已部署的项目数量
-     * @return 项目总数
-     */
-    function getProjectCount() external view returns (uint256);
-    
-    /**
-     * @dev 查询指定索引的项目信息
-     * @param index 项目索引
-     * @return result 部署结果
-     */
-    function getProject(uint256 index) external view returns (DeploymentResult memory result);
+
     
     /**
      * @dev 查询用户部署的项目
@@ -241,4 +228,18 @@ interface ICreation {
      * @return projects 用户的项目数组
      */
     function getUserProjects(address user) external view returns (DeploymentResult[] memory projects);
+    
+    /**
+     * @dev 根据项目名称获取项目详情
+     * @param projectName 项目名称
+     * @return project 项目详情
+     */
+    function getProjectByName(string memory projectName) external view returns (Project memory);
+    
+    /**
+     * @dev 获取用户的所有项目详情
+     * @param user 用户地址
+     * @return projects 项目详情数组
+     */
+    function getUserProjectDetails(address user) external view returns (Project[] memory);
 } 

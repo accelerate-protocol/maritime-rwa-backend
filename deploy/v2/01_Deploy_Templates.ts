@@ -51,7 +51,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // 5. 部署 MockUSDT
   console.log("部署 MockUSDT...");
   const mockUSDT = await deploy("MockUSDT", {
-    contract: "contracts/v1/MockUSDT.sol:MockUSDT",
+    contract: "contracts/v2/mocks/MockUSDT.sol:MockUSDT",
     from: deployer,
     args: ["Mock USDT", "USDT"],
     log: true,

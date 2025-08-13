@@ -75,7 +75,7 @@ describe("V2 架构完整业务流程测试", function () {
         endTime = startTime + TEST_CONFIG.FUNDING_DURATION;
 
         // 部署测试代币
-        const MockUSDTFactory = await ethers.getContractFactory("contracts/mocks/MockUSDT.sol:MockUSDT");
+        const MockUSDTFactory = await ethers.getContractFactory("contracts/v2/mocks/MockUSDT.sol:MockUSDT");
         usdt = await MockUSDTFactory.deploy("Mock USDT", "USDT");
         
         // 给测试用户分配初始余额
@@ -166,6 +166,7 @@ describe("V2 架构完整业务流程测试", function () {
 
         // 使用 deployAll 方法部署
         const tx = await creation.deployAll(
+            "CompleteFlowProject", // projectName
             0, // vaultTemplateId
             vaultInitData,
             0, // tokenTemplateId
@@ -182,17 +183,17 @@ describe("V2 架构完整业务流程测试", function () {
             throw new Error("部署交易失败");
         }
         
-        // 从 FullDeployment 事件中解析地址
+        // 从 ProjectCreated 事件中解析地址
         let vaultAddress, tokenAddress, fundAddress, yieldAddress;
         
         for (const log of receipt.logs) {
             try {
                 const parsedLog = creation.interface.parseLog(log);
-                if (parsedLog && parsedLog.name === "FullDeployment") {
-                    vaultAddress = parsedLog.args[1];
-                    tokenAddress = parsedLog.args[2];
-                    fundAddress = parsedLog.args[3];
-                    yieldAddress = parsedLog.args[4];
+                if (parsedLog && parsedLog.name === "ProjectCreated") {
+                    vaultAddress = parsedLog.args[1]; // vault
+                    tokenAddress = parsedLog.args[2]; // token
+                    fundAddress = parsedLog.args[3];  // fund
+                    yieldAddress = parsedLog.args[4]; // yield
                     break;
                 }
             } catch (e) {
@@ -246,7 +247,6 @@ describe("V2 架构完整业务流程测试", function () {
         const feeAmount = (BigInt(amount) * BigInt(TEST_CONFIG.MANAGE_FEE_BPS)) / 10000n;
         const netAmount = BigInt(amount) - feeAmount;
         
-        // 参考 v1 版本的实现逻辑：
         // 1. 先对 netAmount 进行 scaleUp（乘以 decimalsMultiplier）
         // 2. 然后乘以 SHARE_PRICE_DENOMINATOR
         // 3. 最后除以 sharePrice
