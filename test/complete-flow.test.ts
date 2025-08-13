@@ -6,6 +6,7 @@ import { BasicVault } from "../typechain-types/contracts/v2/templates/vault/Basi
 import { VaultToken } from "../typechain-types/contracts/v2/templates/token/VaultToken";
 import { Crowdsale } from "../typechain-types/contracts/v2/templates/funding/Crowdsale";
 import { AccumulatedYield } from "../typechain-types/contracts/v2/templates/yield/AccumulatedYield";
+import { ZeroAddress } from "ethers";
 
 describe("V2 架构完整业务流程测试", function () {
     // 代币精度常量
@@ -584,5 +585,461 @@ describe("V2 架构完整业务流程测试", function () {
             const userInfo = await accumulatedYield.getUserInfo(user1.address);
             expect(userInfo.lastClaimDividend).to.be.gt(0);
         });
+    });
+
+    describe("7. offDeposit 操作测试", function () {
+        it("应该成功处理正常offDeposit", async function () {
+            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            // const tx = await fund.connect(user1).offChainDeposit(depositAmount, user1.address, signature);
+
+            const tx = await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+
+
+            // 验证份额计算
+            const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
+            const actualShares = await token.balanceOf(user1.address);
+
+            // console.log("actualShares", actualShares);
+            // console.log("expectedShares", expectedShares);
+
+            expect(actualShares).to.equal(expectedShares);
+
+            // 验证代币仍然处于暂停状态（融资期间）
+            expect(await token.paused()).to.be.true;
+        });
+        it("应该拒绝offDeposit金额为0", async function () {
+            const depositAmount = ethers.parseUnits("0", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            // const tx = await fund.connect(user1).offChainDeposit(depositAmount, user1.address, signature);
+
+            // const tx = await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+
+            await expect(
+                fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature)
+            ).to.be.revertedWith("Crowdsale: amount less than minimum");
+        });
+
+        it("应该拒绝无效签名", async function () {
+            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+            const invalidSignature = "0x" + "1".repeat(130); // 无效签名
+
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            await expect(
+                fund.connect(manager).offChainDeposit(depositAmount, user1.address, invalidSignature)
+            ).to.be.revertedWith("ECDSA: invalid signature");
+        });
+
+        it("应该拒绝非validitor的签名", async function () {
+            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+
+            const signature = await prepareDepositSignature(user1, depositAmount, user1.address);
+
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            await expect(
+                fund.connect(manager).offChainDeposit(depositAmount, user1.address, signature)
+            ).to.be.revertedWith("Crowdsale: invalid drds signature");
+        });
+
+        it("应该拒绝非管理员执行链下认购", async function () {
+            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            await expect(
+                fund.connect(user1).offChainDeposit(depositAmount, user1.address, offDepositSignature)
+            ).to.be.revertedWith("Crowdsale: only manager");
+        });
+
+        it("应该正确处理供应量不足的情况", async function () {
+            // 先进行大额deposit，接近最大供应量
+            const largeAmount = ethers.parseUnits("8000", TEST_CONFIG.TOKEN_DECIMALS);
+            await performLargeDeposit(largeAmount);
+
+            // 尝试deposit一个较大的金额，但供应量不足
+            const remainingAmount = ethers.parseUnits("5000", TEST_CONFIG.TOKEN_DECIMALS);
+            // const signature = await prepareDepositSignature(user2, remainingAmount, user2.address);
+            const offDepositSignature = await prepareOffDepositSignature(remainingAmount, user2.address);
+
+            await usdt.connect(user2).approve(await fund.getAddress(), remainingAmount);
+            const tx = await fund.connect(manager).offChainDeposit(remainingAmount, user2.address, offDepositSignature);
+
+            // 验证用户获得了份额，但可能少于预期（因为供应量限制）
+            expect(await token.balanceOf(user2.address)).to.be.gt(0);
+
+
+            // 验证总供应量不超过最大供应量
+            const totalSupply = await token.totalSupply();
+            expect(totalSupply).to.be.lte(TEST_CONFIG.MAX_SUPPLY);
+        });
+        it("应该在融资期间拒绝代币转账", async function () {
+            // 先进行deposit获得代币
+            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+
+            // 验证代币被暂停
+            expect(await token.paused()).to.be.true;
+
+            // 尝试转账（应该失败）
+            const transferAmount = ethers.parseUnits("100", TEST_CONFIG.VAULT_TOKEN_DECIMALS);
+            await expect(
+                token.connect(user1).transfer(user2.address, transferAmount)
+            ).to.be.revertedWith("VaultToken: token transfer while paused");
+        });
+
+        it("应该拒绝在非融资期执行链下认购", async function () {
+
+            // 等待融资期结束（假设融资失败）
+            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            await ethers.provider.send("evm_mine", []);
+
+            // 进行deposit获得代币
+            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+
+            await expect(
+                fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature)
+            ).to.be.revertedWith("Crowdsale: not in funding period");
+            
+
+        });
+
+        it("应该拒绝低于最小认购金额的链下认购", async function () {
+            // 进行deposit获得代币
+            const depositAmount = ethers.parseUnits("9", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+
+            await expect(
+                fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature)
+            ).to.be.revertedWith("Crowdsale: amount less than minimum");
+
+        });
+
+        it("应该可以以最小认购金额执行链下认购", async function () {
+            // 进行deposit获得代币
+            const depositAmount = ethers.parseUnits("10", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+
+            // 验证份额计算
+            const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
+            const actualShares = await token.balanceOf(user1.address);
+
+            // console.log("actualShares", actualShares);
+            // console.log("expectedShares", expectedShares);
+
+            expect(actualShares).to.equal(expectedShares);
+
+        });
+
+        
+        it("应该拒绝零地址作为接收者", async function () {
+             // 进行deposit获得代币
+             const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+             const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+ 
+             await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            await expect(
+                fund.connect(manager).offChainDeposit(depositAmount, ethers.ZeroAddress, offDepositSignature)
+            ).to.be.revertedWith("Crowdsale: invalid receiver");
+        });
+
+
+    });
+
+    async function prepareOffDepositSignature(amount: any, receiver: any) {
+        const messageHash = ethers.keccak256(ethers.solidityPacked(
+            ["string", "uint256", "address", "uint256", "address"],
+            ["offChainDeposit", amount, receiver, await ethers.provider.getNetwork().then(n => n.chainId), await fund.getAddress()]
+        ));
+        const ethSignedMessageHash = ethers.getBytes(messageHash);
+        return await validator.signMessage(ethSignedMessageHash);
+    }
+
+    describe("8. offChainRedeem 操作测试", function () {
+
+        //TODO：待验证bug
+        it("应该成功处理融资失败后的offChainRedeem", async function () {
+            // 先进行deposit
+            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+            
+            // 等待融资期结束（假设融资失败）
+            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            await ethers.provider.send("evm_mine", []);
+
+            const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
+
+            
+            const userBalance = await token.balanceOf(user1.address);
+            // console.log("userBalance",userBalance);
+        
+            expect(expectedShares).to.equal(userBalance);
+            
+            // 批准代币燃烧 - 需要批准给vault地址
+            await token.connect(user1).approve(await vault.getAddress(), userBalance);
+            
+            const tx = await fund.connect(manager).offChainRedeem(user1.address);
+           
+
+
+            const userBalanceAfterRedeem = await token.balanceOf(user1.address);
+            expect(0).to.be.equal(userBalanceAfterRedeem);
+            
+            // 验证资产返还
+            // const finalUsdtBalance = await usdt.balanceOf(user1.address);
+            // expect(finalUsdtBalance).to.be.gt(initialUsdtBalance);
+        });
+
+        it("应该拒绝非管理员执行offChainRedeem", async function () {
+            // 先进行deposit
+            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+            
+            // 等待融资期结束（假设融资失败）
+            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            await ethers.provider.send("evm_mine", []);
+
+            const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
+
+            
+            const userBalance = await token.balanceOf(user1.address);
+        
+            expect(expectedShares).to.equal(userBalance);
+            
+            // 批准代币燃烧 - 需要批准给vault地址
+            await token.connect(user1).approve(await vault.getAddress(), userBalance);            
+            
+            await expect(
+                fund.connect(user1).offChainRedeem(user1.address)
+            ).to.be.revertedWith("Crowdsale: only manager");
+
+            const userBalanceAfterRedeem = await token.balanceOf(user1.address);
+            expect(userBalance).to.be.equal(userBalanceAfterRedeem);
+            
+        });
+
+        it("应该拒绝在认购期内执行offChainRedeem", async function () {
+            // 先进行deposit
+            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+            
+            // // 等待融资期结束（假设融资失败）
+            // await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            // await ethers.provider.send("evm_mine", []);
+
+            const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
+
+            
+            const userBalance = await token.balanceOf(user1.address);
+        
+            expect(expectedShares).to.equal(userBalance);
+            
+            // 批准代币燃烧 - 需要批准给vault地址
+            await token.connect(user1).approve(await vault.getAddress(), userBalance);            
+            
+            await expect(
+                fund.connect(manager).offChainRedeem(user1.address)
+            ).to.be.revertedWith("Crowdsale: funding period not ended");
+
+            const userBalanceAfterRedeem = await token.balanceOf(user1.address);
+            expect(userBalance).to.be.equal(userBalanceAfterRedeem);
+            
+        });
+
+        it("应该拒绝在融资成功且认购期没结束时执行offChainRedeem", async function () {
+            // 先进行deposit
+            const depositAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+            
+            // // 等待融资期结束（假设融资失败）
+            // await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            // await ethers.provider.send("evm_mine", []);
+
+            const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
+
+            
+            const userBalance = await token.balanceOf(user1.address);
+        
+            expect(expectedShares).to.equal(userBalance);
+            
+            // 批准代币燃烧 - 需要批准给vault地址
+            await token.connect(user1).approve(await vault.getAddress(), userBalance);            
+            
+            await expect(
+                fund.connect(manager).offChainRedeem(user1.address)
+            ).to.be.revertedWith("Crowdsale: funding period not ended");
+
+            const userBalanceAfterRedeem = await token.balanceOf(user1.address);
+            expect(userBalance).to.be.equal(userBalanceAfterRedeem);
+            
+        });
+
+        it("应该拒绝在融资成功且认购期结束后执行offChainRedeem", async function () {
+            // 先进行deposit
+            const depositAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+            
+            // 等待融资期结束（假设融资失败）
+            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            await ethers.provider.send("evm_mine", []);
+
+            const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
+
+            
+            const userBalance = await token.balanceOf(user1.address);
+        
+            expect(expectedShares).to.equal(userBalance);
+            
+            // 批准代币燃烧 - 需要批准给vault地址
+            await token.connect(user1).approve(await vault.getAddress(), userBalance);            
+            
+            await expect(
+                fund.connect(manager).offChainRedeem(user1.address)
+            ).to.be.revertedWith("Crowdsale: funding was successful");
+
+            const userBalanceAfterRedeem = await token.balanceOf(user1.address);
+            expect(userBalance).to.be.equal(userBalanceAfterRedeem);
+            
+        });
+
+        it("应该拒绝对零地址执行offChainRedeem", async function () {
+            // 先进行deposit
+            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+            
+            // 等待融资期结束（假设融资失败）
+            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            await ethers.provider.send("evm_mine", []);
+
+            const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
+
+            
+            const userBalance = await token.balanceOf(user1.address);
+        
+            expect(expectedShares).to.equal(userBalance);
+            
+            // 批准代币燃烧 - 需要批准给vault地址
+            await token.connect(user1).approve(await vault.getAddress(), userBalance);            
+            
+            await expect(
+                fund.connect(manager).offChainRedeem(ZeroAddress)
+            ).to.be.revertedWith("Crowdsale: invalid receiver");
+
+            const userBalanceAfterRedeem = await token.balanceOf(user1.address);
+            expect(userBalance).to.be.equal(userBalanceAfterRedeem);
+            
+        });
+
+        it("应该拒绝在未批准的情况下执行offChainRedeem", async function () {
+            // 先进行deposit
+            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+            
+            // 等待融资期结束（假设融资失败）
+            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            await ethers.provider.send("evm_mine", []);
+
+            const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
+
+            
+            const userBalance = await token.balanceOf(user1.address);
+        
+            expect(expectedShares).to.equal(userBalance);
+            
+            // 批准代币燃烧 - 需要批准给vault地址
+            // await token.connect(user1).approve(await vault.getAddress(), userBalance);            
+            
+            await expect(
+                fund.connect(manager).offChainRedeem(user1.address)
+            ).to.be.revertedWith("ERC20: insufficient allowance");
+
+            const userBalanceAfterRedeem = await token.balanceOf(user1.address);
+            expect(userBalance).to.be.equal(userBalanceAfterRedeem);
+            
+        });
+
+        it("应该拒绝在批准的余额不足的情况下执行offChainRedeem", async function () {
+            // 先进行deposit
+            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+            
+            // 等待融资期结束（假设融资失败）
+            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            await ethers.provider.send("evm_mine", []);
+
+            const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
+
+            
+            const userBalance = await token.balanceOf(user1.address);
+        
+            expect(expectedShares).to.equal(userBalance);
+            
+            // 批准代币燃烧 - 需要批准给vault地址
+            await token.connect(user1).approve(await vault.getAddress(), userBalance -1000000n);            
+            
+            await expect(
+                fund.connect(manager).offChainRedeem(user1.address)
+            ).to.be.revertedWith("ERC20: insufficient allowance");
+
+            const userBalanceAfterRedeem = await token.balanceOf(user1.address);
+            expect(userBalance).to.be.equal(userBalanceAfterRedeem);
+            
+        });
+
+        it("应该拒绝在账户未认购的情况下给该账户执行offChainRedeem", async function () {
+            
+            // 等待融资期结束（假设融资失败）
+            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            await ethers.provider.send("evm_mine", []);
+
+            // const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
+
+            
+            const userBalance = await token.balanceOf(user1.address);
+        
+            expect(0).to.equal(userBalance);
+            
+            // 批准代币燃烧 - 需要批准给vault地址
+            await token.connect(user1).approve(await vault.getAddress(), userBalance);            
+            
+            await expect(
+                fund.connect(manager).offChainRedeem(user1.address)
+            ).to.be.revertedWith("Crowdsale: no shares to redeem");
+
+            const userBalanceAfterRedeem = await token.balanceOf(user1.address);
+            expect(userBalance).to.be.equal(userBalanceAfterRedeem);
+            
+        });
+
     });
 });
