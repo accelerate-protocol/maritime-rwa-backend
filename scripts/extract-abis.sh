@@ -112,15 +112,15 @@ else
     echo "❌ FundFactory artifact not found"
 fi
 
-# 2.4 AccumulatedYieldFactory合约
-if [ -f "artifacts/contracts/v2/factories/AccumulatedYieldFactory.sol/AccumulatedYieldFactory.json" ]; then
+# 2.4 YieldFactory合约
+if [ -f "artifacts/contracts/v2/factories/YieldFactory.sol/YieldFactory.json" ]; then
     # 提取ABI
-    jq '.abi' artifacts/contracts/v2/factories/AccumulatedYieldFactory.sol/AccumulatedYieldFactory.json > abis/factories/AccumulatedYieldFactory.json
+    jq '.abi' artifacts/contracts/v2/factories/YieldFactory.sol/YieldFactory.json > abis/factories/YieldFactory.json
     # 提取Bytecode
-    jq '.bytecode' artifacts/contracts/v2/factories/AccumulatedYieldFactory.sol/AccumulatedYieldFactory.json > abis/factories/AccumulatedYieldFactory.bytecode
-    echo -e "${GREEN}✅ AccumulatedYieldFactory.json + AccumulatedYieldFactory.bytecode${NC}"
+    jq '.bytecode' artifacts/contracts/v2/factories/YieldFactory.sol/YieldFactory.json > abis/factories/YieldFactory.bytecode
+    echo -e "${GREEN}✅ YieldFactory.json + YieldFactory.bytecode${NC}"
 else
-    echo "❌ AccumulatedYieldFactory artifact not found"
+    echo "❌ YieldFactory artifact not found"
 fi
 
 # ==============================================
@@ -205,9 +205,9 @@ cat > abis/index.json << EOF
         "abi": "factories/FundFactory.json",
         "bytecode": "factories/FundFactory.bytecode"
       },
-      "AccumulatedYieldFactory": {
-        "abi": "factories/AccumulatedYieldFactory.json",
-        "bytecode": "factories/AccumulatedYieldFactory.bytecode"
+      "YieldFactory": {
+        "abi": "factories/YieldFactory.json",
+        "bytecode": "factories/YieldFactory.bytecode"
       }
     },
     "creation": {
@@ -233,7 +233,7 @@ cat > abis/index.json << EOF
       "VaultFactory": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
       "TokenFactory": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
       "FundFactory": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
-      "AccumulatedYieldFactory": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+      "YieldFactory": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
       "Creation": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
     },
     "example_project": {
@@ -272,7 +272,7 @@ cat > abis/README.md << 'EOF'
    ├── VaultFactory.json + VaultFactory.bytecode
    ├── TokenFactory.json + TokenFactory.bytecode
    ├── FundFactory.json + FundFactory.bytecode
-   └── AccumulatedYieldFactory.json + AccumulatedYieldFactory.bytecode
+   └── YieldFactory.json + YieldFactory.bytecode
 
 3. 🚀 Creation合约
    └── Creation.json + Creation.bytecode
@@ -298,8 +298,8 @@ abis/
 │   ├── TokenFactory.bytecode
 │   ├── FundFactory.json
 │   ├── FundFactory.bytecode
-│   ├── AccumulatedYieldFactory.json
-│   └── AccumulatedYieldFactory.bytecode
+│   ├── YieldFactory.json
+│   └── YieldFactory.bytecode
 ├── creation/           # Creation合约ABI和Bytecode
 │   ├── Creation.json
 │   └── Creation.bytecode
@@ -410,7 +410,7 @@ tx_hash = new_vault.constructor().transact({'from': deployer})
 - **VaultFactory**: `0x5FC8d32690cc91D4c39d9d3abcBD16989F875707`
 - **TokenFactory**: `0x0165878A594ca255338adfa4d48449f69242Eb8F`
 - **FundFactory**: `0xa513E6E4b8f2a923D98304ec87F64353C4D5C853`
-- **AccumulatedYieldFactory**: `0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6`
+- **YieldFactory**: `0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6`
 
 ### Creation合约
 

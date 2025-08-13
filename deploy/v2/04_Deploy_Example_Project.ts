@@ -22,8 +22,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const fundFactoryDeployment = await get("FundFactory");
   const fundFactory = await ethers.getContractAt("contracts/v2/factories/FundFactory.sol:FundFactory", fundFactoryDeployment.address);
   
-  const accumulatedYieldFactoryDeployment = await get("AccumulatedYieldFactory");
-  const accumulatedYieldFactory = await ethers.getContractAt("contracts/v2/factories/AccumulatedYieldFactory.sol:AccumulatedYieldFactory", accumulatedYieldFactoryDeployment.address);
+  const YieldFactoryDeployment = await get("YieldFactory");
+  const YieldFactory = await ethers.getContractAt("contracts/v2/factories/YieldFactory.sol:YieldFactory", YieldFactoryDeployment.address);
   
   const mockUSDTDeployment = await get("MockUSDT");
   const mockUSDT = await ethers.getContractAt("contracts/v1/MockUSDT.sol:MockUSDT", mockUSDTDeployment.address);

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -27,14 +27,10 @@ contract TokenFactory is ITokenFactory, Ownable {
         
         token = template.clone();
         
-        // 解码initData为TokenUserParams结构体
-        (string memory name, string memory symbol, uint8 decimals) = 
-            abi.decode(initData, (string, string, uint8));
-        
-        // 构造完整的初始化数据，包含vault
+        // 使用统一的 initiate(address, bytes) 接口
         bytes memory fullInitData = abi.encodeWithSignature(
-            "initToken(address,string,string,uint8)",
-            vault, name, symbol, decimals
+            "initiate(address,bytes)",
+            vault, initData
         );
         
         // 调用初始化函数

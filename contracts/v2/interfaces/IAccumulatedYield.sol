@@ -118,21 +118,7 @@ interface IAccumulatedYield {
      */
     function setDividendTreasury(address _dividendTreasury) external;
     
-    /**
-     * @dev Initialize global yield pool
-     * @param _vault Vault contract address
-     * @param _manager Manager address
-     * @param _dividendTreasury Dividend treasury address
-     * @param shareToken Share token address
-     * @param rewardToken Reward token address
-     */
-    function initGlobalPool(
-        address _vault,
-        address _manager,
-        address _dividendTreasury,
-        address shareToken,
-        address rewardToken
-    ) external;
+
     
     /**
      * @dev Update global pool status
@@ -234,5 +220,6 @@ interface IAccumulatedYield {
      */
     function calculateAccumulatedShares(address user, uint256 userBalance) external view returns (uint256);
     
-
+    // ============ 统一初始化接口 ============
+    function initiate(address _vault, bytes memory _initData) external;
 } 

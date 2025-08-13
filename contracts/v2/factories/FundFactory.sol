@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -27,16 +27,10 @@ contract FundFactory is IFundFactory, Ownable {
         
         fund = template.clone();
         
-        // 解码initData为FundUserParams结构体
-        (uint256 startTime, uint256 endTime, address assetToken, uint256 maxSupply, uint256 softCap, 
-         uint256 sharePrice, uint256 minDepositAmount, uint256 manageFeeBps, address fundingReceiver, 
-         address manageFeeReceiver, uint256 decimalsMultiplier) = 
-            abi.decode(initData, (uint256, uint256, address, uint256, uint256, uint256, uint256, uint256, address, address, uint256));
-        
-        // 构造完整的初始化数据，包含vault
+        // 使用统一的 initiate(address, bytes) 接口
         bytes memory fullInitData = abi.encodeWithSignature(
-            "initCrowdsale(address,uint256,uint256,address,uint256,uint256,uint256,uint256,uint256,address,address,uint256,address)",
-            vault, startTime, endTime, assetToken, maxSupply, softCap, sharePrice, minDepositAmount, manageFeeBps, fundingReceiver, manageFeeReceiver, decimalsMultiplier, msg.sender
+            "initiate(address,bytes)",
+            vault, initData
         );
         
         // 调用初始化函数

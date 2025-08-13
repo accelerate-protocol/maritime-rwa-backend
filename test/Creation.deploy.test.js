@@ -5,11 +5,11 @@ describe("Creation部署测试 - 完整的V2架构", function () {
     let owner, manager, validator, user1, user2;
     
     // 工厂合约
-    let vaultFactory, tokenFactory, fundFactory, accumulatedYieldFactory;
+    let vaultFactory, tokenFactory, fundFactory, YieldFactory;
     
     // 模板合约
     let vaultTemplate, tokenTemplate, accumulatedYieldTemplate;
-    let fundTemplate; // 暂时跳过，因为MockCrowdsale有编译问题
+    let fundTemplate;
     
     // Creation合约
     let creation;
@@ -26,14 +26,19 @@ describe("Creation部署测试 - 完整的V2架构", function () {
         console.log("\n步骤1: 部署模板合约");
         
         // 部署Vault模板
-        const MockBasicVault = await ethers.getContractFactory("MockBasicVault");
-        vaultTemplate = await MockBasicVault.deploy();
+        const BasicVault = await ethers.getContractFactory("BasicVault");
+        vaultTemplate = await BasicVault.deploy();
         console.log(`✓ VaultTemplate部署: ${vaultTemplate.target || vaultTemplate.address}`);
         
         // 部署Token模板
-        const MockStandardToken = await ethers.getContractFactory("MockStandardToken");
-        tokenTemplate = await MockStandardToken.deploy();
+        const VaultToken = await ethers.getContractFactory("VaultToken");
+        tokenTemplate = await VaultToken.deploy();
         console.log(`✓ TokenTemplate部署: ${tokenTemplate.target || tokenTemplate.address}`);
+        
+        // 部署Fund模板
+        const Crowdsale = await ethers.getContractFactory("Crowdsale");
+        fundTemplate = await Crowdsale.deploy();
+        console.log(`✓ FundTemplate部署: ${fundTemplate.target || fundTemplate.address}`);
         
         // 部署AccumulatedYield模板
         const AccumulatedYield = await ethers.getContractFactory("AccumulatedYield");
@@ -43,17 +48,21 @@ describe("Creation部署测试 - 完整的V2架构", function () {
         // ==================== 2. 部署工厂合约 ====================
         console.log("\n步骤2: 部署工厂合约");
         
-        const VaultFactory = await ethers.getContractFactory("VaultFactory");
+        const VaultFactory = await ethers.getContractFactory("contracts/v2/factories/VaultFactory.sol:VaultFactory");
         vaultFactory = await VaultFactory.deploy();
         console.log(`✓ VaultFactory部署: ${vaultFactory.target || vaultFactory.address}`);
         
-        const TokenFactory = await ethers.getContractFactory("TokenFactory");
+        const TokenFactory = await ethers.getContractFactory("contracts/v2/factories/TokenFactory.sol:TokenFactory");
         tokenFactory = await TokenFactory.deploy();
         console.log(`✓ TokenFactory部署: ${tokenFactory.target || tokenFactory.address}`);
         
-        const AccumulatedYieldFactory = await ethers.getContractFactory("AccumulatedYieldFactory");
-        accumulatedYieldFactory = await AccumulatedYieldFactory.deploy();
-        console.log(`✓ AccumulatedYieldFactory部署: ${accumulatedYieldFactory.target || accumulatedYieldFactory.address}`);
+        const FundFactory = await ethers.getContractFactory("contracts/v2/factories/FundFactory.sol:FundFactory");
+        fundFactory = await FundFactory.deploy();
+        console.log(`✓ FundFactory部署: ${fundFactory.target || fundFactory.address}`);
+        
+        const YieldFactoryContract = await ethers.getContractFactory("contracts/v2/factories/YieldFactory.sol:YieldFactory");
+        YieldFactory = await YieldFactoryContract.deploy();
+        console.log(`✓ YieldFactory部署: ${YieldFactory.target || YieldFactory.address}`);
 
         // ==================== 3. 注册模板到工厂 ====================
         console.log("\n步骤3: 注册模板到工厂");
@@ -62,32 +71,32 @@ describe("Creation部署测试 - 完整的V2架构", function () {
         console.log("✓ BasicVault模板注册为ID 0");
         
         await tokenFactory.addTemplate(0, tokenTemplate.target || tokenTemplate.address);
-        console.log("✓ StandardToken模板注册为ID 0");
+        console.log("✓ VaultToken模板注册为ID 0");
         
-        await accumulatedYieldFactory.addTemplate(0, accumulatedYieldTemplate.target || accumulatedYieldTemplate.address);
+        await fundFactory.addTemplate(0, fundTemplate.target || fundTemplate.address);
+        console.log("✓ Crowdsale模板注册为ID 0");
+        
+        await YieldFactory.addTemplate(0, accumulatedYieldTemplate.target || accumulatedYieldTemplate.address);
         console.log("✓ AccumulatedYield模板注册为ID 0");
 
         // ==================== 4. 部署Creation合约 ====================
         console.log("\n步骤4: 部署Creation合约");
         
-        const Creation = await ethers.getContractFactory("Creation");
-        creation = await Creation.deploy();
-        console.log(`✓ Creation部署: ${creation.target || creation.address}`);
-        
-        // 设置工厂地址
-        await creation.setFactories(
+        const Creation = await ethers.getContractFactory("contracts/v2/creation/Creation.sol:Creation");
+        creation = await Creation.deploy(
             vaultFactory.target || vaultFactory.address,
             tokenFactory.target || tokenFactory.address,
-            ethers.ZeroAddress, // 暂时跳过FundFactory
-            accumulatedYieldFactory.target || accumulatedYieldFactory.address
+            fundFactory.target || fundFactory.address,
+            YieldFactory.target || YieldFactory.address
         );
-        console.log("✓ 工厂地址设置完成");
+        console.log(`✓ Creation部署: ${creation.target || creation.address}`);
+        console.log("✓ 工厂地址已在构造函数中设置");
 
         // ==================== 5. 部署测试代币 ====================
         console.log("\n步骤5: 部署测试代币");
         
-        const MockERC20 = await ethers.getContractFactory("MockERC20");
-        usdt = await MockERC20.deploy("USDT", "USDT", 6);
+        const MockUSDT = await ethers.getContractFactory("contracts/mocks/MockUSDT.sol:MockUSDT");
+        usdt = await MockUSDT.deploy("USDT", "USDT");
         console.log(`✓ USDT测试代币部署: ${usdt.target || usdt.address}`);
 
         console.log("\n=== V2架构部署完成 ===\n");
@@ -97,12 +106,14 @@ describe("Creation部署测试 - 完整的V2架构", function () {
         // 验证工厂合约状态
         expect(await vaultFactory.getTemplateCount()).to.equal(1);
         expect(await tokenFactory.getTemplateCount()).to.equal(1);
-        expect(await accumulatedYieldFactory.getTemplateCount()).to.equal(1);
+        expect(await fundFactory.getTemplateCount()).to.equal(1);
+        expect(await YieldFactory.getTemplateCount()).to.equal(1);
         
         // 验证模板地址
         expect(await vaultFactory.getTemplate(0)).to.equal(vaultTemplate.target || vaultTemplate.address);
         expect(await tokenFactory.getTemplate(0)).to.equal(tokenTemplate.target || tokenTemplate.address);
-        expect(await accumulatedYieldFactory.getTemplate(0)).to.equal(accumulatedYieldTemplate.target || accumulatedYieldTemplate.address);
+        expect(await fundFactory.getTemplate(0)).to.equal(fundTemplate.target || fundTemplate.address);
+        expect(await YieldFactory.getTemplate(0)).to.equal(accumulatedYieldTemplate.target || accumulatedYieldTemplate.address);
         
         console.log("✅ V2架构验证通过");
     });
@@ -112,41 +123,47 @@ describe("Creation部署测试 - 完整的V2架构", function () {
 
         // ==================== 准备初始化数据 ====================
         
-        // Vault初始化数据
+        // Vault初始化数据 - 使用新的initiate接口
         const vaultInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-            ["address", "address", "bool"],
-            [manager.address, validator.address, false] // manager, validator, whitelistEnabled
+            ["address", "address", "bool", "address[]"],
+            [manager.address, validator.address, false, []] // manager, validator, whitelistEnabled, initialWhitelist
         );
-        const vaultInitCalldata = ethers.concat([
-            "0x8129fc1c", // initVault(address,address,bool) selector
-            vaultInitData
-        ]);
 
-        // Token初始化数据
+        // Token初始化数据 - 使用新的initiate接口
         const tokenInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-            ["address", "string", "string", "uint8"],
-            [ethers.ZeroAddress, "Test Token", "TEST", 18] // vault会在Creation中设置
+            ["string", "string", "uint8"],
+            ["Test Token", "TEST", 18] // name, symbol, decimals
         );
-        const tokenInitCalldata = ethers.concat([
-            "0x077f224a", // initToken(address,string,string,uint8) selector (简化)
-            tokenInitData
-        ]);
 
-        // AccumulatedYield初始化数据
-        const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-            ["address", "address", "address", "address", "address"],
+        // Fund初始化数据 - 使用新的initiate接口
+        const currentTime = Math.floor(Date.now() / 1000);
+        const fundInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+            ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"],
             [
-                ethers.ZeroAddress, // vault会在Creation中设置
-                manager.address,
-                manager.address, // dividendTreasury
-                ethers.ZeroAddress, // shareToken会在Creation中设置
-                usdt.target || usdt.address // rewardToken
+                currentTime + 3600, // startTime
+                currentTime + 7200, // endTime
+                usdt.target || usdt.address, // assetToken
+                ethers.parseUnits("1000000", 18), // maxSupply
+                ethers.parseUnits("100000", 18), // softCap
+                ethers.parseUnits("1", 18), // sharePrice
+                ethers.parseUnits("100", 18), // minDepositAmount
+                1000, // manageFeeBps (10%)
+                manager.address, // fundingReceiver
+                manager.address, // manageFeeReceiver
+                ethers.parseUnits("1", 18), // decimalsMultiplier
+                manager.address // manager
             ]
         );
-        const yieldInitCalldata = ethers.concat([
-            "0x8f1a9e8e", // initGlobalPool selector (需要实际计算)
-            yieldInitData
-        ]);
+
+        // AccumulatedYield初始化数据 - 使用新的initiate接口
+        const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+            ["address", "address", "address"],
+            [
+                usdt.target || usdt.address, // rewardToken
+                manager.address, // rewardManager
+                manager.address // dividendTreasury
+            ]
+        );
 
         console.log("✓ 初始化数据准备完成");
 
@@ -156,10 +173,10 @@ describe("Creation部署测试 - 完整的V2架构", function () {
         
         try {
             const tx = await creation.deployAll(
-                0, vaultInitCalldata,  // vaultTemplateId, vaultInitData
-                0, tokenInitCalldata,  // tokenTemplateId, tokenInitData
-                0, ethers.ZeroHash,    // fundTemplateId, fundInitData (跳过)
-                0, yieldInitCalldata   // yieldTemplateId, yieldInitData
+                0, vaultInitData,  // vaultTemplateId, vaultInitData
+                0, tokenInitData,  // tokenTemplateId, tokenInitData
+                0, fundInitData,   // fundTemplateId, fundInitData
+                0, yieldInitData   // yieldTemplateId, yieldInitData
             );
             
             const receipt = await tx.wait();
@@ -188,15 +205,11 @@ describe("Creation部署测试 - 完整的V2架构", function () {
         // 测试VaultFactory
         try {
             const vaultInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-                ["address", "address", "bool"],
-                [manager.address, validator.address, false]
+                ["address", "address", "bool", "address[]"],
+                [manager.address, validator.address, false, []]
             );
-            const vaultCalldata = ethers.concat([
-                "0x8129fc1c", // 假设的selector
-                vaultInitData
-            ]);
             
-            const vaultAddress = await vaultFactory.createVault.staticCall(0, vaultCalldata);
+            const vaultAddress = await vaultFactory.createVault.staticCall(0, vaultInitData);
             console.log(`✓ VaultFactory测试通过，预计部署地址: ${vaultAddress}`);
         } catch (error) {
             console.log("⚠️ VaultFactory测试失败:", error.message.substring(0, 100));
@@ -205,35 +218,65 @@ describe("Creation部署测试 - 完整的V2架构", function () {
         // 测试TokenFactory
         try {
             const tokenInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-                ["address", "string", "string", "uint8"],
-                [user1.address, "Test Token", "TEST", 18]
+                ["string", "string", "uint8"],
+                ["Test Token", "TEST", 18]
             );
-            const tokenCalldata = ethers.concat([
-                "0x4cd88b76", // 假设的selector
-                tokenInitData
-            ]);
             
-            const tokenAddress = await tokenFactory.createToken.staticCall(0, user1.address, tokenCalldata);
+            const tokenAddress = await tokenFactory.createToken.staticCall(0, user1.address, tokenInitData);
             console.log(`✓ TokenFactory测试通过，预计部署地址: ${tokenAddress}`);
         } catch (error) {
             console.log("⚠️ TokenFactory测试失败:", error.message.substring(0, 100));
         }
 
-        // 测试AccumulatedYieldFactory
+        // 测试FundFactory
+        try {
+            const currentTime = Math.floor(Date.now() / 1000);
+            const fundInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"],
+                [
+                    currentTime + 3600, // startTime
+                    currentTime + 7200, // endTime
+                    usdt.target || usdt.address, // assetToken
+                    ethers.parseUnits("1000000", 18), // maxSupply
+                    ethers.parseUnits("100000", 18), // softCap
+                    ethers.parseUnits("1", 18), // sharePrice
+                    ethers.parseUnits("100", 18), // minDepositAmount
+                    1000, // manageFeeBps
+                    manager.address, // fundingReceiver
+                    manager.address, // manageFeeReceiver
+                    ethers.parseUnits("1", 18), // decimalsMultiplier
+                    manager.address // manager
+                ]
+            );
+            
+            // 先创建一个vault作为fund的vault参数
+            const vaultInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["address", "address", "bool", "address[]"],
+                [manager.address, validator.address, false, []]
+            );
+            const vaultAddress = await vaultFactory.createVault.staticCall(0, vaultInitData);
+            
+            const fundAddress = await fundFactory.createFund.staticCall(0, vaultAddress, fundInitData);
+            console.log(`✓ FundFactory测试通过，预计部署地址: ${fundAddress}`);
+        } catch (error) {
+            console.log("⚠️ FundFactory测试失败:", error.message.substring(0, 100));
+        }
+
+        // 测试YieldFactory
         try {
             const yieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-                ["address", "address", "address", "address", "address"],
-                [user1.address, manager.address, manager.address, user2.address, usdt.target || usdt.address]
+                ["address", "address", "address"],
+                [
+                    usdt.target || usdt.address, // rewardToken
+                    manager.address, // rewardManager
+                    manager.address // dividendTreasury
+                ]
             );
-            const yieldCalldata = ethers.concat([
-                "0x8f1a9e8e", // 假设的selector
-                yieldInitData
-            ]);
             
-            const yieldAddress = await accumulatedYieldFactory.createAccumulatedYield.staticCall(0, user1.address, user2.address, yieldCalldata);
-            console.log(`✓ AccumulatedYieldFactory测试通过，预计部署地址: ${yieldAddress}`);
+            const yieldAddress = await YieldFactory.createYield.staticCall(0, user1.address, user2.address, yieldInitData);
+            console.log(`✓ YieldFactory测试通过，预计部署地址: ${yieldAddress}`);
         } catch (error) {
-            console.log("⚠️ AccumulatedYieldFactory测试失败:", error.message.substring(0, 100));
+            console.log("⚠️ YieldFactory测试失败:", error.message.substring(0, 100));
         }
 
         console.log("\n✅ 单独工厂测试完成");
@@ -245,8 +288,8 @@ describe("Creation部署测试 - 完整的V2架构", function () {
         
         expect(factories[0]).to.equal(vaultFactory.target || vaultFactory.address); // vaultFactory
         expect(factories[1]).to.equal(tokenFactory.target || tokenFactory.address); // tokenFactory
-        expect(factories[2]).to.equal(ethers.ZeroAddress); // fundFactory (跳过)
-        expect(factories[3]).to.equal(accumulatedYieldFactory.target || accumulatedYieldFactory.address); // accumulatedYieldFactory
+        expect(factories[2]).to.equal(fundFactory.target || fundFactory.address); // fundFactory
+        expect(factories[3]).to.equal(YieldFactory.target || YieldFactory.address); // YieldFactory
         
         console.log("✅ 工厂地址验证通过");
     });
@@ -262,14 +305,14 @@ describe("Creation部署测试 - 完整的V2架构", function () {
                 ethers.ZeroAddress,
                 ethers.ZeroAddress
             )
-        ).to.be.revertedWithCustomError(creation, "OwnableUnauthorizedAccount");
+        ).to.be.revertedWith("Ownable: caller is not the owner");
 
         console.log("✓ 非owner无法设置工厂");
 
         // 非owner不能添加模板
         await expect(
             vaultFactory.connect(user1).addTemplate(1, user1.address)
-        ).to.be.revertedWithCustomError(vaultFactory, "OwnableUnauthorizedAccount");
+        ).to.be.revertedWith("Ownable: caller is not the owner");
 
         console.log("✓ 非owner无法添加模板");
 
@@ -282,21 +325,25 @@ describe("Creation部署测试 - 完整的V2架构", function () {
         // 1. 查询可用模板
         const vaultTemplateCount = await vaultFactory.getTemplateCount();
         const tokenTemplateCount = await tokenFactory.getTemplateCount();
-        const yieldTemplateCount = await accumulatedYieldFactory.getTemplateCount();
+        const fundTemplateCount = await fundFactory.getTemplateCount();
+        const yieldTemplateCount = await YieldFactory.getTemplateCount();
         
         console.log(`✓ 可用模板数量:`);
         console.log(`  - Vault模板: ${vaultTemplateCount}`);
         console.log(`  - Token模板: ${tokenTemplateCount}`);
+        console.log(`  - Fund模板: ${fundTemplateCount}`);
         console.log(`  - Yield模板: ${yieldTemplateCount}`);
 
         // 2. 查询模板地址
         const vaultTemplate0 = await vaultFactory.getTemplate(0);
         const tokenTemplate0 = await tokenFactory.getTemplate(0);
-        const yieldTemplate0 = await accumulatedYieldFactory.getTemplate(0);
+        const fundTemplate0 = await fundFactory.getTemplate(0);
+        const yieldTemplate0 = await YieldFactory.getTemplate(0);
         
         console.log(`✓ 模板地址:`);
         console.log(`  - Vault模板0: ${vaultTemplate0}`);
         console.log(`  - Token模板0: ${tokenTemplate0}`);
+        console.log(`  - Fund模板0: ${fundTemplate0}`);
         console.log(`  - Yield模板0: ${yieldTemplate0}`);
 
         // 3. 查询Creation状态
@@ -315,12 +362,14 @@ describe("Creation部署测试 - 完整的V2架构", function () {
         console.log("\n=== 函数选择器参考 ===");
         
         // 这些选择器可以用于后端构造正确的calldata
-        const initVaultSelector = ethers.id("initVault(address,address,bool)").substring(0, 10);
+        const initVaultSelector = ethers.id("initVault(address,address,bool,address[])").substring(0, 10);
         const initTokenSelector = ethers.id("initToken(address,string,string,uint8)").substring(0, 10);
+        const initCrowdsaleSelector = ethers.id("initCrowdsale(address,uint256,uint256,address,uint256,uint256,uint256,uint256,uint256,address,address,uint256,address)").substring(0, 10);
         const initGlobalPoolSelector = ethers.id("initGlobalPool(address,address,address,address,address)").substring(0, 10);
         
         console.log(`initVault选择器: ${initVaultSelector}`);
         console.log(`initToken选择器: ${initTokenSelector}`);
+        console.log(`initCrowdsale选择器: ${initCrowdsaleSelector}`);
         console.log(`initGlobalPool选择器: ${initGlobalPoolSelector}`);
         
         console.log("\n=== 示例calldata构造 ===");

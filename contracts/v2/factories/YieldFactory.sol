@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/IFactory.sol";
 
-contract AccumulatedYieldFactory is IAccumulatedYieldFactory, Ownable {
+contract YieldFactory is IYieldFactory, Ownable {
     using Clones for address;
     
     mapping(uint256 => address) public templates;
     uint256 public templateCount;
     
     function addTemplate(uint256 templateId, address template) external override onlyOwner {
-        require(template != address(0), "AccumulatedYieldFactory: invalid template");
-        require(templates[templateId] == address(0), "AccumulatedYieldFactory: template already exists");
+        require(template != address(0), "YieldFactory: invalid template");
+        require(templates[templateId] == address(0), "YieldFactory: template already exists");
         
         templates[templateId] = template;
         if (templateId >= templateCount) {
@@ -21,27 +21,25 @@ contract AccumulatedYieldFactory is IAccumulatedYieldFactory, Ownable {
         }
     }
     
-    function createAccumulatedYield(uint256 templateId, address vault, address token, bytes memory initData) external override returns (address accumulatedYield) {
+    function createYield(uint256 templateId, address vault, address token, bytes memory initData) external override returns (address accumulatedYield) {
         address template = templates[templateId];
-        require(template != address(0), "AccumulatedYieldFactory: template not found");
+        require(template != address(0), "YieldFactory: template not found");
         
         accumulatedYield = template.clone();
         
-        // 解码initData为AccumulatedYieldUserParams结构体
-        (address rewardToken, address rewardManager) = 
-            abi.decode(initData, (address, address));
-        
-        // 构造完整的初始化数据，包含vault和shareToken
+        // 使用统一的 initiate(address, bytes) 接口
+        // 将 vault 和 token 信息编码到 initData 中
         bytes memory fullInitData = abi.encodeWithSignature(
-            "initGlobalPool(address,address,address,address,address)",
-            vault, rewardManager, rewardManager, token, rewardToken
+            "initiate(address,bytes)",
+            vault, 
+            abi.encode(token, initData)
         );
         
         // 调用初始化函数
         (bool success, ) = accumulatedYield.call(fullInitData);
-        require(success, "AccumulatedYieldFactory: initialization failed");
+        require(success, "YieldFactory: initialization failed");
         
-        emit AccumulatedYieldCreated(templateId, accumulatedYield, msg.sender);
+        emit YieldCreated(templateId, accumulatedYield, msg.sender);
         
         return accumulatedYield;
     }

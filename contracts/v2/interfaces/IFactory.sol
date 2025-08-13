@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
 /**
  * @title IVaultFactory
@@ -41,13 +41,13 @@ interface IFundFactory {
 }
 
 /**
- * @title IAccumulatedYieldFactory
- * @dev AccumulatedYield工厂接口
+ * @title IYieldFactory
+ * @dev Yield工厂接口
  */
-interface IAccumulatedYieldFactory {
-    event AccumulatedYieldCreated(uint256 indexed templateId, address indexed accumulatedYield, address indexed vault);
+interface IYieldFactory {
+    event YieldCreated(uint256 indexed templateId, address indexed accumulatedYield, address indexed vault);
     
-    function createAccumulatedYield(uint256 templateId, address vault, address token, bytes memory initData) external returns (address);
+    function createYield(uint256 templateId, address vault, address token, bytes memory initData) external returns (address);
     function addTemplate(uint256 templateId, address template) external;
     function getTemplate(uint256 templateId) external view returns (address);
     function getTemplateCount() external view returns (uint256);

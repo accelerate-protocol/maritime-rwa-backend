@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -28,4 +28,7 @@ interface IToken is IERC20 {
     // ============ 暂停控制接口 ============
     function pause() external;
     function unpause() external;
+    
+    // ============ 统一初始化接口 ============
+    function initiate(address _vault, bytes memory _initData) external;
 } 

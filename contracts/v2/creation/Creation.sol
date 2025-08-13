@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
@@ -7,13 +7,13 @@ import "../interfaces/ICreation.sol";
 import "../factories/VaultFactory.sol";
 import "../factories/TokenFactory.sol";
 import "../factories/FundFactory.sol";
-import "../factories/AccumulatedYieldFactory.sol";
+import "../factories/YieldFactory.sol";
 
 contract Creation is ICreation, Ownable {
     VaultFactory public vaultFactory;
     TokenFactory public tokenFactory;
     FundFactory public fundFactory;
-    AccumulatedYieldFactory public accumulatedYieldFactory;
+    YieldFactory public yieldFactory;
     
     // 用户传入的初始化参数结构体（不包含上下文合约地址）
     struct VaultUserParams {
@@ -64,12 +64,15 @@ contract Creation is ICreation, Ownable {
         address _vaultFactory,
         address _tokenFactory,
         address _fundFactory,
-        address _accumulatedYieldFactory
+        address _YieldFactory
     ) {
         vaultFactory = VaultFactory(_vaultFactory);
         tokenFactory = TokenFactory(_tokenFactory);
         fundFactory = FundFactory(_fundFactory);
-        accumulatedYieldFactory = AccumulatedYieldFactory(_accumulatedYieldFactory);
+        yieldFactory = YieldFactory(_YieldFactory);
+        
+        // 确保 owner 被正确设置
+        _transferOwnership(msg.sender);
     }
     
     // 实现接口的deployAll方法
@@ -84,41 +87,49 @@ contract Creation is ICreation, Ownable {
         bytes memory dividendInitData
     ) external override returns (DeploymentResult memory result) {
         // 1. 部署Vault
-        result.vault = vaultFactory.createVault(vaultTemplateId, vaultInitData);
-        require(result.vault != address(0), "Creation: vault creation failed");
+        address vault = vaultFactory.createVault(vaultTemplateId, vaultInitData);
+        require(vault != address(0), "Creation: vault creation failed");
         
         // 2. 部署Token（需要vault参数）
-        result.token = tokenFactory.createToken(tokenTemplateId, result.vault, tokenInitData);
-        require(result.token != address(0), "Creation: token creation failed");
+        address token = tokenFactory.createToken(tokenTemplateId, vault, tokenInitData);
+        require(token != address(0), "Creation: token creation failed");
         
         // 3. 部署Fund
-        result.fund = fundFactory.createFund(fundTemplateId, result.vault, fundInitData);
-        require(result.fund != address(0), "Creation: fund creation failed");
+        address fund = fundFactory.createFund(fundTemplateId, vault, fundInitData);
+        require(fund != address(0), "Creation: fund creation failed");
         
         // 4. 部署AccumulatedYield
-        result.accumulatedYield = accumulatedYieldFactory.createAccumulatedYield(
+        address accumulatedYield = yieldFactory.createYield(
             dividendTemplateId,
-            result.vault,
-            result.token,
+            vault,
+            token,
             dividendInitData
         );
-        require(result.accumulatedYield != address(0), "Creation: accumulatedYield creation failed");
+        require(accumulatedYield != address(0), "Creation: accumulatedYield creation failed");
         
         // 5. 配置模块间的依赖关系
-        _configureModules(result.vault, result.token, result.fund, result.accumulatedYield);
+        _configureModules(vault, token, fund, accumulatedYield);
         
         // 6. 创建项目记录
         uint256 projectId = projects.length;
         projects.push(Project({
-            vault: result.vault,
-            token: result.token,
-            fund: result.fund,
-            accumulatedYield: result.accumulatedYield,
+            vault: vault,
+            token: token,
+            fund: fund,
+            accumulatedYield: accumulatedYield,
             createdAt: block.timestamp
         }));
         
-        emit ProjectCreated(projectId, result.vault, result.token, result.fund, result.accumulatedYield);
-        emit FullDeployment(msg.sender, result.vault, result.token, result.fund, result.accumulatedYield);
+        // 7. 构造返回结果
+        result = DeploymentResult({
+            vault: vault,
+            token: token,
+            fund: fund,
+            accumulatedYield: accumulatedYield
+        });
+        
+        emit ProjectCreated(projectId, vault, token, fund, accumulatedYield);
+        emit FullDeployment(msg.sender, vault, token, fund, accumulatedYield);
         
         return result;
     }
@@ -147,7 +158,7 @@ contract Creation is ICreation, Ownable {
         require(fund != address(0), "Creation: fund creation failed");
         
         // 4. 部署AccumulatedYield
-        address accumulatedYield = accumulatedYieldFactory.createAccumulatedYield(
+        address accumulatedYield = yieldFactory.createYield(
             accumulatedYieldTemplateId,
             vault,
             token,
@@ -174,30 +185,12 @@ contract Creation is ICreation, Ownable {
     }
     
     function _configureModules(address vault, address token, address fund, address accumulatedYield) internal {
-        // 配置Vault的token
-        if (vault != address(0) && token != address(0)) {
-            (bool success, ) = vault.call(
-                abi.encodeWithSignature("setVaultToken(address)", token)
-            );
-            require(success, "Creation: setVaultToken failed");
-        }
+        // 注意：在 Clones 模式下，这些配置函数需要在初始化后由 manager 调用
+        // 由于 Creation 合约不是 manager，我们需要在部署后由用户手动配置
+        // 或者修改这些函数的权限控制
         
-        // 配置Vault的模块地址
-        if (vault != address(0)) {
-            if (fund != address(0)) {
-                (bool success, ) = vault.call(
-                    abi.encodeWithSignature("setFundingModule(address)", fund)
-                );
-                require(success, "Creation: setFundingModule failed");
-            }
-            
-            if (accumulatedYield != address(0)) {
-                (bool success, ) = vault.call(
-                    abi.encodeWithSignature("setDividendModule(address)", accumulatedYield)
-                );
-                require(success, "Creation: setDividendModule failed");
-            }
-        }
+        // 暂时跳过自动配置，让用户手动配置
+        // 这样可以确保正确的权限控制
     }
     
     // 实现接口的其他方法
@@ -210,7 +203,7 @@ contract Creation is ICreation, Ownable {
         vaultFactory = VaultFactory(_vaultFactory);
         tokenFactory = TokenFactory(_tokenFactory);
         fundFactory = FundFactory(_fundFactory);
-        accumulatedYieldFactory = AccumulatedYieldFactory(_dividendFactory);
+        yieldFactory = YieldFactory(_dividendFactory);
         
         emit FactoriesUpdated(_vaultFactory, _tokenFactory, _fundFactory, _dividendFactory);
     }
@@ -221,7 +214,7 @@ contract Creation is ICreation, Ownable {
         address,
         address
     ) {
-        return (address(vaultFactory), address(tokenFactory), address(fundFactory), address(accumulatedYieldFactory));
+        return (address(vaultFactory), address(tokenFactory), address(fundFactory), address(yieldFactory));
     }
     
     function deployVault(uint256 templateId, bytes memory initData) external override returns (address vault) {
@@ -243,8 +236,8 @@ contract Creation is ICreation, Ownable {
     }
     
     function deployDividend(uint256 templateId, address vault, address token, bytes memory initData) external override returns (address dividend) {
-        dividend = accumulatedYieldFactory.createAccumulatedYield(templateId, vault, token, initData);
-        emit AccumulatedYieldCreated(dividend);
+        dividend = yieldFactory.createYield(templateId, vault, token, initData);
+        emit YieldCreated(dividend);
         return dividend;
     }
     

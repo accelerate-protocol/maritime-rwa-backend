@@ -4,7 +4,7 @@ import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { Crowdsale } from "../typechain-types/contracts/v2/templates/funding/Crowdsale";
 import { VaultToken } from "../typechain-types/contracts/v2/templates/token/VaultToken";
 import { BasicVault } from "../typechain-types/contracts/v2/templates/vault/BasicVault";
-import { MockERC20 } from "../typechain-types/contracts/mocks/MockERC20";
+import { MockUSDT } from "../typechain-types/contracts/mocks/MockUSDT";
 
 describe("Crowdsale", function () {
     // Constants for token precision
@@ -14,7 +14,7 @@ describe("Crowdsale", function () {
     let crowdsale: Crowdsale;
     let vaultToken: VaultToken;
     let vault: BasicVault;
-    let assetToken: MockERC20;
+    let assetToken: any;
     let owner: HardhatEthersSigner;
     let manager: HardhatEthersSigner;
     let validator: HardhatEthersSigner;
@@ -39,14 +39,8 @@ describe("Crowdsale", function () {
         // Don't set global time here
 
         // Deploy mock asset token
-        const MockERC20Factory = await ethers.getContractFactory("MockERC20");
-        assetToken = await MockERC20Factory.deploy();
-        await assetToken.initToken(
-            owner.address,
-            "Mock USDT",
-            "USDT",
-            TOKEN_DECIMALS
-        );
+        const MockUSDTFactory = await ethers.getContractFactory("contracts/mocks/MockUSDT.sol:MockUSDT");
+        assetToken = await MockUSDTFactory.deploy("Mock USDT", "USDT");
         await assetToken.mint(user1.address, ethers.parseUnits("100000", TOKEN_DECIMALS));
         await assetToken.mint(user2.address, ethers.parseUnits("100000", TOKEN_DECIMALS));
 
@@ -57,20 +51,21 @@ describe("Crowdsale", function () {
         // Deploy basic vault
         const BasicVaultFactory = await ethers.getContractFactory("BasicVault");
         vault = await BasicVaultFactory.deploy();
-        await vault.initVault(
-            manager.address,
-            validator.address,
-            false, // whitelist disabled
-            [] // empty initial whitelist
+        
+        // Encode initialization data
+        const initData = ethers.AbiCoder.defaultAbiCoder().encode(
+            ["address", "address", "bool", "address[]"],
+            [manager.address, validator.address, false, []]
         );
+        
+        await vault.initiate(initData);
 
         // Initialize vault token
-        await vaultToken.initToken(
-            await vault.getAddress(),
-            "Test Vault Token",
-            "TVT",
-            VAULT_TOKEN_DECIMALS
+        const tokenInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+            ["string", "string", "uint8"],
+            ["Test Vault Token", "TVT", VAULT_TOKEN_DECIMALS]
         );
+        await vaultToken.initiate(await vault.getAddress(), tokenInitData);
 
         // Set vault token in vault (manager is the owner)
         await vault.connect(manager).setVaultToken(await vaultToken.getAddress());
@@ -82,12 +77,21 @@ describe("Crowdsale", function () {
         // Set funding module in vault
         await vault.connect(manager).setFundingModule(await crowdsale.getAddress());
         
+        // Unpause token for testing (since it's paused during initialization)
+        await vault.connect(manager).unpauseToken();
+        
         // Don't initialize crowdsale in beforeEach - let each test handle its own initialization
     });
 
     // Helper function to reset EVM time to a clean state
     async function resetEVMTime() {
-        const currentBlockTime = await ethers.provider.getBlock("latest").then(block => block.timestamp);
+        const block = await ethers.provider.getBlock("latest");
+        if (!block) {
+            await ethers.provider.send("evm_mine", []);
+            return;
+        }
+        
+        const currentBlockTime = block.timestamp;
         const currentRealTime = Math.floor(Date.now() / 1000);
         if (currentBlockTime > currentRealTime) {
             // If block time is ahead, we can't reset it, so we'll work with it
@@ -100,13 +104,13 @@ describe("Crowdsale", function () {
         }
     }
 
-    // Helper function to create a new crowdsale instance with proper initialization
-    async function createNewCrowdsale(
-        vault: any,
+    // Helper function to create a new vault and crowdsale instance with proper initialization
+    async function createNewVaultAndCrowdsale(
         assetToken: any,
         fundingReceiver: any,
         manageFeeReceiver: any,
         manager: any,
+        validator: any,
         startTime: number,
         endTime: number,
         maxSupply: any,
@@ -116,26 +120,49 @@ describe("Crowdsale", function () {
         manageFeeBps: any,
         decimalsMultiplier: any
     ) {
+        // Deploy new vault token
+        const VaultTokenFactory = await ethers.getContractFactory("VaultToken");
+        const newVaultToken = await VaultTokenFactory.deploy();
+
+        // Deploy new basic vault
+        const BasicVaultFactory = await ethers.getContractFactory("BasicVault");
+        const newVault = await BasicVaultFactory.deploy();
+        
+        // Encode initialization data
+        const initData = ethers.AbiCoder.defaultAbiCoder().encode(
+            ["address", "address", "bool", "address[]"],
+            [manager.address, validator.address, false, []]
+        );
+        
+        await newVault.initiate(initData);
+
+        // Initialize vault token
+        const tokenInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+            ["string", "string", "uint8"],
+            ["Test Vault Token", "TVT", VAULT_TOKEN_DECIMALS]
+        );
+        await newVaultToken.initiate(await newVault.getAddress(), tokenInitData);
+
+        // Set vault token in vault
+        await newVault.connect(manager).setVaultToken(await newVaultToken.getAddress());
+
+        // Deploy new crowdsale
         const CrowdsaleFactory = await ethers.getContractFactory("Crowdsale");
         const newCrowdsale = await CrowdsaleFactory.deploy();
         
-        await newCrowdsale.initCrowdsale(
-            await vault.getAddress(),
-            startTime,
-            endTime,
-            await assetToken.getAddress(),
-            maxSupply,
-            softCap,
-            sharePrice,
-            minDepositAmount,
-            manageFeeBps,
-            fundingReceiver.address,
-            manageFeeReceiver.address,
-            decimalsMultiplier,
-            manager.address
+        const crowdsaleInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+            ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"],
+            [startTime, endTime, await assetToken.getAddress(), maxSupply, softCap, sharePrice, minDepositAmount, manageFeeBps, fundingReceiver.address, manageFeeReceiver.address, decimalsMultiplier, manager.address]
         );
+        await newCrowdsale.initiate(await newVault.getAddress(), crowdsaleInitData);
         
-        return newCrowdsale;
+        // Set the new crowdsale as the funding module in the new vault
+        await newVault.connect(manager).setFundingModule(await newCrowdsale.getAddress());
+        
+        // Unpause token for testing (since it's paused during initialization)
+        await newVault.connect(manager).unpauseToken();
+        
+        return { newVault, newVaultToken, newCrowdsale };
     }
 
     describe("Initialization", function () {
@@ -147,21 +174,11 @@ describe("Crowdsale", function () {
         });
 
         it("should initialize crowdsale correctly", async function () {
-            await crowdsale.initCrowdsale(
-                await vault.getAddress(),
-                startTime,
-                endTime,
-                await assetToken.getAddress(),
-                maxSupply,
-                softCap,
-                sharePrice,
-                minDepositAmount,
-                manageFeeBps,
-                fundingReceiver.address,
-                manageFeeReceiver.address,
-                decimalsMultiplier,
-                manager.address
+            const crowdsaleInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"],
+                [startTime, endTime, await assetToken.getAddress(), maxSupply, softCap, sharePrice, minDepositAmount, manageFeeBps, fundingReceiver.address, manageFeeReceiver.address, decimalsMultiplier, manager.address]
             );
+            await crowdsale.initiate(await vault.getAddress(), crowdsaleInitData);
 
             expect(await crowdsale.vault()).to.equal(await vault.getAddress());
             expect(await crowdsale.startTime()).to.equal(startTime);
@@ -180,118 +197,54 @@ describe("Crowdsale", function () {
         });
 
         it("should reject duplicate initialization", async function () {
-            await crowdsale.initCrowdsale(
-                await vault.getAddress(),
-                startTime,
-                endTime,
-                await assetToken.getAddress(),
-                maxSupply,
-                softCap,
-                sharePrice,
-                minDepositAmount,
-                manageFeeBps,
-                fundingReceiver.address,
-                manageFeeReceiver.address,
-                decimalsMultiplier,
-                manager.address
+            const crowdsaleInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"],
+                [startTime, endTime, await assetToken.getAddress(), maxSupply, softCap, sharePrice, minDepositAmount, manageFeeBps, fundingReceiver.address, manageFeeReceiver.address, decimalsMultiplier, manager.address]
             );
+            await crowdsale.initiate(await vault.getAddress(), crowdsaleInitData);
 
             await expect(
-                crowdsale.initCrowdsale(
-                    await vault.getAddress(),
-                    startTime,
-                    endTime,
-                    await assetToken.getAddress(),
-                    maxSupply,
-                    softCap,
-                    sharePrice,
-                    minDepositAmount,
-                    manageFeeBps,
-                    fundingReceiver.address,
-                    manageFeeReceiver.address,
-                    decimalsMultiplier,
-                    manager.address
-                )
+                crowdsale.connect(manager).initiate(await vault.getAddress(), crowdsaleInitData)
             ).to.be.revertedWith("Crowdsale: already initialized");
         });
 
         it("should reject invalid initialization parameters", async function () {
             // Invalid vault address
+            const invalidVaultInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"],
+                [startTime, endTime, await assetToken.getAddress(), maxSupply, softCap, sharePrice, minDepositAmount, manageFeeBps, fundingReceiver.address, manageFeeReceiver.address, decimalsMultiplier, manager.address]
+            );
             await expect(
-                crowdsale.initCrowdsale(
-                    ethers.ZeroAddress,
-                    startTime,
-                    endTime,
-                    await assetToken.getAddress(),
-                    maxSupply,
-                    softCap,
-                    sharePrice,
-                    minDepositAmount,
-                    manageFeeBps,
-                    fundingReceiver.address,
-                    manageFeeReceiver.address,
-                    decimalsMultiplier,
-                    manager.address
-                )
+                crowdsale.initiate(ethers.ZeroAddress, invalidVaultInitData)
             ).to.be.revertedWith("Crowdsale: invalid vault");
 
             // Invalid time range
+            const invalidTimeInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"],
+                [endTime, startTime, await assetToken.getAddress(), maxSupply, softCap, sharePrice, minDepositAmount, manageFeeBps, fundingReceiver.address, manageFeeReceiver.address, decimalsMultiplier, manager.address]
+            );
             await expect(
-                crowdsale.initCrowdsale(
-                    await vault.getAddress(),
-                    endTime,
-                    startTime,
-                    await assetToken.getAddress(),
-                    maxSupply,
-                    softCap,
-                    sharePrice,
-                    minDepositAmount,
-                    manageFeeBps,
-                    fundingReceiver.address,
-                    manageFeeReceiver.address,
-                    decimalsMultiplier,
-                    manager.address
-                )
+                crowdsale.initiate(await vault.getAddress(), invalidTimeInitData)
             ).to.be.revertedWith("Crowdsale: invalid time range");
 
             // End time in past
             const pastTime = Math.floor(Date.now() / 1000) - 86400; // 24 hours ago
             const pastStartTime = pastTime - 3600; // 1 hour before pastTime
+            const pastTimeInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"],
+                [pastStartTime, pastTime, await assetToken.getAddress(), maxSupply, softCap, sharePrice, minDepositAmount, manageFeeBps, fundingReceiver.address, manageFeeReceiver.address, decimalsMultiplier, manager.address]
+            );
             await expect(
-                crowdsale.initCrowdsale(
-                    await vault.getAddress(),
-                    pastStartTime,
-                    pastTime,
-                    await assetToken.getAddress(),
-                    maxSupply,
-                    softCap,
-                    sharePrice,
-                    minDepositAmount,
-                    manageFeeBps,
-                    fundingReceiver.address,
-                    manageFeeReceiver.address,
-                    decimalsMultiplier,
-                    manager.address
-                )
+                crowdsale.initiate(await vault.getAddress(), pastTimeInitData)
             ).to.be.revertedWith("Crowdsale: end time in past");
 
             // Invalid soft cap
+            const invalidSoftCapInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"],
+                [startTime, endTime, await assetToken.getAddress(), maxSupply, maxSupply + ethers.parseEther("1000"), sharePrice, minDepositAmount, manageFeeBps, fundingReceiver.address, manageFeeReceiver.address, decimalsMultiplier, manager.address]
+            );
             await expect(
-                crowdsale.initCrowdsale(
-                    await vault.getAddress(),
-                    startTime,
-                    endTime,
-                    await assetToken.getAddress(),
-                    maxSupply,
-                    maxSupply + ethers.parseEther("1000"),
-                    sharePrice,
-                    minDepositAmount,
-                    manageFeeBps,
-                    fundingReceiver.address,
-                    manageFeeReceiver.address,
-                    decimalsMultiplier,
-                    manager.address
-                )
+                crowdsale.initiate(await vault.getAddress(), invalidSoftCapInitData)
             ).to.be.revertedWith("Crowdsale: invalid soft cap");
         });
     });
@@ -303,21 +256,11 @@ describe("Crowdsale", function () {
             startTime = baseTime + 60;
             endTime = startTime + 86400;
             
-            await crowdsale.initCrowdsale(
-                await vault.getAddress(),
-                startTime,
-                endTime,
-                await assetToken.getAddress(),
-                maxSupply,
-                softCap,
-                sharePrice,
-                minDepositAmount,
-                manageFeeBps,
-                fundingReceiver.address,
-                manageFeeReceiver.address,
-                decimalsMultiplier,
-                manager.address
+            const crowdsaleInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"],
+                [startTime, endTime, await assetToken.getAddress(), maxSupply, softCap, sharePrice, minDepositAmount, manageFeeBps, fundingReceiver.address, manageFeeReceiver.address, decimalsMultiplier, manager.address]
             );
+            await crowdsale.initiate(await vault.getAddress(), crowdsaleInitData);
 
             // Set time to funding period
             const currentTime = Math.floor(Date.now() / 1000);
@@ -457,6 +400,8 @@ describe("Crowdsale", function () {
 
     describe("Redeem Operations", function () {
         let testCrowdsale: any;
+        let testVault: any;
+        let testVaultToken: any;
         
         beforeEach(async function () {
             // Reset EVM time to a clean state
@@ -467,13 +412,13 @@ describe("Crowdsale", function () {
             startTime = baseTime + 60;
             endTime = startTime + 86400;
             
-            // Create a new crowdsale instance using the helper function
-            testCrowdsale = await createNewCrowdsale(
-                vault,
+            // Create new vault and crowdsale instances using the helper function
+            const { newVault, newVaultToken, newCrowdsale } = await createNewVaultAndCrowdsale(
                 assetToken,
                 fundingReceiver,
                 manageFeeReceiver,
                 manager,
+                validator,
                 startTime,
                 endTime,
                 maxSupply,
@@ -483,6 +428,10 @@ describe("Crowdsale", function () {
                 manageFeeBps,
                 decimalsMultiplier
             );
+            
+            testVault = newVault;
+            testVaultToken = newVaultToken;
+            testCrowdsale = newCrowdsale;
 
             // Move to funding period for deposit
             const currentTime = Math.floor(Date.now() / 1000);
@@ -522,8 +471,11 @@ describe("Crowdsale", function () {
             const signature = await manager.signMessage(ethers.getBytes(messageHash));
 
             // Check initial balance
-            const initialBalance = await vaultToken.balanceOf(user1.address);
+            const initialBalance = await testVaultToken.balanceOf(user1.address);
             console.log("Initial balance:", initialBalance.toString());
+            
+            // Approve vault to burn tokens (required for redeem operation)
+            await testVaultToken.connect(user1).approve(await testVault.getAddress(), initialBalance);
             
             // Perform redeem
             await expect(
@@ -533,118 +485,119 @@ describe("Crowdsale", function () {
 
             // User should have remaining balance after redeeming 500 shares
             const expectedRemainingBalance = initialBalance - redeemAmount;
-            expect(await vaultToken.balanceOf(user1.address)).to.equal(expectedRemainingBalance);
+            expect(await testVaultToken.balanceOf(user1.address)).to.equal(expectedRemainingBalance);
         });
     });
 
     describe("Fund Management", function () {
+        let testCrowdsale: any;
+        let testVault: any;
+        let testVaultToken: any;
+        
         beforeEach(async function () {
-            // Reset EVM time to a clean state first
-            const currentBlockTime = await ethers.provider.getBlock("latest").then(block => block.timestamp);
-            const currentRealTime = Math.floor(Date.now() / 1000);
-            if (currentBlockTime > currentRealTime) {
-                // If block time is ahead, we can't reset it, so we'll work with it
-                // Just mine a new block to ensure we have the latest state
-                await ethers.provider.send("evm_mine", []);
-            } else {
-                // If block time is behind or equal, we can set it to current time
-                await ethers.provider.send("evm_setNextBlockTimestamp", [currentRealTime]);
-                await ethers.provider.send("evm_mine", []);
-            }
+            // Reset EVM time to a clean state
+            await resetEVMTime();
             
             // Set independent time for this test suite
-            const baseTime = Math.floor(Date.now() / 1000) + 120;
+            // Get current block time and ensure endTime is far enough in the future
+            const currentBlockTime = await ethers.provider.getBlock("latest").then(block => block.timestamp);
+            const baseTime = Math.max(currentBlockTime + 120, Math.floor(Date.now() / 1000) + 120);
             startTime = baseTime + 60;
             endTime = startTime + 86400;
             
-            await crowdsale.initCrowdsale(
-                await vault.getAddress(),
+            // Create new vault and crowdsale instances using the helper function
+            const { newVault, newVaultToken, newCrowdsale } = await createNewVaultAndCrowdsale(
+                assetToken,
+                fundingReceiver,
+                manageFeeReceiver,
+                manager,
+                validator,
                 startTime,
                 endTime,
-                await assetToken.getAddress(),
                 maxSupply,
                 softCap,
                 sharePrice,
                 minDepositAmount,
                 manageFeeBps,
-                fundingReceiver.address,
-                manageFeeReceiver.address,
-                decimalsMultiplier,
-                manager.address
+                decimalsMultiplier
             );
+            
+            testVault = newVault;
+            testVaultToken = newVaultToken;
+            testCrowdsale = newCrowdsale;
 
             // Move to funding period for deposit
-            const currentTime = Math.floor(Date.now() / 1000);
+            const currentTime = await ethers.provider.getBlock("latest").then(block => block.timestamp);
             const timeToFunding = Math.max(0, startTime + 60 - currentTime);
             await ethers.provider.send("evm_increaseTime", [timeToFunding]);
             await ethers.provider.send("evm_mine", []);
             
             // Setup: make funding successful
             const depositAmount = ethers.parseUnits("6000", TOKEN_DECIMALS);
-            const nonce = await crowdsale.getManagerNonce();
-            const messageHash = await crowdsale.getDepositSignatureMessage(
+            const nonce = await testCrowdsale.getManagerNonce();
+            const messageHash = await testCrowdsale.getDepositSignatureMessage(
                 depositAmount,
                 user1.address,
                 nonce
             );
             const signature = await manager.signMessage(ethers.getBytes(messageHash));
-            await assetToken.connect(user1).approve(await crowdsale.getAddress(), ethers.parseUnits("100000", TOKEN_DECIMALS));
-            await crowdsale.connect(user1).deposit(depositAmount, user1.address, signature);
+            await assetToken.connect(user1).approve(await testCrowdsale.getAddress(), ethers.parseUnits("100000", TOKEN_DECIMALS));
+            await testCrowdsale.connect(user1).deposit(depositAmount, user1.address, signature);
 
             // Move time to after funding period
-            const timeToAfterFunding = Math.max(0, endTime + 3600 - Math.floor(Date.now() / 1000));
+            const currentTimeAfterDeposit = await ethers.provider.getBlock("latest").then(block => block.timestamp);
+            const timeToAfterFunding = Math.max(0, endTime + 3600 - currentTimeAfterDeposit);
             await ethers.provider.send("evm_increaseTime", [timeToAfterFunding]);
             await ethers.provider.send("evm_mine", []);
         });
 
         it("should allow withdrawal of funding assets when successful", async function () {
             const initialBalance = await assetToken.balanceOf(fundingReceiver.address);
-            const fundingAssets = await crowdsale.fundingAssets();
+            const fundingAssets = await testCrowdsale.fundingAssets();
 
             await expect(
-                crowdsale.connect(manager).withdrawFundingAssets()
-            ).to.emit(crowdsale, "FundingAssetsWithdrawn")
+                testCrowdsale.connect(manager).withdrawFundingAssets()
+            ).to.emit(testCrowdsale, "FundingAssetsWithdrawn")
                 .withArgs(fundingReceiver.address, fundingAssets);
 
             expect(await assetToken.balanceOf(fundingReceiver.address)).to.equal(initialBalance + fundingAssets);
-            expect(await crowdsale.fundingAssets()).to.equal(0);
+            expect(await testCrowdsale.fundingAssets()).to.equal(0);
         });
 
         it("should allow withdrawal of management fee when successful", async function () {
             const initialBalance = await assetToken.balanceOf(manageFeeReceiver.address);
-            const manageFee = await crowdsale.manageFee();
+            const manageFee = await testCrowdsale.manageFee();
 
             await expect(
-                crowdsale.connect(manager).withdrawManageFee()
-            ).to.emit(crowdsale, "ManageFeeWithdrawn")
+                testCrowdsale.connect(manager).withdrawManageFee()
+            ).to.emit(testCrowdsale, "ManageFeeWithdrawn")
                 .withArgs(manageFeeReceiver.address, manageFee);
 
             expect(await assetToken.balanceOf(manageFeeReceiver.address)).to.equal(initialBalance + manageFee);
-            expect(await crowdsale.manageFee()).to.equal(0);
+            expect(await testCrowdsale.manageFee()).to.equal(0);
         });
 
         it("should reject withdrawal when funding not successful", async function () {
-            // Create new crowdsale that fails
+            // Create new crowdsale that fails with fresh time settings
             const CrowdsaleFactory = await ethers.getContractFactory("Crowdsale");
             const failedCrowdsale = await CrowdsaleFactory.deploy();
-            await failedCrowdsale.initCrowdsale(
-                await vault.getAddress(),
-                startTime,
-                endTime,
-                await assetToken.getAddress(),
-                maxSupply,
-                softCap,
-                sharePrice,
-                minDepositAmount,
-                manageFeeBps,
-                fundingReceiver.address,
-                manageFeeReceiver.address,
-                decimalsMultiplier,
-                manager.address
+            
+            // Get current block time and set fresh time for the failed crowdsale
+            const currentBlockTime = await ethers.provider.getBlock("latest").then(block => block.timestamp);
+            const freshBaseTime = Math.max(currentBlockTime + 120, Math.floor(Date.now() / 1000) + 120);
+            const freshStartTime = freshBaseTime + 60;
+            const freshEndTime = freshStartTime + 86400;
+            
+            const failedCrowdsaleInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"],
+                [freshStartTime, freshEndTime, await assetToken.getAddress(), maxSupply, softCap, sharePrice, minDepositAmount, manageFeeBps, fundingReceiver.address, manageFeeReceiver.address, decimalsMultiplier, manager.address]
             );
+            await failedCrowdsale.initiate(await vault.getAddress(), failedCrowdsaleInitData);
 
             // Move time to after funding period
-            await ethers.provider.send("evm_increaseTime", [endTime + 7200 - Math.floor(Date.now() / 1000)]);
+            const currentTimeAfterInit = await ethers.provider.getBlock("latest").then(block => block.timestamp);
+            const timeToAfterFunding = Math.max(0, freshEndTime + 7200 - currentTimeAfterInit);
+            await ethers.provider.send("evm_increaseTime", [timeToAfterFunding]);
             await ethers.provider.send("evm_mine", []);
 
             await expect(
@@ -654,158 +607,185 @@ describe("Crowdsale", function () {
 
         it("should reject withdrawal by non-manager", async function () {
             await expect(
-                crowdsale.connect(user1).withdrawFundingAssets()
+                testCrowdsale.connect(user1).withdrawFundingAssets()
             ).to.be.revertedWith("Crowdsale: only manager");
         });
     });
 
     describe("Status Queries", function () {
+        let testCrowdsale: any;
+        let testVault: any;
+        let testVaultToken: any;
+        
         beforeEach(async function () {
-            // Reset EVM time to a clean state first
-            await ethers.provider.send("evm_setNextBlockTimestamp", [Math.floor(Date.now() / 1000)]);
-            await ethers.provider.send("evm_mine", []);
+            // Reset EVM time to a clean state
+            await resetEVMTime();
             
             // Set independent time for this test suite
-            const baseTime = Math.floor(Date.now() / 1000) + 120;
+            // Get current block time and ensure endTime is far enough in the future
+            const currentBlockTime = await ethers.provider.getBlock("latest").then(block => block.timestamp);
+            const baseTime = Math.max(currentBlockTime + 120, Math.floor(Date.now() / 1000) + 120);
             startTime = baseTime + 60;
             endTime = startTime + 86400;
             
-            await crowdsale.initCrowdsale(
-                await vault.getAddress(),
+            // Create new vault and crowdsale instances using the helper function
+            const { newVault, newVaultToken, newCrowdsale } = await createNewVaultAndCrowdsale(
+                assetToken,
+                fundingReceiver,
+                manageFeeReceiver,
+                manager,
+                validator,
                 startTime,
                 endTime,
-                await assetToken.getAddress(),
                 maxSupply,
                 softCap,
                 sharePrice,
                 minDepositAmount,
                 manageFeeBps,
-                fundingReceiver.address,
-                manageFeeReceiver.address,
-                decimalsMultiplier,
-                manager.address
+                decimalsMultiplier
             );
+            
+            testVault = newVault;
+            testVaultToken = newVaultToken;
+            testCrowdsale = newCrowdsale;
         });
 
         it("should return correct funding status", async function () {
-            expect(await crowdsale.isFundingSuccessful()).to.be.false;
+            expect(await testCrowdsale.isFundingSuccessful()).to.be.false;
             
             // Check current funding period status
-            const currentStatus = await crowdsale.isFundingPeriodActive();
+            const currentStatus = await testCrowdsale.isFundingPeriodActive();
             console.log("Current funding period status:", currentStatus);
             
             // Move to funding period
-            const currentTime = Math.floor(Date.now() / 1000);
+            const currentTime = await ethers.provider.getBlock("latest").then(block => block.timestamp);
             const timeToFunding = Math.max(0, startTime + 3600 - currentTime);
             await ethers.provider.send("evm_increaseTime", [timeToFunding]);
             await ethers.provider.send("evm_mine", []);
-            expect(await crowdsale.isFundingPeriodActive()).to.be.true;
+            expect(await testCrowdsale.isFundingPeriodActive()).to.be.true;
 
             // Move after funding period
-            const timeToAfterFunding = Math.max(0, endTime + 3600 - Math.floor(Date.now() / 1000));
+            const currentTimeAfterFunding = await ethers.provider.getBlock("latest").then(block => block.timestamp);
+            const timeToAfterFunding = Math.max(0, endTime + 3600 - currentTimeAfterFunding);
             await ethers.provider.send("evm_increaseTime", [timeToAfterFunding]);
             await ethers.provider.send("evm_mine", []);
-            expect(await crowdsale.isFundingPeriodActive()).to.be.false;
+            expect(await testCrowdsale.isFundingPeriodActive()).to.be.false;
         });
 
         it("should return correct remaining supply", async function () {
             // Check initial remaining supply (should be maxSupply since no deposits yet)
-            expect(await crowdsale.getRemainingSupply()).to.equal(maxSupply);
+            expect(await testCrowdsale.getRemainingSupply()).to.equal(maxSupply);
 
             // Move to funding period for deposit
-            await ethers.provider.send("evm_increaseTime", [startTime + 60 - Math.floor(Date.now() / 1000)]);
+            const currentTime = await ethers.provider.getBlock("latest").then(block => block.timestamp);
+            const timeToFunding = Math.max(0, startTime + 60 - currentTime);
+            await ethers.provider.send("evm_increaseTime", [timeToFunding]);
             await ethers.provider.send("evm_mine", []);
             
             // After some deposits
             const depositAmount = ethers.parseUnits("1000", TOKEN_DECIMALS);
-            const nonce = await crowdsale.getManagerNonce();
-            const messageHash = await crowdsale.getDepositSignatureMessage(
+            const nonce = await testCrowdsale.getManagerNonce();
+            const messageHash = await testCrowdsale.getDepositSignatureMessage(
                 depositAmount,
                 user1.address,
                 nonce
             );
             const signature = await manager.signMessage(ethers.getBytes(messageHash));
-            await assetToken.connect(user1).approve(await crowdsale.getAddress(), ethers.parseUnits("100000", TOKEN_DECIMALS));
-            await crowdsale.connect(user1).deposit(depositAmount, user1.address, signature);
+            await assetToken.connect(user1).approve(await testCrowdsale.getAddress(), ethers.parseUnits("100000", TOKEN_DECIMALS));
+            await testCrowdsale.connect(user1).deposit(depositAmount, user1.address, signature);
 
             // Calculate expected remaining supply based on actual shares received
-            const actualSharesReceived = await vaultToken.balanceOf(user1.address);
+            const actualSharesReceived = await testVaultToken.balanceOf(user1.address);
             const expectedRemaining = maxSupply - actualSharesReceived;
-            expect(await crowdsale.getRemainingSupply()).to.equal(expectedRemaining);
+            expect(await testCrowdsale.getRemainingSupply()).to.equal(expectedRemaining);
         });
 
         it("should return correct total raised", async function () {
-            expect(await crowdsale.getTotalRaised()).to.equal(0);
+            expect(await testCrowdsale.getTotalRaised()).to.equal(0);
 
             // Move to funding period for deposit
-            await ethers.provider.send("evm_increaseTime", [startTime + 60 - Math.floor(Date.now() / 1000)]);
+            const currentTime = await ethers.provider.getBlock("latest").then(block => block.timestamp);
+            const timeToFunding = Math.max(0, startTime + 60 - currentTime);
+            await ethers.provider.send("evm_increaseTime", [timeToFunding]);
             await ethers.provider.send("evm_mine", []);
             
             const depositAmount = ethers.parseUnits("1000", TOKEN_DECIMALS);
-            const nonce = await crowdsale.getManagerNonce();
-            const messageHash = await crowdsale.getDepositSignatureMessage(
+            const nonce = await testCrowdsale.getManagerNonce();
+            const messageHash = await testCrowdsale.getDepositSignatureMessage(
                 depositAmount,
                 user1.address,
                 nonce
             );
             const signature = await manager.signMessage(ethers.getBytes(messageHash));
-            await assetToken.connect(user1).approve(await crowdsale.getAddress(), ethers.parseUnits("100000", TOKEN_DECIMALS));
-            await crowdsale.connect(user1).deposit(depositAmount, user1.address, signature);
+            await assetToken.connect(user1).approve(await testCrowdsale.getAddress(), ethers.parseUnits("100000", TOKEN_DECIMALS));
+            await testCrowdsale.connect(user1).deposit(depositAmount, user1.address, signature);
 
             // Total raised should be the net amount (after management fee)
-            const expectedTotalRaised = await crowdsale.fundingAssets();
-            expect(await crowdsale.getTotalRaised()).to.equal(expectedTotalRaised);
+            const expectedTotalRaised = await testCrowdsale.fundingAssets();
+            expect(await testCrowdsale.getTotalRaised()).to.equal(expectedTotalRaised);
         });
     });
 
     describe("Signature Query Interface", function () {
+        let testCrowdsale: any;
+        let testVault: any;
+        let testVaultToken: any;
+        
         beforeEach(async function () {
-            // Reset EVM time to a clean state first
-            await ethers.provider.send("evm_setNextBlockTimestamp", [Math.floor(Date.now() / 1000)]);
-            await ethers.provider.send("evm_mine", []);
+            // Reset EVM time to a clean state
+            await resetEVMTime();
             
             // Set independent time for this test suite
-            const baseTime = Math.floor(Date.now() / 1000) + 120;
+            // Get current block time and ensure endTime is far enough in the future
+            const currentBlockTime = await ethers.provider.getBlock("latest").then(block => block.timestamp);
+            const baseTime = Math.max(currentBlockTime + 120, Math.floor(Date.now() / 1000) + 120);
             startTime = baseTime + 60;
             endTime = startTime + 86400;
             
-            await crowdsale.initCrowdsale(
-                await vault.getAddress(),
+            // Create new vault and crowdsale instances using the helper function
+            const { newVault, newVaultToken, newCrowdsale } = await createNewVaultAndCrowdsale(
+                assetToken,
+                fundingReceiver,
+                manageFeeReceiver,
+                manager,
+                validator,
                 startTime,
                 endTime,
-                await assetToken.getAddress(),
                 maxSupply,
                 softCap,
                 sharePrice,
                 minDepositAmount,
                 manageFeeBps,
-                fundingReceiver.address,
-                manageFeeReceiver.address,
-                decimalsMultiplier,
-                manager.address
+                decimalsMultiplier
             );
+            
+            testVault = newVault;
+            testVaultToken = newVaultToken;
+            testCrowdsale = newCrowdsale;
         });
 
         it("should return correct manager nonce", async function () {
-            expect(await crowdsale.getManagerNonce()).to.equal(0);
+            expect(await testCrowdsale.getManagerNonce()).to.equal(0);
 
             // Move to funding period for deposit
-            await ethers.provider.send("evm_increaseTime", [startTime + 60 - Math.floor(Date.now() / 1000)]);
+            const currentTime = await ethers.provider.getBlock("latest").then(block => block.timestamp);
+            const timeToFunding = Math.max(0, startTime + 60 - currentTime);
+            await ethers.provider.send("evm_increaseTime", [timeToFunding]);
             await ethers.provider.send("evm_mine", []);
             
             // After a deposit, nonce should increment
             const depositAmount = ethers.parseUnits("1000", TOKEN_DECIMALS);
-            const nonce = await crowdsale.getManagerNonce();
-            const messageHash = await crowdsale.getDepositSignatureMessage(
+            const nonce = await testCrowdsale.getManagerNonce();
+            const messageHash = await testCrowdsale.getDepositSignatureMessage(
                 depositAmount,
                 user1.address,
                 nonce
             );
             const signature = await manager.signMessage(ethers.getBytes(messageHash));
-            await assetToken.connect(user1).approve(await crowdsale.getAddress(), ethers.parseUnits("100000", TOKEN_DECIMALS));
-            await crowdsale.connect(user1).deposit(depositAmount, user1.address, signature);
+            await assetToken.connect(user1).approve(await testCrowdsale.getAddress(), ethers.parseUnits("100000", TOKEN_DECIMALS));
+            await testCrowdsale.connect(user1).deposit(depositAmount, user1.address, signature);
 
-            expect(await crowdsale.getManagerNonce()).to.equal(1);
+            expect(await testCrowdsale.getManagerNonce()).to.equal(1);
         });
 
         it("should generate correct signature messages", async function () {
@@ -813,8 +793,8 @@ describe("Crowdsale", function () {
             const receiver = user1.address;
             const nonce = 0;
 
-            const depositMessage = await crowdsale.getDepositSignatureMessage(amount, receiver, nonce);
-            const redeemMessage = await crowdsale.getRedeemSignatureMessage(amount, receiver, nonce);
+            const depositMessage = await testCrowdsale.getDepositSignatureMessage(amount, receiver, nonce);
+            const redeemMessage = await testCrowdsale.getRedeemSignatureMessage(amount, receiver, nonce);
 
             expect(depositMessage).to.not.equal(ethers.ZeroHash);
             expect(redeemMessage).to.not.equal(ethers.ZeroHash);

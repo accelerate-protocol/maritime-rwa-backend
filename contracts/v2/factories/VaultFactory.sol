@@ -29,17 +29,10 @@ contract VaultFactory is IVaultFactory, Ownable {
         
         vault = template.clone();
         
-        // 解码initData为VaultUserParams结构体
-        (address validator, bool whitelistEnabled, address[] memory initialWhitelist) = 
-            abi.decode(initData, (address, bool, address[]));
-        
-        // 构造完整的初始化数据，包含manager
+        // 使用统一的 initiate(bytes) 接口
         bytes memory fullInitData = abi.encodeWithSignature(
-            "initVault(address,address,bool,address[])",
-            msg.sender, // manager
-            validator,
-            whitelistEnabled,
-            initialWhitelist
+            "initiate(bytes)",
+            initData
         );
         
         // 调用初始化函数

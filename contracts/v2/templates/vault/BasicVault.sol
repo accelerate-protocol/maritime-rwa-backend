@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -26,8 +26,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     address public override vaultToken;
     address public funding;
     
-    // Whitelist array for easy iteration
-    address[] public whitelistArray;
+
     
     // Initialization state
     bool private _initialized;
@@ -69,8 +68,8 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     // ============ Constructor ============
     
     constructor() {
-        // Empty constructor, supports Clones pattern
-        _transferOwnership(msg.sender);
+        // 设置部署者为临时 owner，在 Clones 模式下会被覆盖
+        // 在 Clones 模式下，owner 将在 initVault 中设置
     }
     
     // ============ Initialization Function ============
@@ -87,7 +86,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         address _validator,
         bool _whitelistEnabled,
         address[] memory _initialWhitelist
-    ) external whenNotInitialized {
+    ) internal whenNotInitialized {
         require(_manager != address(0), "BasicVault: invalid manager");
         require(_validator != address(0), "BasicVault: invalid validator");
         
@@ -102,6 +101,19 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         }
         
         _transferOwnership(_manager);
+    }
+
+    /**
+     * @dev Unified initialization interface
+     * @param _initData Encoded initialization data
+     */
+    function initiate(bytes memory _initData) external override whenNotInitialized {
+        // 解码初始化数据
+        (address _manager, address _validator, bool _whitelistEnabled, address[] memory _initialWhitelist) = 
+            abi.decode(_initData, (address, address, bool, address[]));
+        
+        // 调用原有的初始化逻辑
+        initVault(_manager, _validator, _whitelistEnabled, _initialWhitelist);
     }
     
     // ============ IVault Interface Implementation ============
@@ -122,15 +134,6 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         require(isWhitelisted[_addr], "BasicVault: not whitelisted");
         
         isWhitelisted[_addr] = false;
-        
-        // Remove from array
-        for (uint256 i = 0; i < whitelistArray.length; i++) {
-            if (whitelistArray[i] == _addr) {
-                whitelistArray[i] = whitelistArray[whitelistArray.length - 1];
-                whitelistArray.pop();
-                break;
-            }
-        }
         
         emit WhitelistRemoved(_addr);
     }
@@ -191,7 +194,8 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     /**
      * @dev Unpause token
      */
-    function unpauseToken() external override onlyManager whenInitialized {
+    function unpauseToken() external override whenInitialized {
+        require(msg.sender == manager || msg.sender == funding, "BasicVault: only manager or funding");
         require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).unpause();
         emit TokenUnpaused();
@@ -261,6 +265,10 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         require(vaultToken == address(0), "BasicVault: token already set");
         require(_vaultToken != address(0), "BasicVault: invalid token address");
         vaultToken = _vaultToken;
+        
+        // Note: Token will be paused when it's initialized with this vault
+        // The pause will be handled during token initialization
+        emit TokenPaused();
     }
     
     /**
@@ -285,31 +293,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     
     // ============ Query Functions ============
     
-    /**
-     * @dev Get whitelist length
-     * @return Whitelist length
-     */
-    function getWhitelistLength() external view returns (uint256) {
-        return whitelistArray.length;
-    }
     
-    /**
-     * @dev Get whitelist address
-     * @param index Index
-     * @return Whitelist address
-     */
-    function getWhitelistAddress(uint256 index) external view returns (address) {
-        require(index < whitelistArray.length, "BasicVault: index out of bounds");
-        return whitelistArray[index];
-    }
-    
-    /**
-     * @dev Get complete whitelist
-     * @return Whitelist address array
-     */
-    function getWhitelist() external view returns (address[] memory) {
-        return whitelistArray;
-    }
     
     /**
      * @dev Get funding module address
@@ -338,7 +322,6 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         require(!isWhitelisted[_addr], "BasicVault: already whitelisted");
         
         isWhitelisted[_addr] = true;
-        whitelistArray.push(_addr);
         
         emit WhitelistAdded(_addr);
     }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
 /**
  * @title ICreation
@@ -66,7 +66,7 @@ interface ICreation {
     event VaultCreated(address indexed vault);
     event TokenCreated(address indexed token);
     event FundCreated(address indexed fund);
-    event AccumulatedYieldCreated(address indexed accumulatedYield);
+    event YieldCreated(address indexed accumulatedYield);
     
     event FullDeployment(
         address indexed deployer,

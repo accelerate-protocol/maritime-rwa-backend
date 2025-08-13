@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
 /**
  * @title ICrowdsale
@@ -35,6 +35,7 @@ interface ICrowdsale {
     event OffChainRedeem(address indexed manager, address indexed receiver, uint256 amount);
     event FundingAssetsWithdrawn(address indexed receiver, uint256 amount);
     event ManageFeeWithdrawn(address indexed receiver, uint256 amount);
+    event TokenUnpausedOnFundingSuccess();
 
     // ============ Basic Field Query Interface ============
     function vault() external view returns (address);
@@ -69,6 +70,7 @@ interface ICrowdsale {
     // ============ Fund Management Interface ============
     function withdrawFundingAssets() external;
     function withdrawManageFee() external;
+    function unpauseTokenOnFundingSuccess() external;
 
     // ============ Status Query Interface ============
     function isFundingSuccessful() external view returns (bool);
@@ -80,4 +82,7 @@ interface ICrowdsale {
     function getManagerNonce() external view returns (uint256);
     function getDepositSignatureMessage(uint256 amount, address receiver, uint256 nonce) external view returns (bytes32);
     function getRedeemSignatureMessage(uint256 amount, address receiver, uint256 nonce) external view returns (bytes32);
+    
+    // ============ 统一初始化接口 ============
+    function initiate(address _vault, bytes memory _initData) external;
 } 

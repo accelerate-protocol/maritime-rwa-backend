@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -52,8 +52,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
      * @dev Constructor
      */
     constructor() {
-        // Owner defaults to deployer
-        _transferOwnership(msg.sender);
+        // 在 Clones 模式下，owner 将在 initGlobalPool 中设置
     }
     
     // ============ Global Pool Management ============
@@ -95,13 +94,13 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
      * @param shareToken Share token address
      * @param rewardToken Reward token address
      */
-    function initGlobalPool(
+    function _initGlobalPool(
         address _vault,
         address _manager,
         address _dividendTreasury,
         address shareToken,
         address rewardToken
-    ) external override {
+    ) internal {
         // Can only initialize once, cannot re-initialize
         require(globalPool.shareToken == address(0), "AccumulatedYield: already initialized");
         require(_vault != address(0), "AccumulatedYield: invalid vault");
@@ -128,6 +127,25 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         });
         
         emit GlobalPoolInitialized(shareToken, rewardToken, block.timestamp);
+    }
+
+    /**
+     * @dev Unified initialization interface
+     * @param _vault Vault address
+     * @param _initData Encoded initialization data (contains token and original initData)
+     */
+    function initiate(address _vault, bytes memory _initData) external override {
+        require(_vault != address(0), "AccumulatedYield: invalid vault");
+        
+        // 解码初始化数据：token 和原始的 initData
+        (address token, bytes memory originalInitData) = abi.decode(_initData, (address, bytes));
+        
+        // 解码原始的初始化数据
+        (address rewardToken, address rewardManager, address dividendTreasuryAddr) = 
+            abi.decode(originalInitData, (address, address, address));
+        
+        // 调用原有的初始化逻辑
+        _initGlobalPool(_vault, rewardManager, dividendTreasuryAddr, token, rewardToken);
     }
     
     /**
@@ -197,6 +215,10 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         globalPool.totalDividend += dividendAmount;
         globalPool.lastDividendTime = block.timestamp;
         
+        // Update total accumulated shares: shareTotalSupply * dividendAmount
+        uint256 totalSupply = IERC20(globalPool.shareToken).totalSupply();
+        globalPool.totalAccumulatedShares += totalSupply * dividendAmount;
+        
         emit DividendDistributed(dividendAmount, block.timestamp, validator, signature);
     }
     
@@ -213,7 +235,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         address to,
         uint256 amount
     ) external override {
-        require(msg.sender == globalPool.shareToken, "AccumulatedYield: only share token");
+        require(msg.sender == vault, "AccumulatedYield: only vault can call");
         
         if (from != address(0)) {
             _updateUserPool(from);

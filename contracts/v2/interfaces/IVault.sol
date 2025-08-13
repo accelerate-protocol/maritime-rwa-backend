@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
 /**
  * @title IVault
@@ -50,4 +50,7 @@ interface IVault {
     function setVaultToken(address _vaultToken) external;
     function setFundingModule(address _funding) external;
     function setDividendModule(address _dividendModule) external;
+    
+    // ============ 统一初始化接口 ============
+    function initiate(bytes memory _initData) external;
 } 

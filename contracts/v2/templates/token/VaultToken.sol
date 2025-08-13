@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
@@ -48,7 +48,7 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
     
     constructor() ERC20("", "") {
         // Empty constructor, supports Clones pattern
-        _transferOwnership(msg.sender);
+        // 在 Clones 模式下，owner 将在 initToken 中设置
     }
     
     // ============ Initialization Function ============
@@ -65,7 +65,7 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
         string memory _name,
         string memory _symbol,
         uint8 _decimals
-    ) external whenNotInitialized {
+    ) internal whenNotInitialized {
         require(_vault != address(0), "VaultToken: invalid vault address");
         require(bytes(_name).length > 0, "VaultToken: empty name");
         require(bytes(_symbol).length > 0, "VaultToken: empty symbol");
@@ -79,6 +79,25 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
         
         // Transfer ownership to vault
         _transferOwnership(_vault);
+        
+        // Pause token trading during funding period
+        _pause();
+    }
+
+    /**
+     * @dev Unified initialization interface
+     * @param _vault Vault address
+     * @param _initData Encoded initialization data
+     */
+    function initiate(address _vault, bytes memory _initData) external override whenNotInitialized {
+        require(_vault != address(0), "VaultToken: invalid vault");
+        
+        // 解码初始化数据
+        (string memory _name, string memory _symbol, uint8 _decimals) = 
+            abi.decode(_initData, (string, string, uint8));
+        
+        // 调用原有的初始化逻辑
+        initToken(_vault, _name, _symbol, _decimals);
     }
     
     // ============ IToken Interface Implementation ============
@@ -139,6 +158,7 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
         require(amount > 0, "VaultToken: burn amount must be positive");
         require(balanceOf(account) >= amount, "VaultToken: insufficient balance");
         
+        _spendAllowance(account, _msgSender(), amount);
         _burn(account, amount);
         
         emit TokenBurned(account, amount);
@@ -149,10 +169,11 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
     /**
      * @dev Pause token transfers
      */
-    function pause() external override onlyVault whenInitialized whenNotPaused {
-        _pause();
-        
-        emit TokenPaused();
+    function pause() external override onlyVault whenInitialized {
+        if (!paused()) {
+            _pause();
+            emit TokenPaused();
+        }
     }
     
     /**
@@ -178,8 +199,10 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, amount);
         
-        // Check pause status
-        require(!paused(), "VaultToken: token transfer while paused");
+        // Check pause status (allow minting and burning during pause)
+        if (from != address(0) && to != address(0)) {
+            require(!paused(), "VaultToken: token transfer while paused");
+        }
         
         // Update user's yield before transfer through vault
         if (from != address(0) && to != address(0)) {

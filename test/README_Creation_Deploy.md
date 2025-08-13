@@ -48,7 +48,7 @@ const VaultFactoryContract = await ethers.getContractFactory("VaultFactory");
 const vaultFactory = await VaultFactoryContract.deploy(vaultTemplate.address);
 
 // Deploy yield factory
-const YieldFactoryContract = await ethers.getContractFactory("AccumulatedYieldFactory");
+const YieldFactoryContract = await ethers.getContractFactory("YieldFactory");
 const yieldFactory = await YieldFactoryContract.deploy(yieldTemplate.address);
 
 // Deploy funding factory

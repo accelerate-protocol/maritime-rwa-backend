@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
@@ -87,7 +87,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     
     constructor() {
         // Empty constructor, supports Clones pattern
-        _transferOwnership(msg.sender);
+        // 在 Clones 模式下，owner 将在 initCrowdsale 中设置
     }
     
     // ============ Initialization Function ============
@@ -122,7 +122,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         address _manageFeeReceiver,
         uint256 _decimalsMultiplier,
         address _manager
-    ) external whenNotInitialized {
+    ) internal whenNotInitialized {
         require(_vault != address(0), "Crowdsale: invalid vault");
         require(_startTime < _endTime, "Crowdsale: invalid time range");
         require(_endTime > block.timestamp, "Crowdsale: end time in past");
@@ -152,6 +152,28 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         
         _initialized = true;
         _transferOwnership(_manager);
+    }
+
+    /**
+     * @dev Unified initialization interface
+     * @param _vault Vault address
+     * @param _initData Encoded initialization data
+     */
+    function initiate(address _vault, bytes memory _initData) external override whenNotInitialized {
+        require(_vault != address(0), "Crowdsale: invalid vault");
+        
+        // 解码初始化数据
+        (uint256 _startTime, uint256 _endTime, address _assetToken, uint256 _maxSupply, uint256 _softCap, 
+         uint256 _sharePrice, uint256 _minDepositAmount, uint256 _manageFeeBps, address _fundingReceiver, 
+         address _manageFeeReceiver, uint256 _decimalsMultiplier, address _manager) = 
+            abi.decode(_initData, (uint256, uint256, address, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address));
+        
+        // 调用原有的初始化逻辑
+        initCrowdsale(
+            _vault, _startTime, _endTime, _assetToken, _maxSupply, _softCap, 
+            _sharePrice, _minDepositAmount, _manageFeeBps, _fundingReceiver, 
+            _manageFeeReceiver, _decimalsMultiplier, _manager
+        );
     }
     
     // ============ Funding Operations ============
@@ -439,6 +461,19 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         emit ManageFeeWithdrawn(manageFeeReceiver, amount);
     }
     
+    /**
+     * @dev Unpause token trading when funding is successful
+     * This function should be called after funding period ends and funding is successful
+     */
+    function unpauseTokenOnFundingSuccess() external onlyManager onlyAfterFunding whenInitialized {
+        require(isFundingSuccessful(), "Crowdsale: funding not successful");
+        
+        // Unpause token trading through vault
+        IVault(vault).unpauseToken();
+        
+        emit TokenUnpausedOnFundingSuccess();
+    }
+    
     // ============ Status Queries ============
     
     /**
@@ -477,12 +512,31 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     // ============ Internal Functions ============
     
     /**
+     * @dev Scale up amount by decimalsMultiplier
+     * @param amount Amount to scale up
+     * @return Scaled up amount
+     */
+    function _scaleUp(uint256 amount) internal view returns (uint256) {
+        return amount * decimalsMultiplier;
+    }
+
+    /**
+     * @dev Scale down amount by decimalsMultiplier
+     * @param amount Amount to scale down
+     * @return Scaled down amount
+     */
+    function _scaleDown(uint256 amount) internal view returns (uint256) {
+        return amount / decimalsMultiplier;
+    }
+
+    /**
      * @dev Calculate shares for given asset amount
      * @param assetAmount Asset amount
      * @return Number of shares
      */
     function _getSharesForAssets(uint256 assetAmount) internal view returns (uint256) {
-        return (assetAmount * decimalsMultiplier * SHARE_PRICE_DENOMINATOR) / sharePrice;
+        uint256 scaledAmount = _scaleUp(assetAmount);
+        return (scaledAmount * SHARE_PRICE_DENOMINATOR) / sharePrice;
     }
     
     /**
@@ -491,7 +545,10 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
      * @return Asset amount
      */
     function _getAssetsForShares(uint256 shareAmount) internal view returns (uint256) {
-        return (shareAmount * sharePrice) / (decimalsMultiplier * SHARE_PRICE_DENOMINATOR);
+        // 1. scaledAmount = shareAmount * sharePrice / SHARE_PRICE_DENOMINATOR
+        // 2. then scaleDown
+        uint256 scaledAmount = (shareAmount * sharePrice) / SHARE_PRICE_DENOMINATOR;
+        return _scaleDown(scaledAmount);
     }
     
     // ============ Query Interface ============

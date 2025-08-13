@@ -38,15 +38,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
   console.log("FundFactory 地址:", fundFactory.address);
 
-  // 4. 部署 AccumulatedYieldFactory
-  console.log("部署 AccumulatedYieldFactory...");
-  const accumulatedYieldFactory = await deploy("AccumulatedYieldFactory", {
-    contract: "contracts/v2/factories/AccumulatedYieldFactory.sol:AccumulatedYieldFactory",
+  // 4. 部署 YieldFactory
+  console.log("部署 YieldFactory...");
+  const YieldFactory = await deploy("YieldFactory", {
+    contract: "contracts/v2/factories/YieldFactory.sol:YieldFactory",
     from: deployer,
     args: [],
     log: true,
   });
-  console.log("AccumulatedYieldFactory 地址:", accumulatedYieldFactory.address);
+  console.log("YieldFactory 地址:", YieldFactory.address);
 
   console.log("=== 添加 Mock 模板到工厂 ===");
 
@@ -74,11 +74,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await (await fundFactoryContract.addTemplate(0, mockCrowdsale.address)).wait();
   console.log("MockCrowdsale 已添加到 FundFactory (templateId: 0)");
 
-  // 8. 添加模板到 AccumulatedYieldFactory
-  console.log("添加 MockAccumulatedYield 到 AccumulatedYieldFactory...");
-  const accumulatedYieldFactoryContract = await hre.ethers.getContractAt("contracts/v2/factories/AccumulatedYieldFactory.sol:AccumulatedYieldFactory", accumulatedYieldFactory.address);
-  await (await accumulatedYieldFactoryContract.addTemplate(0, mockAccumulatedYield.address)).wait();
-  console.log("MockAccumulatedYield 已添加到 AccumulatedYieldFactory (templateId: 0)");
+  // 8. 添加模板到 YieldFactory
+  console.log("添加 MockAccumulatedYield 到 YieldFactory...");
+  const YieldFactoryContract = await hre.ethers.getContractAt("contracts/v2/factories/YieldFactory.sol:YieldFactory", YieldFactory.address);
+  await (await YieldFactoryContract.addTemplate(0, mockAccumulatedYield.address)).wait();
+  console.log("MockAccumulatedYield 已添加到 YieldFactory (templateId: 0)");
 
   console.log("=== V2 工厂合约部署完成 ===");
 };
