@@ -111,7 +111,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     ) external override onlyManager whenInitialized {
         if (isActive) {
             // require funding successful
-            require(IVault(vault).isFundingSuccessful(), "AccumulatedYield: funding not successful");
+            require(IVault(vault).isFundingSuccessful(), "AccumulatedYield: funding was not successful");
         }
         globalPool.isActive = isActive;
     }

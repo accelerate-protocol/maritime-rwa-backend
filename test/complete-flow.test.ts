@@ -350,7 +350,7 @@ describe("V2 架构完整业务流程测试", function () {
             // 在融资成功之前，无法激活收益模块
             await expect(
                 accumulatedYield.connect(manager).updateGlobalPoolStatus(true)
-            ).to.be.revertedWith("AccumulatedYield: funding not successful");
+            ).to.be.revertedWith("AccumulatedYield: funding was not successful");
 
             // 进行大额deposit使融资成功
             await performLargeDeposit(TEST_CONFIG.ABOVE_SOFT_CAP_AMOUNT);
@@ -486,7 +486,7 @@ describe("V2 架构完整业务流程测试", function () {
             // 尝试解锁代币（应该失败）
             await expect(
                 fund.connect(manager).unpauseTokenOnFundingSuccess()
-            ).to.be.revertedWith("Crowdsale: funding not successful");
+            ).to.be.revertedWith("Crowdsale: funding was not successful");
 
             // 验证代币仍然被暂停
             expect(await token.paused()).to.be.true;
@@ -903,7 +903,7 @@ describe("V2 架构完整业务流程测试", function () {
 
             await expect(
                 fund.connect(manager).offChainRedeem(user1.address)
-            ).to.be.revertedWith("Crowdsale: funding period not ended");
+            ).to.be.revertedWith("Crowdsale: funding was successful");
 
             const userBalanceAfterRedeem = await token.balanceOf(user1.address);
             expect(userBalance).to.be.equal(userBalanceAfterRedeem);
@@ -1197,7 +1197,7 @@ describe("V2 架构完整业务流程测试", function () {
             // 激活收益模块
             await expect(
                 accumulatedYield.connect(manager).updateGlobalPoolStatus(true)
-            ).to.be.revertedWith("AccumulatedYield: funding not successful");
+            ).to.be.revertedWith("AccumulatedYield: funding was not successful");
         });
 
         //
@@ -1210,7 +1210,7 @@ describe("V2 架构完整业务流程测试", function () {
             // 分发分红
             await expect(
                 distributeDividend()
-            ).to.be.revertedWith("AccumulatedYield: funding not successful");
+            ).to.be.revertedWith("AccumulatedYield: funding was not successful");
         });
 
         it("应拒绝在融资成功后激活收益模块前执行分红", async function () {
@@ -2048,7 +2048,7 @@ describe("V2 架构完整业务流程测试", function () {
 
             await expect(
                 fund.connect(manager).withdrawFundingAssets()
-            ).to.revertedWith("Crowdsale: funding not successful");
+            ).to.revertedWith("Crowdsale: funding was not successful");
         });
 
         it("提取管理费应该为0", async function () {
@@ -2126,7 +2126,7 @@ describe("V2 架构完整业务流程测试", function () {
 
             await expect(
                 fund.connect(manager).withdrawManageFee()
-            ).to.revertedWith("Crowdsale: funding not successful");
+            ).to.revertedWith("Crowdsale: funding was not successful");
         });
 
        

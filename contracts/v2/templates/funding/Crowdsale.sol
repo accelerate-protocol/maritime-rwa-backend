@@ -56,12 +56,20 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     }
     
     modifier onlyDuringFunding() {
+        require(!isFundingSuccessful(), "Crowdsale: funding was successful");
         require(isFundingPeriodActive(), "Crowdsale: not in funding period");
         _;
     }
     
-    modifier onlyAfterFunding() {
+
+    modifier onlyAfterFundingFailed() {
+        require(!isFundingSuccessful(), "Crowdsale: funding was successful");
         require(block.timestamp > endTime, "Crowdsale: funding period not ended");
+        _;
+    }
+
+    modifier onlyAfterFundingSuccess() {
+        require(isFundingSuccessful(), "Crowdsale: funding was not successful");
         _;
     }
     
@@ -198,7 +206,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     function redeem(address receiver, bytes memory signature) 
         external 
         override 
-        onlyAfterFunding 
+        onlyAfterFundingFailed 
         whenInitialized
         nonReentrant 
     {
@@ -322,7 +330,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         external 
         override 
         onlyManager 
-        onlyAfterFunding 
+        onlyAfterFundingFailed 
         whenInitialized
     {
         require(!isFundingSuccessful(), "Crowdsale: funding was successful");
@@ -346,8 +354,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     /**
      * @dev Withdraw funding assets (only when funding is successful)
      */
-    function withdrawFundingAssets() external override onlyManager onlyAfterFunding whenInitialized nonReentrant {
-        require(isFundingSuccessful(), "Crowdsale: funding not successful");
+    function withdrawFundingAssets() external override onlyManager onlyAfterFundingSuccess whenInitialized nonReentrant {
         require(fundingAssets > 0, "Crowdsale: no funding assets");
         
         uint256 amount = fundingAssets;
@@ -361,8 +368,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     /**
      * @dev Withdraw management fee (only when funding is successful)
      */
-    function withdrawManageFee() external override onlyManager onlyAfterFunding whenInitialized nonReentrant {
-        require(isFundingSuccessful(), "Crowdsale: funding not successful");
+    function withdrawManageFee() external override onlyManager onlyAfterFundingSuccess whenInitialized nonReentrant {
         require(manageFee > 0, "Crowdsale: no manage fee");
         
         uint256 amount = manageFee;
@@ -377,9 +383,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
      * @dev Unpause token trading when funding is successful
      * This function should be called after funding period ends and funding is successful
      */
-    function unpauseTokenOnFundingSuccess() external onlyManager onlyAfterFunding whenInitialized {
-        require(isFundingSuccessful(), "Crowdsale: funding not successful");
-        
+    function unpauseTokenOnFundingSuccess() external onlyManager onlyAfterFundingSuccess whenInitialized {
         // Unpause token trading through vault
         IVault(vault).unpauseToken();
         
