@@ -48,9 +48,9 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         _;
     }
     
-    modifier whenWhitelistEnabled() {
+    modifier whenWhitelisted(address user) {
         if (whitelistEnabled) {
-            require(isWhitelisted[msg.sender], "BasicVault: not whitelisted");
+            require(isWhitelisted[user], "BasicVault: not whitelisted");
         }
         _;
     }
@@ -68,52 +68,21 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     // ============ Constructor ============
     
     constructor() {
-        // 设置部署者为临时 owner，在 Clones 模式下会被覆盖
-        // 在 Clones 模式下，owner 将在 initVault 中设置
     }
     
     // ============ Initialization Function ============
     
-    /**
-     * @dev Initialize vault (for Clones pattern)
-     * @param _manager Manager address
-     * @param _validator Validator address
-     * @param _whitelistEnabled Whether to enable whitelist
-     * @param _initialWhitelist Initial whitelist addresses
-     */
-    function initVault(
-        address _manager,
-        address _validator,
-        bool _whitelistEnabled,
-        address[] memory _initialWhitelist
-    ) internal whenNotInitialized {
-        require(_manager != address(0), "BasicVault: invalid manager");
-        require(_validator != address(0), "BasicVault: invalid validator");
-        
-        manager = _manager;
-        validator = _validator;
-        whitelistEnabled = _whitelistEnabled;
-        _initialized = true;
-        
-        // Add initial whitelist
-        for (uint256 i = 0; i < _initialWhitelist.length; i++) {
-            _addToWhitelist(_initialWhitelist[i]);
-        }
-        
-        _transferOwnership(_manager);
-    }
 
     /**
      * @dev Unified initialization interface
      * @param _initData Encoded initialization data
      */
     function initiate(bytes memory _initData) external override whenNotInitialized {
-        // 解码初始化数据
+        // decode init data
         (address _manager, address _validator, bool _whitelistEnabled, address[] memory _initialWhitelist) = 
             abi.decode(_initData, (address, address, bool, address[]));
         
-        // 调用原有的初始化逻辑
-        initVault(_manager, _validator, _whitelistEnabled, _initialWhitelist);
+        _initVault(_manager, _validator, _whitelistEnabled, _initialWhitelist);
     }
     
     // ============ IVault Interface Implementation ============
@@ -217,7 +186,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @param to Recipient address
      * @param amount Amount to mint
      */
-    function mintToken(address to, uint256 amount) external override onlyFunding whenInitialized {
+    function mintToken(address to, uint256 amount) external override onlyFunding whenInitialized whenWhitelisted(to) {
         require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).mint(to, amount);
     }
@@ -227,18 +196,18 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @param from Address to burn from
      * @param amount Amount to burn
      */
-    function burnToken(address from, uint256 amount) external override onlyFunding whenInitialized {
+    function burnToken(address from, uint256 amount) external override onlyFunding whenInitialized whenWhitelisted(from) {
         require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).burnFrom(from, amount);
     }
     
     /**
-     * @dev Update user pools on transfer through vault
+     * @dev Hook called on token transfer
      * @param from From address
      * @param to To address
      * @param amount Transfer amount
      */
-    function updateUserPoolsOnTransfer(address from, address to, uint256 amount) external override whenInitialized {
+    function onTokenTransfer(address from, address to, uint256 amount) external override whenInitialized whenWhitelisted(from) whenWhitelisted(to) {
         require(msg.sender == vaultToken, "BasicVault: only token can call");
         if (accumulatedYield != address(0) && from != address(0) && to != address(0)) {
             (bool success, ) = accumulatedYield.call(
@@ -250,7 +219,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
                 )
             );
             if (!success) {
-                revert("BasicVault: updateUserPoolsOnTransfer failed");
+                revert("BasicVault: onTokenTransfer failed");
             }
         }
     }
@@ -341,6 +310,35 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         isWhitelisted[_addr] = true;
         
         emit WhitelistAdded(_addr);
+    }
+
+    /**
+     * @dev Initialize vault (for Clones pattern)
+     * @param _manager Manager address
+     * @param _validator Validator address
+     * @param _whitelistEnabled Whether to enable whitelist
+     * @param _initialWhitelist Initial whitelist addresses
+     */
+    function _initVault(
+        address _manager,
+        address _validator,
+        bool _whitelistEnabled,
+        address[] memory _initialWhitelist
+    ) internal whenNotInitialized {
+        require(_manager != address(0), "BasicVault: invalid manager");
+        require(_validator != address(0), "BasicVault: invalid validator");
+        
+        manager = _manager;
+        validator = _validator;
+        whitelistEnabled = _whitelistEnabled;
+        _initialized = true;
+        
+        // Add initial whitelist
+        for (uint256 i = 0; i < _initialWhitelist.length; i++) {
+            _addToWhitelist(_initialWhitelist[i]);
+        }
+        
+        _transferOwnership(_manager);
     }
     
     // ============ Query Interface ============

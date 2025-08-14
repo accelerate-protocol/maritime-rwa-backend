@@ -20,7 +20,7 @@ contract VaultFactory is IVaultFactory, Ownable {
             templateCount = templateId + 1;
         }
         
-        // emit TemplateAdded(templateId, template);
+        emit TemplateAdded(templateId, template);
     }
     
     function createVault(uint256 templateId, bytes memory initData) external override returns (address vault) {
@@ -29,13 +29,11 @@ contract VaultFactory is IVaultFactory, Ownable {
         
         vault = template.clone();
         
-        // 使用统一的 initiate(bytes) 接口
         bytes memory fullInitData = abi.encodeWithSignature(
             "initiate(bytes)",
             initData
         );
         
-        // 调用初始化函数
         (bool success, ) = vault.call(fullInitData);
         require(success, "VaultFactory: initialization failed");
         

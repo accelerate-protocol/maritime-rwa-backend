@@ -19,6 +19,7 @@ contract YieldFactory is IYieldFactory, Ownable {
         if (templateId >= templateCount) {
             templateCount = templateId + 1;
         }
+        emit TemplateAdded(templateId, template);
     }
     
     function createYield(uint256 templateId, address vault, address vaultToken, bytes memory initData) external override returns (address accumulatedYield) {

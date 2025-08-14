@@ -19,6 +19,7 @@ contract FundFactory is IFundFactory, Ownable {
         if (templateId >= templateCount) {
             templateCount = templateId + 1;
         }
+        emit TemplateAdded(templateId, template);
     }
     
     function createFund(uint256 templateId, address vault, bytes memory initData) external override returns (address fund) {
@@ -27,13 +28,11 @@ contract FundFactory is IFundFactory, Ownable {
         
         fund = template.clone();
         
-        // 使用统一的 initiate(address, bytes) 接口
         bytes memory fullInitData = abi.encodeWithSignature(
             "initiate(address,bytes)",
             vault, initData
         );
         
-        // 调用初始化函数
         (bool success, ) = fund.call(fullInitData);
         require(success, "FundFactory: initialization failed");
         

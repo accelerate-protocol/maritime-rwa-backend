@@ -65,14 +65,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         _;
     }
     
-    modifier whenWhitelisted(address user) {
-        IVault vaultContract = IVault(vault);
-        if (vaultContract.whitelistEnabled()) {
-            require(vaultContract.isWhitelisted(user), "Crowdsale: not whitelisted");
-        }
-        _;
-    }
-    
     modifier whenInitialized() {
         require(_initialized, "Crowdsale: not initialized");
         _;
@@ -86,73 +78,9 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     // ============ Constructor ============
     
     constructor() {
-        // Empty constructor, supports Clones pattern
-        // 在 Clones 模式下，owner 将在 initCrowdsale 中设置
     }
     
     // ============ Initialization Function ============
-    
-    /**
-     * @dev _Initialize crowdsale contract (for Clones pattern)
-     * @param _vault Vault contract address
-     * @param _startTime Start time
-     * @param _endTime End time
-     * @param _assetToken Asset token address
-     * @param _maxSupply Maximum supply
-     * @param _softCap Soft cap (funding threshold)
-     * @param _sharePrice Share price
-     * @param _minDepositAmount Minimum deposit amount
-     * @param _manageFeeBps Management fee basis points
-     * @param _fundingReceiver Funding receiver address
-     * @param _manageFeeReceiver Management fee receiver address
-     * @param _decimalsMultiplier Decimals multiplier
-     * @param _manager Manager address
-     */
-    function _initCrowdsale(
-        address _vault,
-        uint256 _startTime,
-        uint256 _endTime,
-        address _assetToken,
-        uint256 _maxSupply,
-        uint256 _softCap,
-        uint256 _sharePrice,
-        uint256 _minDepositAmount,
-        uint256 _manageFeeBps,
-        address _fundingReceiver,
-        address _manageFeeReceiver,
-        uint256 _decimalsMultiplier,
-        address _manager
-    ) internal whenNotInitialized {
-        require(_vault != address(0), "Crowdsale: invalid vault");
-        require(_startTime < _endTime, "Crowdsale: invalid time range");
-        require(_endTime > block.timestamp, "Crowdsale: end time in past");
-        require(_assetToken != address(0), "Crowdsale: invalid asset token");
-        require(_maxSupply > 0, "Crowdsale: invalid max supply");
-        require(_softCap > 0 && _softCap <= _maxSupply, "Crowdsale: invalid soft cap");
-        require(_sharePrice > 0, "Crowdsale: invalid share price");
-        require(_minDepositAmount > 0, "Crowdsale: invalid min deposit");
-        require(_manageFeeBps <= BPS_DENOMINATOR, "Crowdsale: invalid manage fee");
-        require(_fundingReceiver != address(0), "Crowdsale: invalid funding receiver");
-        require(_manageFeeReceiver != address(0), "Crowdsale: invalid fee receiver");
-        require(_manager != address(0), "Crowdsale: invalid manager");
-        
-        vault = _vault;
-        startTime = _startTime;
-        endTime = _endTime;
-        assetToken = _assetToken;
-        maxSupply = _maxSupply;
-        softCap = _softCap;
-        sharePrice = _sharePrice;
-        minDepositAmount = _minDepositAmount;
-        manageFeeBps = _manageFeeBps;
-        fundingReceiver = _fundingReceiver;
-        manageFeeReceiver = _manageFeeReceiver;
-        decimalsMultiplier = _decimalsMultiplier;
-        manager = _manager;
-        
-        _initialized = true;
-        _transferOwnership(_manager);
-    }
 
     /**
      * @dev Unified initialization interface
@@ -162,7 +90,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     function initiate(address _vault, bytes memory _initData) external override whenNotInitialized {
         require(_vault != address(0), "Crowdsale: invalid vault");
         
-        // 解码初始化数据
         (uint256 _startTime, uint256 _endTime, address _assetToken, uint256 _maxSupply, uint256 _softCap, 
          uint256 _sharePrice, uint256 _minDepositAmount, uint256 _manageFeeBps, address _fundingReceiver, 
          address _manageFeeReceiver, uint256 _decimalsMultiplier, address _manager) = 
@@ -188,8 +115,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         external 
         override 
         onlyDuringFunding 
-        whenWhitelisted(msg.sender) 
-        whenWhitelisted(receiver) 
         whenInitialized
         nonReentrant 
         returns (uint256 shares) 
@@ -274,7 +199,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         external 
         override 
         onlyAfterFunding 
-        whenWhitelisted(msg.sender) 
         whenInitialized
         nonReentrant 
     {
@@ -498,6 +422,68 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     }
     
     // ============ Internal Functions ============
+
+    /**
+     * @dev _Initialize crowdsale contract (for Clones pattern)
+     * @param _vault Vault contract address
+     * @param _startTime Start time
+     * @param _endTime End time
+     * @param _assetToken Asset token address
+     * @param _maxSupply Maximum supply
+     * @param _softCap Soft cap (funding threshold)
+     * @param _sharePrice Share price
+     * @param _minDepositAmount Minimum deposit amount
+     * @param _manageFeeBps Management fee basis points
+     * @param _fundingReceiver Funding receiver address
+     * @param _manageFeeReceiver Management fee receiver address
+     * @param _decimalsMultiplier Decimals multiplier
+     * @param _manager Manager address
+     */
+    function _initCrowdsale(
+        address _vault,
+        uint256 _startTime,
+        uint256 _endTime,
+        address _assetToken,
+        uint256 _maxSupply,
+        uint256 _softCap,
+        uint256 _sharePrice,
+        uint256 _minDepositAmount,
+        uint256 _manageFeeBps,
+        address _fundingReceiver,
+        address _manageFeeReceiver,
+        uint256 _decimalsMultiplier,
+        address _manager
+    ) internal whenNotInitialized {
+        require(_vault != address(0), "Crowdsale: invalid vault");
+        require(_startTime < _endTime, "Crowdsale: invalid time range");
+        require(_endTime > block.timestamp, "Crowdsale: end time in past");
+        require(_assetToken != address(0), "Crowdsale: invalid asset token");
+        require(_maxSupply > 0, "Crowdsale: invalid max supply");
+        require(_softCap > 0 && _softCap <= _maxSupply, "Crowdsale: invalid soft cap");
+        require(_sharePrice > 0, "Crowdsale: invalid share price");
+        require(_minDepositAmount > 0, "Crowdsale: invalid min deposit");
+        require(_manageFeeBps <= BPS_DENOMINATOR, "Crowdsale: invalid manage fee");
+        require(_fundingReceiver != address(0), "Crowdsale: invalid funding receiver");
+        require(_manageFeeReceiver != address(0), "Crowdsale: invalid fee receiver");
+        require(_manager != address(0), "Crowdsale: invalid manager");
+        
+        vault = _vault;
+        startTime = _startTime;
+        endTime = _endTime;
+        assetToken = _assetToken;
+        maxSupply = _maxSupply;
+        softCap = _softCap;
+        sharePrice = _sharePrice;
+        minDepositAmount = _minDepositAmount;
+        manageFeeBps = _manageFeeBps;
+        fundingReceiver = _fundingReceiver;
+        manageFeeReceiver = _manageFeeReceiver;
+        decimalsMultiplier = _decimalsMultiplier;
+        manager = _manager;
+        
+        _initialized = true;
+        _transferOwnership(_manager);
+    }
     
     /**
      * @dev Scale up amount by decimalsMultiplier
@@ -601,6 +587,4 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         ));
         return messageHash;
     }
-    
-
 } 

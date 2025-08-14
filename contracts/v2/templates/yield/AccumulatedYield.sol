@@ -84,49 +84,6 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         
         emit DividendTreasuryUpdated(oldTreasury, _dividendTreasury);
     }
-    
-    /**
-     * @dev Initialize global yield pool
-     * @param _vault Vault contract address
-     * @param _manager Manager address
-     * @param _dividendTreasury Dividend treasury address
-     * @param shareToken Share token address
-     * @param rewardToken Reward token address
-     */
-    function _initGlobalPool(
-        address _vault,
-        address _manager,
-        address _dividendTreasury,
-        address shareToken,
-        address rewardToken
-    ) internal {
-        // Can only initialize once, cannot re-initialize
-        require(globalPool.shareToken == address(0), "AccumulatedYield: already initialized");
-        require(_vault != address(0), "AccumulatedYield: invalid vault");
-        require(_manager != address(0), "AccumulatedYield: invalid manager");
-        require(_dividendTreasury != address(0), "AccumulatedYield: invalid dividend treasury");
-        require(shareToken != address(0), "AccumulatedYield: invalid share token");
-        require(rewardToken != address(0), "AccumulatedYield: invalid reward token");
-        
-        // Set vault, manager and dividendTreasury
-        vault = _vault;
-        manager = _manager;
-        dividendTreasury = _dividendTreasury;
-        
-        // Set owner as manager
-        _transferOwnership(_manager);
-        
-        globalPool = GlobalPoolInfo({
-            totalAccumulatedShares: 0,
-            lastDividendTime: block.timestamp,
-            totalDividend: 0,
-            isActive: false,
-            shareToken: shareToken,
-            rewardToken: rewardToken
-        });
-        
-        emit GlobalPoolInitialized(shareToken, rewardToken, block.timestamp);
-    }
 
     /**
      * @dev Unified initialization interface
@@ -153,7 +110,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         bool isActive
     ) external override onlyManager whenInitialized {
         if (isActive) {
-            // 只有在激活时才检查融资状态
+            // require funding successful
             require(IVault(vault).isFundingSuccessful(), "AccumulatedYield: funding not successful");
         }
         globalPool.isActive = isActive;
@@ -339,6 +296,48 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
 
     
     // ============ Internal Functions ============
+    /**
+     * @dev Initialize global yield pool
+     * @param _vault Vault contract address
+     * @param _manager Manager address
+     * @param _dividendTreasury Dividend treasury address
+     * @param shareToken Share token address
+     * @param rewardToken Reward token address
+     */
+    function _initGlobalPool(
+        address _vault,
+        address _manager,
+        address _dividendTreasury,
+        address shareToken,
+        address rewardToken
+    ) internal {
+        // Can only initialize once, cannot re-initialize
+        require(globalPool.shareToken == address(0), "AccumulatedYield: already initialized");
+        require(_vault != address(0), "AccumulatedYield: invalid vault");
+        require(_manager != address(0), "AccumulatedYield: invalid manager");
+        require(_dividendTreasury != address(0), "AccumulatedYield: invalid dividend treasury");
+        require(shareToken != address(0), "AccumulatedYield: invalid share token");
+        require(rewardToken != address(0), "AccumulatedYield: invalid reward token");
+        
+        // Set vault, manager and dividendTreasury
+        vault = _vault;
+        manager = _manager;
+        dividendTreasury = _dividendTreasury;
+        
+        // Set owner as manager
+        _transferOwnership(_manager);
+        
+        globalPool = GlobalPoolInfo({
+            totalAccumulatedShares: 0,
+            lastDividendTime: block.timestamp,
+            totalDividend: 0,
+            isActive: false,
+            shareToken: shareToken,
+            rewardToken: rewardToken
+        });
+        
+        emit GlobalPoolInitialized(shareToken, rewardToken, block.timestamp);
+    }
     
     /**
      * @dev Update user pool information

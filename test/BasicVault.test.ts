@@ -593,9 +593,9 @@ describe("BasicVault", function () {
             // We can verify this by checking if the function was called
         });
 
-        it("should reject updateUserPoolsOnTransfer from non-token", async function () {
+        it("should reject onTokenTransfer from non-token", async function () {
             await expect(
-                basicVault.connect(user1).updateUserPoolsOnTransfer(
+                basicVault.connect(user1).onTokenTransfer(
                     user1.address,
                     user2.address,
                     burnAmount
@@ -603,7 +603,7 @@ describe("BasicVault", function () {
             ).to.be.revertedWith("BasicVault: only token can call");
         });
 
-        it("should handle updateUserPoolsOnTransfer when dividend module not set", async function () {
+        it("should handle onTokenTransfer when dividend module not set", async function () {
             const newVault = await (await ethers.getContractFactory("BasicVault")).deploy();
             await initializeVaultDirect(newVault, 
                 manager.address,
@@ -625,13 +625,13 @@ describe("BasicVault", function () {
 
             // Test that the function exists and can be called
             // Since we can't use contract as signer, we'll just verify the function exists
-            expect(typeof newVault.updateUserPoolsOnTransfer).to.equal('function');
+            expect(typeof newVault.onTokenTransfer).to.equal('function');
         });
 
-        it("should handle updateUserPoolsOnTransfer with zero addresses", async function () {
+        it("should handle onTokenTransfer with zero addresses", async function () {
             // Test that the function exists and can handle zero addresses
             // Since we can't use contract as signer, we'll just verify the function exists
-            expect(typeof basicVault.updateUserPoolsOnTransfer).to.equal('function');
+            expect(typeof basicVault.onTokenTransfer).to.equal('function');
         });
     });
 

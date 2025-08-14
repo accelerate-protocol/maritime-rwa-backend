@@ -43,8 +43,8 @@ interface IVault {
     function mintToken(address to, uint256 amount) external;
     function burnToken(address from, uint256 amount) external;
     
-    // ============ 收益更新接口 ============
-    function updateUserPoolsOnTransfer(address from, address to, uint256 amount) external;
+    // ============ transfer hook接口 ============
+    function onTokenTransfer(address from, address to, uint256 amount) external;
     
     // ============ 模块配置接口 ============
     function setVaultToken(address _vaultToken) external;

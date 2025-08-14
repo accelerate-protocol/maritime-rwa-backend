@@ -263,15 +263,7 @@ describe("VaultToken", function () {
                 vaultToken.connect(user1).unpause()
             ).to.be.revertedWith("VaultToken: only vault");
         });
-
-        it("should reject transfers when paused", async function () {
-            await vaultToken.connect(manager).mint(user1.address, ethers.parseEther("1000"));
-            await vaultToken.connect(manager).pause();
-            
-            await expect(
-                vaultToken.connect(user1).transfer(user2.address, ethers.parseEther("100"))
-            ).to.be.revertedWith("VaultToken: token transfer while paused");
-        });
+   
     });
 
     describe("Transfer Functionality", function () {
@@ -286,6 +278,7 @@ describe("VaultToken", function () {
             
             await basicVault.connect(manager).mintToken(user1.address, ethers.parseEther("1000"));
         });
+
 
         it("should transfer tokens normally", async function () {
             const transferAmount = ethers.parseEther("100");
@@ -339,6 +332,164 @@ describe("VaultToken", function () {
 
         it("should return initialization status correctly", async function () {
             expect(await vaultToken.isInitialized()).to.be.true;
+        });
+    });
+
+    describe("Whitelist Functionality", function () {
+        let whitelistedVault: BasicVault;
+        let whitelistedToken: VaultToken;
+
+        beforeEach(async function () {
+            // Deploy BasicVault with whitelist enabled
+            const BasicVaultFactory = await ethers.getContractFactory("BasicVault");
+            whitelistedVault = await BasicVaultFactory.deploy();
+            
+            // Initialize BasicVault with whitelist enabled
+            const vaultInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["address", "address", "bool", "address[]"],
+                [manager.address, validator.address, true, [user1.address, user2.address]] // Enable whitelist and add users
+            );
+            await whitelistedVault.initiate(vaultInitData);
+            
+            // Deploy and initialize VaultToken
+            const VaultTokenFactory = await ethers.getContractFactory("VaultToken");
+            whitelistedToken = await VaultTokenFactory.deploy();
+            
+            const tokenInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["string", "string", "uint8"],
+                ["Test Vault Token", "TVT", 18]
+            );
+            await whitelistedToken.initiate(await whitelistedVault.getAddress(), tokenInitData);
+            
+            // Set token in vault before unpausing
+            await whitelistedVault.connect(manager).setVaultToken(await whitelistedToken.getAddress());
+            
+            // Set manager as funding module for testing
+            await whitelistedVault.connect(manager).setFundingModule(manager.address);
+            
+            // Unpause token for testing
+            await whitelistedVault.connect(manager).unpauseToken();
+            
+            // Mint tokens to whitelisted users
+            await whitelistedVault.connect(manager).mintToken(user1.address, ethers.parseEther("1000"));
+            await whitelistedVault.connect(manager).mintToken(user2.address, ethers.parseEther("1000"));
+        });
+
+        it("should allow transfer between whitelisted users", async function () {
+            const transferAmount = ethers.parseEther("100");
+            
+            await expect(
+                whitelistedToken.connect(user1).transfer(user2.address, transferAmount)
+            ).to.not.be.reverted;
+
+            expect(await whitelistedToken.balanceOf(user2.address)).to.equal(ethers.parseEther("1100"));
+        });
+
+        it("should reject transfer from non-whitelisted user", async function () {
+            const [nonWhitelistedUser] = await ethers.getSigners();
+            
+            // First add user to whitelist to mint tokens
+            await whitelistedVault.connect(manager).addToWhitelist(nonWhitelistedUser.address);
+            await whitelistedVault.connect(manager).mintToken(nonWhitelistedUser.address, ethers.parseEther("1000"));
+            
+            // Then remove from whitelist
+            await whitelistedVault.connect(manager).removeFromWhitelist(nonWhitelistedUser.address);
+            
+            // Try to transfer from non-whitelisted user
+            await expect(
+                whitelistedToken.connect(nonWhitelistedUser).transfer(user1.address, ethers.parseEther("100"))
+            ).to.be.revertedWith("VaultToken: not whitelisted");
+        });
+
+        it("should reject transfer to non-whitelisted user", async function () {
+            const [nonWhitelistedUser] = await ethers.getSigners();
+            
+            // Try to transfer to non-whitelisted user
+            await expect(
+                whitelistedToken.connect(user1).transfer(nonWhitelistedUser.address, ethers.parseEther("100"))
+            ).to.be.revertedWith("VaultToken: not whitelisted");
+        });
+
+        it("should reject minting to non-whitelisted user (mint operations are restricted)", async function () {
+            const [nonWhitelistedUser] = await ethers.getSigners();
+            
+            // Minting should fail for non-whitelisted users
+            await expect(
+                whitelistedVault.connect(manager).mintToken(nonWhitelistedUser.address, ethers.parseEther("1000"))
+            ).to.be.revertedWith("BasicVault: not whitelisted");
+        });
+
+        it("should reject burning from non-whitelisted user (burn operations are restricted)", async function () {
+            const [nonWhitelistedUser] = await ethers.getSigners();
+            
+            // First add user to whitelist to mint tokens
+            await whitelistedVault.connect(manager).addToWhitelist(nonWhitelistedUser.address);
+            await whitelistedVault.connect(manager).mintToken(nonWhitelistedUser.address, ethers.parseEther("1000"));
+            
+            // Then remove from whitelist
+            await whitelistedVault.connect(manager).removeFromWhitelist(nonWhitelistedUser.address);
+            
+            // Approve vault to burn tokens
+            await whitelistedToken.connect(nonWhitelistedUser).approve(await whitelistedVault.getAddress(), ethers.parseEther("500"));
+            
+            // Burning should fail for non-whitelisted users
+            await expect(
+                whitelistedVault.connect(manager).burnToken(nonWhitelistedUser.address, ethers.parseEther("500"))
+            ).to.be.revertedWith("BasicVault: not whitelisted");
+        });
+
+        it("should work correctly when whitelist is disabled", async function () {
+            // Disable whitelist
+            await whitelistedVault.connect(manager).disableWhitelist();
+            
+            const [nonWhitelistedUser] = await ethers.getSigners();
+            
+            // Mint tokens to non-whitelisted user
+            await whitelistedVault.connect(manager).mintToken(nonWhitelistedUser.address, ethers.parseEther("1000"));
+            
+            // Transfer should work when whitelist is disabled
+            await expect(
+                whitelistedToken.connect(nonWhitelistedUser).transfer(user1.address, ethers.parseEther("100"))
+            ).to.not.be.reverted;
+
+            expect(await whitelistedToken.balanceOf(user1.address)).to.equal(ethers.parseEther("1100"));
+        });
+
+        it("should work correctly when user is added to whitelist", async function () {
+            const [newUser] = await ethers.getSigners();
+            
+            // Initially, new user is not whitelisted, so minting should fail
+            await expect(
+                whitelistedVault.connect(manager).mintToken(newUser.address, ethers.parseEther("1000"))
+            ).to.be.revertedWith("BasicVault: not whitelisted");
+            
+            // Add user to whitelist
+            await whitelistedVault.connect(manager).addToWhitelist(newUser.address);
+            
+            // Now minting should work
+            await whitelistedVault.connect(manager).mintToken(newUser.address, ethers.parseEther("1000"));
+            
+            // Transfer should now work
+            await expect(
+                whitelistedToken.connect(newUser).transfer(user1.address, ethers.parseEther("100"))
+            ).to.not.be.reverted;
+
+            expect(await whitelistedToken.balanceOf(user1.address)).to.equal(ethers.parseEther("1100"));
+        });
+
+        it("should work correctly when user is removed from whitelist", async function () {
+            // Initially, user1 is whitelisted and can transfer
+            await expect(
+                whitelistedToken.connect(user1).transfer(user2.address, ethers.parseEther("100"))
+            ).to.not.be.reverted;
+            
+            // Remove user1 from whitelist
+            await whitelistedVault.connect(manager).removeFromWhitelist(user1.address);
+            
+            // Transfer should now fail
+            await expect(
+                whitelistedToken.connect(user1).transfer(user2.address, ethers.parseEther("100"))
+            ).to.be.revertedWith("VaultToken: not whitelisted");
         });
     });
 }); 

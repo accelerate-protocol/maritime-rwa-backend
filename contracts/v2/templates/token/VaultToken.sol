@@ -33,6 +33,17 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
         require(msg.sender == vault, "VaultToken: only vault");
         _;
     }
+
+    modifier whenWhitelisted(address user) {
+        // Skip whitelist check for mint (from = address(0)) and burn (to = address(0)) operations
+        if (user != address(0)) {
+            IVault vaultContract = IVault(vault);
+            if (vaultContract.whitelistEnabled()) {
+                require(vaultContract.isWhitelisted(user), "VaultToken: not whitelisted");
+            }
+        }
+        _;
+    }
     
     modifier whenInitialized() {
         require(_initialized, "VaultToken: not initialized");
@@ -52,38 +63,6 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
     }
     
     // ============ Initialization Function ============
-    
-    /**
-     * @dev Initialize token (for Clones pattern)
-     * @param _vault Vault contract address
-     * @param _name Token name
-     * @param _symbol Token symbol
-     * @param _decimals Token decimals
-     */
-    function initToken(
-        address _vault,
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals
-    ) internal whenNotInitialized {
-        require(_vault != address(0), "VaultToken: invalid vault address");
-        require(bytes(_name).length > 0, "VaultToken: empty name");
-        require(bytes(_symbol).length > 0, "VaultToken: empty symbol");
-        require(_decimals <= MAX_DECIMALS, "VaultToken: invalid decimals");
-        
-        vault = _vault;
-        _tokenName = _name;
-        _tokenSymbol = _symbol;
-        _tokenDecimals = _decimals;
-        _initialized = true;
-        
-        // Transfer ownership to vault
-        _transferOwnership(_vault);
-        
-        // Pause token trading during funding period
-        _pause();
-    }
-
     /**
      * @dev Unified initialization interface
      * @param _vault Vault address
@@ -92,12 +71,10 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
     function initiate(address _vault, bytes memory _initData) external override whenNotInitialized {
         require(_vault != address(0), "VaultToken: invalid vault");
         
-        // 解码初始化数据
         (string memory _name, string memory _symbol, uint8 _decimals) = 
             abi.decode(_initData, (string, string, uint8));
         
-        // 调用原有的初始化逻辑
-        initToken(_vault, _name, _symbol, _decimals);
+        _initToken(_vault, _name, _symbol, _decimals);
     }
     
     // ============ IToken Interface Implementation ============
@@ -163,7 +140,28 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
         
         emit TokenBurned(account, amount);
     }
-    
+
+    // ============ Transfer Interface ============
+
+    /**
+     * @dev transfer function, check whitelist for sender and recipient
+     * @param to Recipient address
+     * @param amount Transfer amount
+     */
+    function transfer(address to, uint256 amount) public virtual override(ERC20, IERC20) whenWhitelisted(_msgSender()) whenWhitelisted(to) returns (bool) {
+        return super.transfer(to, amount);
+    }
+
+    /**
+     * @dev transferFrom function, check whitelist for sender and recipient
+     * @param from Sender address
+     * @param to Recipient address
+     * @param amount Transfer amount
+     */
+    function transferFrom(address from, address to, uint256 amount) public virtual override(ERC20, IERC20) whenWhitelisted(from) whenWhitelisted(to) returns (bool) {
+        return super.transferFrom(from, to, amount);
+    }
+
     // ============ Pause Control Interface ============
     
     /**
@@ -188,6 +186,48 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
 
     
     // ============ Internal Functions ============
+
+    /**
+     * @dev Check whitelist status for a user
+     * @param user User address to check
+     */
+    function _checkWhitelist(address user) internal view {
+        IVault vaultContract = IVault(vault);
+        if (vaultContract.whitelistEnabled()) {
+            require(vaultContract.isWhitelisted(user), "VaultToken: not whitelisted");
+        }
+    }
+        
+    /**
+     * @dev Initialize token (for Clones pattern)
+     * @param _vault Vault contract address
+     * @param _name Token name
+     * @param _symbol Token symbol
+     * @param _decimals Token decimals
+     */
+    function _initToken(
+        address _vault,
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals
+    ) internal whenNotInitialized {
+        require(_vault != address(0), "VaultToken: invalid vault address");
+        require(bytes(_name).length > 0, "VaultToken: empty name");
+        require(bytes(_symbol).length > 0, "VaultToken: empty symbol");
+        require(_decimals <= MAX_DECIMALS, "VaultToken: invalid decimals");
+        
+        vault = _vault;
+        _tokenName = _name;
+        _tokenSymbol = _symbol;
+        _tokenDecimals = _decimals;
+        _initialized = true;
+        
+        // Transfer ownership to vault
+        _transferOwnership(_vault);
+        
+        // Pause token trading during funding period
+        _pause();
+    }
     
     /**
      * @dev Pre-transfer checks
@@ -204,23 +244,13 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
             require(!paused(), "VaultToken: token transfer while paused");
         }
         
-        // Update user's yield before transfer through vault
+        // Call vault hook on token transfer
         if (from != address(0) && to != address(0)) {
-            IVault(vault).updateUserPoolsOnTransfer(from, to, amount);
+            // Only call if vault is a valid contract
+            if (vault.code.length > 0) {
+                IVault(vault).onTokenTransfer(from, to, amount);
+            }
         }
-    }
-    
-    /**
-     * @dev Post-transfer processing
-     */
-    function _afterTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual override {
-        super._afterTokenTransfer(from, to, amount);
-        
-        // Post-transfer processing logic (if any)
     }
     
     // ============ Query Interface ============
