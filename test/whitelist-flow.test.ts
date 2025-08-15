@@ -1760,6 +1760,7 @@ describe("V2 架构完整业务流程测试", function () {
 
             //验证应分红数额
             var user1PendingReward = await accumulatedYield.pendingReward(user1.address);
+            console.log("user1PendingReward",user1PendingReward);
             var expectUser1PendingReward = depositAmount_user1 * TEST_CONFIG.SHARE_PRICE_DENOMINATOR / TEST_CONFIG.SHARE_PRICE * dividendAmount / TEST_CONFIG.MAX_SUPPLY;
             expect(user1PendingReward).to.be.equal(expectUser1PendingReward);
             var user2PendingReward = await accumulatedYield.pendingReward(user2.address);
@@ -1771,11 +1772,13 @@ describe("V2 架构完整业务流程测试", function () {
             var actualSharesUser1 = await token.balanceOf(user1.address);
             var expectUser1AccumulatedShares = delDidUser1 * actualSharesUser1;
             const initialBalanceUser1 = await usdt.balanceOf(user1.address);
+            console.log("initialBalanceUser1",initialBalanceUser1);
             tx = await accumulatedYield.connect(user1).claimReward();
 
 
             // 验证领取结果
             const finalBalanceUser1 = await usdt.balanceOf(user1.address);
+            console.log("finalBalanceUser1",finalBalanceUser1);
             expect(finalBalanceUser1 - initialBalanceUser1).to.be.equal(user1PendingReward);
 
             //验证用户状态更新

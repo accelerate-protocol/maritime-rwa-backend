@@ -55,7 +55,17 @@ const config: HardhatUserConfig = {
     },
     bscTestnet:{
       url: "https://bsc-testnet.bnbchain.org",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      accounts: [
+        process.env.PRIVATE_KEY_1!,
+        process.env.PRIVATE_KEY_2!,
+        process.env.PRIVATE_KEY_3!,
+        process.env.PRIVATE_KEY_4!,
+        process.env.PRIVATE_KEY_5!,
+        process.env.PRIVATE_KEY_6!,
+        process.env.PRIVATE_KEY_7!,
+        process.env.PRIVATE_KEY_8!,
+        process.env.PRIVATE_KEY_9!,
+      ],
       chainId: 97
     },
     bscMainnet:{
@@ -63,11 +73,8 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 56 
     },
-
-
-
-
   },
+  
 };
 
 export default config;
