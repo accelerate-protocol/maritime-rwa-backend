@@ -793,7 +793,7 @@ describe("Crowdsale", function () {
             const fundingAssets = await testCrowdsale.fundingAssets();
 
             await expect(
-                testCrowdsale.connect(manager).withdrawFundingAssets()
+                testCrowdsale.connect(fundingReceiver).withdrawFundingAssets()
             ).to.emit(testCrowdsale, "FundingAssetsWithdrawn")
                 .withArgs(fundingReceiver.address, fundingAssets);
 
@@ -806,7 +806,7 @@ describe("Crowdsale", function () {
             const manageFee = await testCrowdsale.manageFee();
 
             await expect(
-                testCrowdsale.connect(manager).withdrawManageFee()
+                testCrowdsale.connect(manageFeeReceiver).withdrawManageFee()
             ).to.emit(testCrowdsale, "ManageFeeWithdrawn")
                 .withArgs(manageFeeReceiver.address, manageFee);
 
@@ -842,10 +842,10 @@ describe("Crowdsale", function () {
             ).to.be.revertedWith("Crowdsale: funding was not successful");
         });
 
-        it("should reject withdrawal by non-manager", async function () {
+        it("should reject withdrawal by non-fundingReceiver", async function () {
             await expect(
                 testCrowdsale.connect(user1).withdrawFundingAssets()
-            ).to.be.revertedWith("Crowdsale: only manager");
+            ).to.be.revertedWith("Crowdsale: only funding receiver");
         });
     });
 

@@ -1,0 +1,321 @@
+{
+  "address": "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "templateId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "template",
+          "type": "address"
+        }
+      ],
+      "name": "TemplateAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "templateId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "accumulatedYield",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "vault",
+          "type": "address"
+        }
+      ],
+      "name": "YieldCreated",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "templateId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "template",
+          "type": "address"
+        }
+      ],
+      "name": "addTemplate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "templateId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "vault",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "vaultToken",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "initData",
+          "type": "bytes"
+        }
+      ],
+      "name": "createYield",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "accumulatedYield",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "templateId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getTemplate",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTemplateCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "templateCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "templates",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x3ee6f35ac5a2f03dade165c886c3d60b95ab924baf0bb2efee0c89157706b920",
+  "receipt": {
+    "to": null,
+    "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "contractAddress": "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
+    "transactionIndex": 0,
+    "gasUsed": "490979",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000800000000000000000000000000000000800000010000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000020000000000000100000800000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000002000000000000000000020000000000000000000000000004000000000000000000000000000000000000000",
+    "blockHash": "0xdc9f4ebda011eb11480a1be9ff4e691f399dbd592faf4a29fbb8ea933827a91f",
+    "transactionHash": "0x3ee6f35ac5a2f03dade165c886c3d60b95ab924baf0bb2efee0c89157706b920",
+    "logs": [
+      {
+        "transactionIndex": 0,
+        "blockNumber": 20,
+        "transactionHash": "0x3ee6f35ac5a2f03dade165c886c3d60b95ab924baf0bb2efee0c89157706b920",
+        "address": "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
+        "topics": [
+          "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+        ],
+        "data": "0x",
+        "logIndex": 0,
+        "blockHash": "0xdc9f4ebda011eb11480a1be9ff4e691f399dbd592faf4a29fbb8ea933827a91f"
+      }
+    ],
+    "blockNumber": 20,
+    "cumulativeGasUsed": "490979",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "9572697e3a93836ab3d466dd3e23e495",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.26+commit.8a97fa7a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"templateId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"template\",\"type\":\"address\"}],\"name\":\"TemplateAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"templateId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"accumulatedYield\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"}],\"name\":\"YieldCreated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"templateId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"template\",\"type\":\"address\"}],\"name\":\"addTemplate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"templateId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"vaultToken\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"initData\",\"type\":\"bytes\"}],\"name\":\"createYield\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"accumulatedYield\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"templateId\",\"type\":\"uint256\"}],\"name\":\"getTemplate\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTemplateCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"templateCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"templates\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner.\"},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/v2/factories/YieldFactory.sol\":\"YieldFactory\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[],\"viaIR\":true},\"sources\":{\"@openzeppelin/contracts/access/Ownable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.9.0) (access/Ownable.sol)\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"../utils/Context.sol\\\";\\n\\n/**\\n * @dev Contract module which provides a basic access control mechanism, where\\n * there is an account (an owner) that can be granted exclusive access to\\n * specific functions.\\n *\\n * By default, the owner account will be the one that deploys the contract. This\\n * can later be changed with {transferOwnership}.\\n *\\n * This module is used through inheritance. It will make available the modifier\\n * `onlyOwner`, which can be applied to your functions to restrict their use to\\n * the owner.\\n */\\nabstract contract Ownable is Context {\\n    address private _owner;\\n\\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n    /**\\n     * @dev Initializes the contract setting the deployer as the initial owner.\\n     */\\n    constructor() {\\n        _transferOwnership(_msgSender());\\n    }\\n\\n    /**\\n     * @dev Throws if called by any account other than the owner.\\n     */\\n    modifier onlyOwner() {\\n        _checkOwner();\\n        _;\\n    }\\n\\n    /**\\n     * @dev Returns the address of the current owner.\\n     */\\n    function owner() public view virtual returns (address) {\\n        return _owner;\\n    }\\n\\n    /**\\n     * @dev Throws if the sender is not the owner.\\n     */\\n    function _checkOwner() internal view virtual {\\n        require(owner() == _msgSender(), \\\"Ownable: caller is not the owner\\\");\\n    }\\n\\n    /**\\n     * @dev Leaves the contract without owner. It will not be possible to call\\n     * `onlyOwner` functions. Can only be called by the current owner.\\n     *\\n     * NOTE: Renouncing ownership will leave the contract without an owner,\\n     * thereby disabling any functionality that is only available to the owner.\\n     */\\n    function renounceOwnership() public virtual onlyOwner {\\n        _transferOwnership(address(0));\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Can only be called by the current owner.\\n     */\\n    function transferOwnership(address newOwner) public virtual onlyOwner {\\n        require(newOwner != address(0), \\\"Ownable: new owner is the zero address\\\");\\n        _transferOwnership(newOwner);\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Internal function without access restriction.\\n     */\\n    function _transferOwnership(address newOwner) internal virtual {\\n        address oldOwner = _owner;\\n        _owner = newOwner;\\n        emit OwnershipTransferred(oldOwner, newOwner);\\n    }\\n}\\n\",\"keccak256\":\"0xba43b97fba0d32eb4254f6a5a297b39a19a247082a02d6e69349e071e2946218\",\"license\":\"MIT\"},\"@openzeppelin/contracts/proxy/Clones.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.9.0) (proxy/Clones.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev https://eips.ethereum.org/EIPS/eip-1167[EIP 1167] is a standard for\\n * deploying minimal proxy contracts, also known as \\\"clones\\\".\\n *\\n * > To simply and cheaply clone contract functionality in an immutable way, this standard specifies\\n * > a minimal bytecode implementation that delegates all calls to a known, fixed address.\\n *\\n * The library includes functions to deploy a proxy using either `create` (traditional deployment) or `create2`\\n * (salted deterministic deployment). It also includes functions to predict the addresses of clones deployed using the\\n * deterministic method.\\n *\\n * _Available since v3.4._\\n */\\nlibrary Clones {\\n    /**\\n     * @dev Deploys and returns the address of a clone that mimics the behaviour of `implementation`.\\n     *\\n     * This function uses the create opcode, which should never revert.\\n     */\\n    function clone(address implementation) internal returns (address instance) {\\n        /// @solidity memory-safe-assembly\\n        assembly {\\n            // Cleans the upper 96 bits of the `implementation` word, then packs the first 3 bytes\\n            // of the `implementation` address with the bytecode before the address.\\n            mstore(0x00, or(shr(0xe8, shl(0x60, implementation)), 0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000))\\n            // Packs the remaining 17 bytes of `implementation` with the bytecode after the address.\\n            mstore(0x20, or(shl(0x78, implementation), 0x5af43d82803e903d91602b57fd5bf3))\\n            instance := create(0, 0x09, 0x37)\\n        }\\n        require(instance != address(0), \\\"ERC1167: create failed\\\");\\n    }\\n\\n    /**\\n     * @dev Deploys and returns the address of a clone that mimics the behaviour of `implementation`.\\n     *\\n     * This function uses the create2 opcode and a `salt` to deterministically deploy\\n     * the clone. Using the same `implementation` and `salt` multiple time will revert, since\\n     * the clones cannot be deployed twice at the same address.\\n     */\\n    function cloneDeterministic(address implementation, bytes32 salt) internal returns (address instance) {\\n        /// @solidity memory-safe-assembly\\n        assembly {\\n            // Cleans the upper 96 bits of the `implementation` word, then packs the first 3 bytes\\n            // of the `implementation` address with the bytecode before the address.\\n            mstore(0x00, or(shr(0xe8, shl(0x60, implementation)), 0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000))\\n            // Packs the remaining 17 bytes of `implementation` with the bytecode after the address.\\n            mstore(0x20, or(shl(0x78, implementation), 0x5af43d82803e903d91602b57fd5bf3))\\n            instance := create2(0, 0x09, 0x37, salt)\\n        }\\n        require(instance != address(0), \\\"ERC1167: create2 failed\\\");\\n    }\\n\\n    /**\\n     * @dev Computes the address of a clone deployed using {Clones-cloneDeterministic}.\\n     */\\n    function predictDeterministicAddress(\\n        address implementation,\\n        bytes32 salt,\\n        address deployer\\n    ) internal pure returns (address predicted) {\\n        /// @solidity memory-safe-assembly\\n        assembly {\\n            let ptr := mload(0x40)\\n            mstore(add(ptr, 0x38), deployer)\\n            mstore(add(ptr, 0x24), 0x5af43d82803e903d91602b57fd5bf3ff)\\n            mstore(add(ptr, 0x14), implementation)\\n            mstore(ptr, 0x3d602d80600a3d3981f3363d3d373d3d3d363d73)\\n            mstore(add(ptr, 0x58), salt)\\n            mstore(add(ptr, 0x78), keccak256(add(ptr, 0x0c), 0x37))\\n            predicted := keccak256(add(ptr, 0x43), 0x55)\\n        }\\n    }\\n\\n    /**\\n     * @dev Computes the address of a clone deployed using {Clones-cloneDeterministic}.\\n     */\\n    function predictDeterministicAddress(\\n        address implementation,\\n        bytes32 salt\\n    ) internal view returns (address predicted) {\\n        return predictDeterministicAddress(implementation, salt, address(this));\\n    }\\n}\\n\",\"keccak256\":\"0x01f055f5c26ba25d7f83e9aa9ba877fbea4d0bf22227de046ea67494bc932999\",\"license\":\"MIT\"},\"@openzeppelin/contracts/utils/Context.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.9.4) (utils/Context.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Provides information about the current execution context, including the\\n * sender of the transaction and its data. While these are generally available\\n * via msg.sender and msg.data, they should not be accessed in such a direct\\n * manner, since when dealing with meta-transactions the account sending and\\n * paying for execution may not be the actual sender (as far as an application\\n * is concerned).\\n *\\n * This contract is only required for intermediate, library-like contracts.\\n */\\nabstract contract Context {\\n    function _msgSender() internal view virtual returns (address) {\\n        return msg.sender;\\n    }\\n\\n    function _msgData() internal view virtual returns (bytes calldata) {\\n        return msg.data;\\n    }\\n\\n    function _contextSuffixLength() internal view virtual returns (uint256) {\\n        return 0;\\n    }\\n}\\n\",\"keccak256\":\"0xa92e4fa126feb6907daa0513ddd816b2eb91f30a808de54f63c17d0e162c3439\",\"license\":\"MIT\"},\"contracts/v2/factories/YieldFactory.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.26;\\n\\nimport \\\"@openzeppelin/contracts/proxy/Clones.sol\\\";\\nimport \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\nimport \\\"../interfaces/IFactory.sol\\\";\\n\\ncontract YieldFactory is IYieldFactory, Ownable {\\n    using Clones for address;\\n    \\n    mapping(uint256 => address) public templates;\\n    uint256 public templateCount;\\n    \\n    function addTemplate(uint256 templateId, address template) external override onlyOwner {\\n        require(template != address(0), \\\"YieldFactory: invalid template\\\");\\n        require(templates[templateId] == address(0), \\\"YieldFactory: template already exists\\\");\\n        \\n        templates[templateId] = template;\\n        if (templateId >= templateCount) {\\n            templateCount = templateId + 1;\\n        }\\n        emit TemplateAdded(templateId, template);\\n    }\\n    \\n    function createYield(uint256 templateId, address vault, address vaultToken, bytes memory initData) external override returns (address accumulatedYield) {\\n        address template = templates[templateId];\\n        require(template != address(0), \\\"YieldFactory: template not found\\\");\\n        \\n        accumulatedYield = template.clone();\\n        \\n        bytes memory fullInitData = abi.encodeWithSignature(\\n            \\\"initiate(address,address,bytes)\\\",\\n            vault, \\n            vaultToken,\\n            initData\\n        );\\n        \\n        // \\u8c03\\u7528\\u521d\\u59cb\\u5316\\u51fd\\u6570\\n        (bool success, ) = accumulatedYield.call(fullInitData);\\n        require(success, \\\"YieldFactory: initialization failed\\\");\\n        \\n        emit YieldCreated(templateId, accumulatedYield, msg.sender);\\n        \\n        return accumulatedYield;\\n    }\\n    \\n    function getTemplate(uint256 templateId) external view override returns (address) {\\n        return templates[templateId];\\n    }\\n    \\n    function getTemplateCount() external view override returns (uint256) {\\n        return templateCount;\\n    }\\n} \",\"keccak256\":\"0x14b591aacdff7cff5b54185ee7cb1b79e95b000cfcc0d3aead2bb0ac735be381\",\"license\":\"MIT\"},\"contracts/v2/interfaces/IFactory.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.26;\\n\\n/**\\n * @title IVaultFactory\\n * @dev Vault\\u5de5\\u5382\\u63a5\\u53e3\\n */\\ninterface IVaultFactory {\\n    event TemplateAdded(uint256 indexed templateId, address indexed template);\\n    event VaultCreated(uint256 indexed templateId, address indexed vault, address indexed deployer);\\n    \\n    function createVault(uint256 templateId, bytes memory initData) external returns (address);\\n    function addTemplate(uint256 templateId, address template) external;\\n    function getTemplate(uint256 templateId) external view returns (address);\\n    function getTemplateCount() external view returns (uint256);\\n}\\n\\n/**\\n * @title ITokenFactory\\n * @dev Token\\u5de5\\u5382\\u63a5\\u53e3\\n */\\ninterface ITokenFactory {\\n    event TemplateAdded(uint256 indexed templateId, address indexed template);\\n    event TokenCreated(uint256 indexed templateId, address indexed token, address indexed vault);\\n    \\n    function createToken(uint256 templateId, address vault, bytes memory initData) external returns (address);\\n    function addTemplate(uint256 templateId, address template) external;\\n    function getTemplate(uint256 templateId) external view returns (address);\\n    function getTemplateCount() external view returns (uint256);\\n}\\n\\n/**\\n * @title IFundFactory\\n * @dev Fund\\u5de5\\u5382\\u63a5\\u53e3\\n */\\ninterface IFundFactory {\\n    event TemplateAdded(uint256 indexed templateId, address indexed template);\\n    event FundCreated(uint256 indexed templateId, address indexed fund, address indexed vault);\\n    \\n    function createFund(uint256 templateId, address vault, bytes memory initData) external returns (address);\\n    function addTemplate(uint256 templateId, address template) external;\\n    function getTemplate(uint256 templateId) external view returns (address);\\n    function getTemplateCount() external view returns (uint256);\\n}\\n\\n/**\\n * @title IYieldFactory\\n * @dev Yield\\u5de5\\u5382\\u63a5\\u53e3\\n */\\ninterface IYieldFactory {\\n    event TemplateAdded(uint256 indexed templateId, address indexed template);\\n    event YieldCreated(uint256 indexed templateId, address indexed accumulatedYield, address indexed vault);\\n    \\n    function createYield(uint256 templateId, address vault, address token, bytes memory initData) external returns (address);\\n    function addTemplate(uint256 templateId, address template) external;\\n    function getTemplate(uint256 templateId) external view returns (address);\\n    function getTemplateCount() external view returns (uint256);\\n} \",\"keccak256\":\"0x4df21f3df021dfbf8aec071425732d0b4054dd92b824a5625cc1bbc243ae436f\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60808060405234605a5760008054336001600160a01b0319821681178355916001600160a01b03909116907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09080a361077790816100608239f35b600080fdfe608080604052600436101561001357600080fd5b60003560e01c90816326705c3c146106645750806331543cf4146105905780635016959a14610646578063715018a6146105ed5780638da5cb5b146105c4578063bc52565214610590578063cafdadde1461042f578063d16ce86f146101525763f2fde38b1461008257600080fd5b3461014d57602036600319011261014d576004356001600160a01b0381169081900361014d576100b06106e9565b80156100f957600080546001600160a01b03198116831782556001600160a01b0316907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09080a3005b60405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b6064820152608490fd5b600080fd5b3461014d57608036600319011261014d5760043561016e61067f565b906044356001600160a01b0381169081900361014d576064359267ffffffffffffffff841161014d573660238501121561014d5783600401356101b0816106cd565b946101be6040519687610695565b818652366024838301011161014d578160009260246020930183890137860101526000838152600160205260409020546001600160a01b038116156103eb5780763d602d80600a3d3981f3363d3d373d3d3d363d7300000062ffffff6e5af43d82803e903d91602b57fd5bf39360881c16176000526effffffffffffffffffffffffffffff199060781b1617602052603760096000f06001600160a01b0381169490929085156103ad57604051630aedf8cf60e21b602082019081526001600160a01b0390941660248201526044810192909252606060648301528051608483018190529060005b8281106103975787876000808989828a6102dc60a4828d85838284010152601f801991011681010301601f198101835282610695565b51925af13d15610392573d6102f0816106cd565b906102fe6040519283610695565b8152600060203d92013e5b1561034157602091604051918133917fc7cf0f921e5c6314ed32730ef0319d666986f4be68576276607ed6e16ed7828a600080a48152f35b60405162461bcd60e51b815260206004820152602360248201527f5969656c64466163746f72793a20696e697469616c697a6174696f6e206661696044820152621b195960ea1b6064820152608490fd5b610309565b80602080928401015160a48287010152016102a6565b60405162461bcd60e51b8152602060048201526016602482015275115490cc4c4d8dce8818dc99585d194819985a5b195960521b6044820152606490fd5b606460405162461bcd60e51b815260206004820152602060248201527f5969656c64466163746f72793a2074656d706c617465206e6f7420666f756e646044820152fd5b3461014d57604036600319011261014d5760043561044b61067f565b6104536106e9565b6001600160a01b031690811561054b576000818152600160205260409020546001600160a01b03166104f857600081815260016020526040902080546001600160a01b031916831790556002548110156104cf575b7f015902ea38b371359d3cfcc702e9445d97bf18c32ee4f72ebe2361cf53e0088e600080a3005b600181018082116104e2576002556104a8565b634e487b7160e01b600052601160045260246000fd5b60405162461bcd60e51b815260206004820152602560248201527f5969656c64466163746f72793a2074656d706c61746520616c72656164792065604482015264786973747360d81b6064820152608490fd5b60405162461bcd60e51b815260206004820152601e60248201527f5969656c64466163746f72793a20696e76616c69642074656d706c61746500006044820152606490fd5b3461014d57602036600319011261014d576004356000526001602052602060018060a01b0360406000205416604051908152f35b3461014d57600036600319011261014d576000546040516001600160a01b039091168152602090f35b3461014d57600036600319011261014d576106066106e9565b600080546001600160a01b0319811682556001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08280a3005b3461014d57600036600319011261014d576020600254604051908152f35b3461014d57600036600319011261014d576020906002548152f35b602435906001600160a01b038216820361014d57565b90601f8019910116810190811067ffffffffffffffff8211176106b757604052565b634e487b7160e01b600052604160045260246000fd5b67ffffffffffffffff81116106b757601f01601f191660200190565b6000546001600160a01b031633036106fd57565b606460405162461bcd60e51b815260206004820152602060248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152fdfea2646970667358221220cf3a56aa024fffe6f647c1b8f3979dc22b04ea6c1fdb40f09e6c6d22630028ae64736f6c634300081a0033",
+  "deployedBytecode": "0x608080604052600436101561001357600080fd5b60003560e01c90816326705c3c146106645750806331543cf4146105905780635016959a14610646578063715018a6146105ed5780638da5cb5b146105c4578063bc52565214610590578063cafdadde1461042f578063d16ce86f146101525763f2fde38b1461008257600080fd5b3461014d57602036600319011261014d576004356001600160a01b0381169081900361014d576100b06106e9565b80156100f957600080546001600160a01b03198116831782556001600160a01b0316907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09080a3005b60405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b6064820152608490fd5b600080fd5b3461014d57608036600319011261014d5760043561016e61067f565b906044356001600160a01b0381169081900361014d576064359267ffffffffffffffff841161014d573660238501121561014d5783600401356101b0816106cd565b946101be6040519687610695565b818652366024838301011161014d578160009260246020930183890137860101526000838152600160205260409020546001600160a01b038116156103eb5780763d602d80600a3d3981f3363d3d373d3d3d363d7300000062ffffff6e5af43d82803e903d91602b57fd5bf39360881c16176000526effffffffffffffffffffffffffffff199060781b1617602052603760096000f06001600160a01b0381169490929085156103ad57604051630aedf8cf60e21b602082019081526001600160a01b0390941660248201526044810192909252606060648301528051608483018190529060005b8281106103975787876000808989828a6102dc60a4828d85838284010152601f801991011681010301601f198101835282610695565b51925af13d15610392573d6102f0816106cd565b906102fe6040519283610695565b8152600060203d92013e5b1561034157602091604051918133917fc7cf0f921e5c6314ed32730ef0319d666986f4be68576276607ed6e16ed7828a600080a48152f35b60405162461bcd60e51b815260206004820152602360248201527f5969656c64466163746f72793a20696e697469616c697a6174696f6e206661696044820152621b195960ea1b6064820152608490fd5b610309565b80602080928401015160a48287010152016102a6565b60405162461bcd60e51b8152602060048201526016602482015275115490cc4c4d8dce8818dc99585d194819985a5b195960521b6044820152606490fd5b606460405162461bcd60e51b815260206004820152602060248201527f5969656c64466163746f72793a2074656d706c617465206e6f7420666f756e646044820152fd5b3461014d57604036600319011261014d5760043561044b61067f565b6104536106e9565b6001600160a01b031690811561054b576000818152600160205260409020546001600160a01b03166104f857600081815260016020526040902080546001600160a01b031916831790556002548110156104cf575b7f015902ea38b371359d3cfcc702e9445d97bf18c32ee4f72ebe2361cf53e0088e600080a3005b600181018082116104e2576002556104a8565b634e487b7160e01b600052601160045260246000fd5b60405162461bcd60e51b815260206004820152602560248201527f5969656c64466163746f72793a2074656d706c61746520616c72656164792065604482015264786973747360d81b6064820152608490fd5b60405162461bcd60e51b815260206004820152601e60248201527f5969656c64466163746f72793a20696e76616c69642074656d706c61746500006044820152606490fd5b3461014d57602036600319011261014d576004356000526001602052602060018060a01b0360406000205416604051908152f35b3461014d57600036600319011261014d576000546040516001600160a01b039091168152602090f35b3461014d57600036600319011261014d576106066106e9565b600080546001600160a01b0319811682556001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08280a3005b3461014d57600036600319011261014d576020600254604051908152f35b3461014d57600036600319011261014d576020906002548152f35b602435906001600160a01b038216820361014d57565b90601f8019910116810190811067ffffffffffffffff8211176106b757604052565b634e487b7160e01b600052604160045260246000fd5b67ffffffffffffffff81116106b757601f01601f191660200190565b6000546001600160a01b031633036106fd57565b606460405162461bcd60e51b815260206004820152602060248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152fdfea2646970667358221220cf3a56aa024fffe6f647c1b8f3979dc22b04ea6c1fdb40f09e6c6d22630028ae64736f6c634300081a0033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 3547,
+        "contract": "contracts/v2/factories/YieldFactory.sol:YieldFactory",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 13811,
+        "contract": "contracts/v2/factories/YieldFactory.sol:YieldFactory",
+        "label": "templates",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_uint256,t_address)"
+      },
+      {
+        "astId": 13813,
+        "contract": "contracts/v2/factories/YieldFactory.sol:YieldFactory",
+        "label": "templateCount",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_uint256"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_mapping(t_uint256,t_address)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

@@ -354,7 +354,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     /**
      * @dev Withdraw funding assets (only when funding is successful)
      */
-    function withdrawFundingAssets() external override onlyManager onlyAfterFundingSuccess whenInitialized nonReentrant {
+    function withdrawFundingAssets() external override onlyAfterFundingSuccess whenInitialized nonReentrant {
+        require(msg.sender == fundingReceiver, "Crowdsale: only funding receiver");
         require(fundingAssets > 0, "Crowdsale: no funding assets");
         
         uint256 amount = fundingAssets;
@@ -368,7 +369,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     /**
      * @dev Withdraw management fee (only when funding is successful)
      */
-    function withdrawManageFee() external override onlyManager onlyAfterFundingSuccess whenInitialized nonReentrant {
+    function withdrawManageFee() external override onlyAfterFundingSuccess whenInitialized nonReentrant {
+        require(msg.sender == manageFeeReceiver, "Crowdsale: only manage fee receiver");
         require(manageFee > 0, "Crowdsale: no manage fee");
         
         uint256 amount = manageFee;

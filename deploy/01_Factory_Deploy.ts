@@ -24,8 +24,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     });
 
     const VaultFactory =await deploy('VaultFactory', {
+        contract: 'contracts/v2/factories/VaultFactory.sol:VaultFactory',
         from: deployer,
-        args: [deployer],
+        args: [],
     });
 
     console.log("EscrowFactory:",EscrowFactory.address);

@@ -1,0 +1,1212 @@
+{
+  "address": "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_vaultFactory",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_tokenFactory",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_fundFactory",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_YieldFactory",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "vaultFactory",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "tokenFactory",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "fundFactory",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "dividendFactory",
+          "type": "address"
+        }
+      ],
+      "name": "FactoriesUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "fund",
+          "type": "address"
+        }
+      ],
+      "name": "FundCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "vault",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "fund",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "yield",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "deployer",
+          "type": "address"
+        }
+      ],
+      "name": "ProjectCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "TokenCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "vault",
+          "type": "address"
+        }
+      ],
+      "name": "VaultCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "yield",
+          "type": "address"
+        }
+      ],
+      "name": "YieldCreated",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "addToWhitelist",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "projectName",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "vaultTemplateId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "vaultInitData",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenTemplateId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "tokenInitData",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "fundTemplateId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "fundInitData",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "dividendTemplateId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "dividendInitData",
+          "type": "bytes"
+        }
+      ],
+      "name": "deployAll",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "vault",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "fund",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "accumulatedYield",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct ICreation.DeploymentResult",
+          "name": "result",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "templateId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "vault",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "vaultToken",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "initData",
+          "type": "bytes"
+        }
+      ],
+      "name": "deployDividend",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "dividend",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "templateId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "vault",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "initData",
+          "type": "bytes"
+        }
+      ],
+      "name": "deployFund",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "fund",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "templateId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "vault",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "initData",
+          "type": "bytes"
+        }
+      ],
+      "name": "deployToken",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "templateId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "initData",
+          "type": "bytes"
+        }
+      ],
+      "name": "deployVault",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "vault",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "fundFactory",
+      "outputs": [
+        {
+          "internalType": "contract FundFactory",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getFactories",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "projectName",
+          "type": "string"
+        }
+      ],
+      "name": "getProjectByName",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "vault",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "fund",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "accumulatedYield",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "createdAt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "deployer",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct ICreation.Project",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "getUserProjectDetails",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "vault",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "fund",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "accumulatedYield",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "createdAt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "deployer",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct ICreation.Project[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "getUserProjects",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "vault",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "fund",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "accumulatedYield",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct ICreation.DeploymentResult[]",
+          "name": "result",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "name": "projects",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "vault",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "fund",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "accumulatedYield",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "createdAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "deployer",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "removeFromWhitelist",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_vaultFactory",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_tokenFactory",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_fundFactory",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_dividendFactory",
+          "type": "address"
+        }
+      ],
+      "name": "setFactories",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "tokenFactory",
+      "outputs": [
+        {
+          "internalType": "contract TokenFactory",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "userProjects",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "dividendInitData",
+          "type": "bytes"
+        }
+      ],
+      "name": "validateDividendInitData",
+      "outputs": [],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "fundInitData",
+          "type": "bytes"
+        }
+      ],
+      "name": "validateFundInitData",
+      "outputs": [],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "tokenInitData",
+          "type": "bytes"
+        }
+      ],
+      "name": "validateTokenInitData",
+      "outputs": [],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "vaultInitData",
+          "type": "bytes"
+        }
+      ],
+      "name": "validateVaultInitData",
+      "outputs": [],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "vaultFactory",
+      "outputs": [
+        {
+          "internalType": "contract VaultFactory",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "whitelist",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "yieldFactory",
+      "outputs": [
+        {
+          "internalType": "contract YieldFactory",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x5004e8f6c5ce7a0d20795627d7452468e9f858380a7d01497256f3f65e23811b",
+  "receipt": {
+    "to": null,
+    "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "contractAddress": "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f",
+    "transactionIndex": 0,
+    "gasUsed": "2636896",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000800000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000040000000000000020000000000000100000800000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000200000000000000000000000002000000000000000000020000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x37dd80d80302b82d84e080b2081ca1507f293fbe82581ea3e84627d1af189316",
+    "transactionHash": "0x5004e8f6c5ce7a0d20795627d7452468e9f858380a7d01497256f3f65e23811b",
+    "logs": [
+      {
+        "transactionIndex": 0,
+        "blockNumber": 25,
+        "transactionHash": "0x5004e8f6c5ce7a0d20795627d7452468e9f858380a7d01497256f3f65e23811b",
+        "address": "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f",
+        "topics": [
+          "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+        ],
+        "data": "0x",
+        "logIndex": 0,
+        "blockHash": "0x37dd80d80302b82d84e080b2081ca1507f293fbe82581ea3e84627d1af189316"
+      },
+      {
+        "transactionIndex": 0,
+        "blockNumber": 25,
+        "transactionHash": "0x5004e8f6c5ce7a0d20795627d7452468e9f858380a7d01497256f3f65e23811b",
+        "address": "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f",
+        "topics": [
+          "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+          "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+        ],
+        "data": "0x",
+        "logIndex": 1,
+        "blockHash": "0x37dd80d80302b82d84e080b2081ca1507f293fbe82581ea3e84627d1af189316"
+      }
+    ],
+    "blockNumber": 25,
+    "cumulativeGasUsed": "2636896",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1",
+    "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE",
+    "0x68B1D87F95878fE05B998F19b66F4baba5De1aed",
+    "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "bef6192f43a977a4b049f0349069cccf",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.26+commit.8a97fa7a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_vaultFactory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenFactory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_fundFactory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_YieldFactory\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"vaultFactory\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"tokenFactory\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"fundFactory\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"dividendFactory\",\"type\":\"address\"}],\"name\":\"FactoriesUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"fund\",\"type\":\"address\"}],\"name\":\"FundCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"fund\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"yield\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"deployer\",\"type\":\"address\"}],\"name\":\"ProjectCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"TokenCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"}],\"name\":\"VaultCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"yield\",\"type\":\"address\"}],\"name\":\"YieldCreated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"addToWhitelist\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"projectName\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"vaultTemplateId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"vaultInitData\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"tokenTemplateId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"tokenInitData\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"fundTemplateId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"fundInitData\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"dividendTemplateId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"dividendInitData\",\"type\":\"bytes\"}],\"name\":\"deployAll\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"fund\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"accumulatedYield\",\"type\":\"address\"}],\"internalType\":\"struct ICreation.DeploymentResult\",\"name\":\"result\",\"type\":\"tuple\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"templateId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"vaultToken\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"initData\",\"type\":\"bytes\"}],\"name\":\"deployDividend\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"dividend\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"templateId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"initData\",\"type\":\"bytes\"}],\"name\":\"deployFund\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"fund\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"templateId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"initData\",\"type\":\"bytes\"}],\"name\":\"deployToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"templateId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"initData\",\"type\":\"bytes\"}],\"name\":\"deployVault\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"fundFactory\",\"outputs\":[{\"internalType\":\"contract FundFactory\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getFactories\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"projectName\",\"type\":\"string\"}],\"name\":\"getProjectByName\",\"outputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"fund\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"accumulatedYield\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"createdAt\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"deployer\",\"type\":\"address\"}],\"internalType\":\"struct ICreation.Project\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"getUserProjectDetails\",\"outputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"fund\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"accumulatedYield\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"createdAt\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"deployer\",\"type\":\"address\"}],\"internalType\":\"struct ICreation.Project[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"getUserProjects\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"fund\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"accumulatedYield\",\"type\":\"address\"}],\"internalType\":\"struct ICreation.DeploymentResult[]\",\"name\":\"result\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"projects\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"fund\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"accumulatedYield\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"createdAt\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"deployer\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"removeFromWhitelist\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_vaultFactory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenFactory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_fundFactory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_dividendFactory\",\"type\":\"address\"}],\"name\":\"setFactories\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"tokenFactory\",\"outputs\":[{\"internalType\":\"contract TokenFactory\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"userProjects\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"dividendInitData\",\"type\":\"bytes\"}],\"name\":\"validateDividendInitData\",\"outputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"fundInitData\",\"type\":\"bytes\"}],\"name\":\"validateFundInitData\",\"outputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"tokenInitData\",\"type\":\"bytes\"}],\"name\":\"validateTokenInitData\",\"outputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"vaultInitData\",\"type\":\"bytes\"}],\"name\":\"validateVaultInitData\",\"outputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"vaultFactory\",\"outputs\":[{\"internalType\":\"contract VaultFactory\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"whitelist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"yieldFactory\",\"outputs\":[{\"internalType\":\"contract YieldFactory\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"deployAll(string,uint256,bytes,uint256,bytes,uint256,bytes,uint256,bytes)\":{\"details\":\"\\u6838\\u5fc3\\u90e8\\u7f72\\u51fd\\u6570\\uff08\\u4f7f\\u7528bytes\\u6570\\u636e\\uff0c\\u63a8\\u8350\\u4f7f\\u7528\\uff09\",\"params\":{\"dividendInitData\":\"Dividend\\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\",\"dividendTemplateId\":\"Dividend\\u6a21\\u677fID\",\"fundInitData\":\"Fund\\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\",\"fundTemplateId\":\"Fund\\u6a21\\u677fID\",\"projectName\":\"\\u9879\\u76ee\\u540d\\u79f0\",\"tokenInitData\":\"Token\\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\",\"tokenTemplateId\":\"Token\\u6a21\\u677fID\",\"vaultInitData\":\"Vault\\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\",\"vaultTemplateId\":\"Vault\\u6a21\\u677fID\"},\"returns\":{\"result\":\"\\u90e8\\u7f72\\u7ed3\\u679c\"}},\"deployFund(uint256,address,bytes)\":{\"details\":\"\\u5355\\u72ec\\u90e8\\u7f72Fund\",\"params\":{\"initData\":\"\\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\",\"templateId\":\"\\u6a21\\u677fID\",\"vault\":\"Vault\\u5730\\u5740\"},\"returns\":{\"fund\":\"Fund\\u5730\\u5740\"}},\"deployToken(uint256,address,bytes)\":{\"details\":\"\\u5355\\u72ec\\u90e8\\u7f72Token\",\"params\":{\"initData\":\"\\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\",\"templateId\":\"\\u6a21\\u677fID\",\"vault\":\"Vault\\u5730\\u5740\"},\"returns\":{\"token\":\"Token\\u5730\\u5740\"}},\"deployVault(uint256,bytes)\":{\"details\":\"\\u5355\\u72ec\\u90e8\\u7f72Vault\",\"params\":{\"initData\":\"\\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\",\"templateId\":\"\\u6a21\\u677fID\"},\"returns\":{\"vault\":\"Vault\\u5730\\u5740\"}},\"getFactories()\":{\"details\":\"\\u83b7\\u53d6\\u5de5\\u5382\\u5730\\u5740\",\"returns\":{\"_0\":\"Vault\\u5de5\\u5382\\u5730\\u5740\",\"_1\":\"Token\\u5de5\\u5382\\u5730\\u5740\",\"_2\":\"Fund\\u5de5\\u5382\\u5730\\u5740\",\"_3\":\"Dividend\\u5de5\\u5382\\u5730\\u5740\"}},\"getProjectByName(string)\":{\"details\":\"\\u6839\\u636e\\u9879\\u76ee\\u540d\\u79f0\\u83b7\\u53d6\\u9879\\u76ee\\u8be6\\u60c5\",\"params\":{\"projectName\":\"\\u9879\\u76ee\\u540d\\u79f0\"},\"returns\":{\"_0\":\"project \\u9879\\u76ee\\u8be6\\u60c5\"}},\"getUserProjectDetails(address)\":{\"details\":\"\\u83b7\\u53d6\\u7528\\u6237\\u7684\\u6240\\u6709\\u9879\\u76ee\\u8be6\\u60c5\",\"params\":{\"user\":\"\\u7528\\u6237\\u5730\\u5740\"},\"returns\":{\"_0\":\"projects \\u9879\\u76ee\\u8be6\\u60c5\\u6570\\u7ec4\"}},\"getUserProjects(address)\":{\"details\":\"\\u67e5\\u8be2\\u7528\\u6237\\u90e8\\u7f72\\u7684\\u9879\\u76ee\",\"params\":{\"user\":\"\\u7528\\u6237\\u5730\\u5740\"},\"returns\":{\"result\":\"\\u7528\\u6237\\u7684\\u9879\\u76ee\\u6570\\u7ec4\"}},\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner.\"},\"setFactories(address,address,address,address)\":{\"details\":\"\\u8bbe\\u7f6e\\u5de5\\u5382\\u5408\\u7ea6\\u5730\\u5740\",\"params\":{\"_dividendFactory\":\"Dividend\\u5de5\\u5382\\u5730\\u5740\",\"_fundFactory\":\"Fund\\u5de5\\u5382\\u5730\\u5740\",\"_tokenFactory\":\"Token\\u5de5\\u5382\\u5730\\u5740\",\"_vaultFactory\":\"Vault\\u5de5\\u5382\\u5730\\u5740\"}},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/v2/creation/Creation.sol\":\"Creation\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[],\"viaIR\":true},\"sources\":{\"@openzeppelin/contracts/access/Ownable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.9.0) (access/Ownable.sol)\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"../utils/Context.sol\\\";\\n\\n/**\\n * @dev Contract module which provides a basic access control mechanism, where\\n * there is an account (an owner) that can be granted exclusive access to\\n * specific functions.\\n *\\n * By default, the owner account will be the one that deploys the contract. This\\n * can later be changed with {transferOwnership}.\\n *\\n * This module is used through inheritance. It will make available the modifier\\n * `onlyOwner`, which can be applied to your functions to restrict their use to\\n * the owner.\\n */\\nabstract contract Ownable is Context {\\n    address private _owner;\\n\\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n    /**\\n     * @dev Initializes the contract setting the deployer as the initial owner.\\n     */\\n    constructor() {\\n        _transferOwnership(_msgSender());\\n    }\\n\\n    /**\\n     * @dev Throws if called by any account other than the owner.\\n     */\\n    modifier onlyOwner() {\\n        _checkOwner();\\n        _;\\n    }\\n\\n    /**\\n     * @dev Returns the address of the current owner.\\n     */\\n    function owner() public view virtual returns (address) {\\n        return _owner;\\n    }\\n\\n    /**\\n     * @dev Throws if the sender is not the owner.\\n     */\\n    function _checkOwner() internal view virtual {\\n        require(owner() == _msgSender(), \\\"Ownable: caller is not the owner\\\");\\n    }\\n\\n    /**\\n     * @dev Leaves the contract without owner. It will not be possible to call\\n     * `onlyOwner` functions. Can only be called by the current owner.\\n     *\\n     * NOTE: Renouncing ownership will leave the contract without an owner,\\n     * thereby disabling any functionality that is only available to the owner.\\n     */\\n    function renounceOwnership() public virtual onlyOwner {\\n        _transferOwnership(address(0));\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Can only be called by the current owner.\\n     */\\n    function transferOwnership(address newOwner) public virtual onlyOwner {\\n        require(newOwner != address(0), \\\"Ownable: new owner is the zero address\\\");\\n        _transferOwnership(newOwner);\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Internal function without access restriction.\\n     */\\n    function _transferOwnership(address newOwner) internal virtual {\\n        address oldOwner = _owner;\\n        _owner = newOwner;\\n        emit OwnershipTransferred(oldOwner, newOwner);\\n    }\\n}\\n\",\"keccak256\":\"0xba43b97fba0d32eb4254f6a5a297b39a19a247082a02d6e69349e071e2946218\",\"license\":\"MIT\"},\"@openzeppelin/contracts/proxy/Clones.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.9.0) (proxy/Clones.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev https://eips.ethereum.org/EIPS/eip-1167[EIP 1167] is a standard for\\n * deploying minimal proxy contracts, also known as \\\"clones\\\".\\n *\\n * > To simply and cheaply clone contract functionality in an immutable way, this standard specifies\\n * > a minimal bytecode implementation that delegates all calls to a known, fixed address.\\n *\\n * The library includes functions to deploy a proxy using either `create` (traditional deployment) or `create2`\\n * (salted deterministic deployment). It also includes functions to predict the addresses of clones deployed using the\\n * deterministic method.\\n *\\n * _Available since v3.4._\\n */\\nlibrary Clones {\\n    /**\\n     * @dev Deploys and returns the address of a clone that mimics the behaviour of `implementation`.\\n     *\\n     * This function uses the create opcode, which should never revert.\\n     */\\n    function clone(address implementation) internal returns (address instance) {\\n        /// @solidity memory-safe-assembly\\n        assembly {\\n            // Cleans the upper 96 bits of the `implementation` word, then packs the first 3 bytes\\n            // of the `implementation` address with the bytecode before the address.\\n            mstore(0x00, or(shr(0xe8, shl(0x60, implementation)), 0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000))\\n            // Packs the remaining 17 bytes of `implementation` with the bytecode after the address.\\n            mstore(0x20, or(shl(0x78, implementation), 0x5af43d82803e903d91602b57fd5bf3))\\n            instance := create(0, 0x09, 0x37)\\n        }\\n        require(instance != address(0), \\\"ERC1167: create failed\\\");\\n    }\\n\\n    /**\\n     * @dev Deploys and returns the address of a clone that mimics the behaviour of `implementation`.\\n     *\\n     * This function uses the create2 opcode and a `salt` to deterministically deploy\\n     * the clone. Using the same `implementation` and `salt` multiple time will revert, since\\n     * the clones cannot be deployed twice at the same address.\\n     */\\n    function cloneDeterministic(address implementation, bytes32 salt) internal returns (address instance) {\\n        /// @solidity memory-safe-assembly\\n        assembly {\\n            // Cleans the upper 96 bits of the `implementation` word, then packs the first 3 bytes\\n            // of the `implementation` address with the bytecode before the address.\\n            mstore(0x00, or(shr(0xe8, shl(0x60, implementation)), 0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000))\\n            // Packs the remaining 17 bytes of `implementation` with the bytecode after the address.\\n            mstore(0x20, or(shl(0x78, implementation), 0x5af43d82803e903d91602b57fd5bf3))\\n            instance := create2(0, 0x09, 0x37, salt)\\n        }\\n        require(instance != address(0), \\\"ERC1167: create2 failed\\\");\\n    }\\n\\n    /**\\n     * @dev Computes the address of a clone deployed using {Clones-cloneDeterministic}.\\n     */\\n    function predictDeterministicAddress(\\n        address implementation,\\n        bytes32 salt,\\n        address deployer\\n    ) internal pure returns (address predicted) {\\n        /// @solidity memory-safe-assembly\\n        assembly {\\n            let ptr := mload(0x40)\\n            mstore(add(ptr, 0x38), deployer)\\n            mstore(add(ptr, 0x24), 0x5af43d82803e903d91602b57fd5bf3ff)\\n            mstore(add(ptr, 0x14), implementation)\\n            mstore(ptr, 0x3d602d80600a3d3981f3363d3d373d3d3d363d73)\\n            mstore(add(ptr, 0x58), salt)\\n            mstore(add(ptr, 0x78), keccak256(add(ptr, 0x0c), 0x37))\\n            predicted := keccak256(add(ptr, 0x43), 0x55)\\n        }\\n    }\\n\\n    /**\\n     * @dev Computes the address of a clone deployed using {Clones-cloneDeterministic}.\\n     */\\n    function predictDeterministicAddress(\\n        address implementation,\\n        bytes32 salt\\n    ) internal view returns (address predicted) {\\n        return predictDeterministicAddress(implementation, salt, address(this));\\n    }\\n}\\n\",\"keccak256\":\"0x01f055f5c26ba25d7f83e9aa9ba877fbea4d0bf22227de046ea67494bc932999\",\"license\":\"MIT\"},\"@openzeppelin/contracts/utils/Context.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.9.4) (utils/Context.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Provides information about the current execution context, including the\\n * sender of the transaction and its data. While these are generally available\\n * via msg.sender and msg.data, they should not be accessed in such a direct\\n * manner, since when dealing with meta-transactions the account sending and\\n * paying for execution may not be the actual sender (as far as an application\\n * is concerned).\\n *\\n * This contract is only required for intermediate, library-like contracts.\\n */\\nabstract contract Context {\\n    function _msgSender() internal view virtual returns (address) {\\n        return msg.sender;\\n    }\\n\\n    function _msgData() internal view virtual returns (bytes calldata) {\\n        return msg.data;\\n    }\\n\\n    function _contextSuffixLength() internal view virtual returns (uint256) {\\n        return 0;\\n    }\\n}\\n\",\"keccak256\":\"0xa92e4fa126feb6907daa0513ddd816b2eb91f30a808de54f63c17d0e162c3439\",\"license\":\"MIT\"},\"contracts/v2/creation/Creation.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.26;\\n\\nimport \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\nimport \\\"@openzeppelin/contracts/proxy/Clones.sol\\\";\\nimport \\\"../interfaces/ICreation.sol\\\";\\nimport \\\"../factories/VaultFactory.sol\\\";\\nimport \\\"../factories/TokenFactory.sol\\\";\\nimport \\\"../factories/FundFactory.sol\\\";\\nimport \\\"../factories/YieldFactory.sol\\\";\\n\\ncontract Creation is ICreation, Ownable {\\n    VaultFactory public vaultFactory;\\n    TokenFactory public tokenFactory;\\n    FundFactory public fundFactory;\\n    YieldFactory public yieldFactory;\\n    \\n    // \\u7528\\u6237\\u4f20\\u5165\\u7684\\u521d\\u59cb\\u5316\\u53c2\\u6570\\u7ed3\\u6784\\u4f53\\uff08\\u4e0d\\u5305\\u542b\\u4e0a\\u4e0b\\u6587\\u5408\\u7ea6\\u5730\\u5740\\uff09\\n    struct VaultUserParams {\\n        address validator;\\n        bool whitelistEnabled;\\n        address[] initialWhitelist;\\n    }\\n    \\n    struct TokenUserParams {\\n        string name;\\n        string symbol;\\n        uint8 decimals;\\n    }\\n    \\n    struct FundUserParams {\\n        uint256 startTime;\\n        uint256 endTime;\\n        address assetToken;\\n        uint256 maxSupply;\\n        uint256 softCap;\\n        uint256 sharePrice;\\n        uint256 minDepositAmount;\\n        uint256 manageFeeBps;\\n        address fundingReceiver;\\n        address manageFeeReceiver;\\n        uint256 decimalsMultiplier;\\n    }\\n    \\n    struct AccumulatedYieldUserParams {\\n        address rewardToken;\\n        address rewardManager;\\n        address dividendTreasury;\\n    }\\n    \\n\\n    \\n    // \\u9879\\u76ee\\u6620\\u5c04\\uff1a\\u9879\\u76ee\\u540d\\u79f0 => \\u9879\\u76ee\\u8be6\\u60c5\\n    mapping(string => Project) public projects;\\n    \\n    // \\u7528\\u6237\\u9879\\u76ee\\u6620\\u5c04\\uff1adeployer => projectName[]\\n    mapping(address => string[]) public userProjects;\\n    \\n    // \\u767d\\u540d\\u5355\\u6743\\u9650\\n    mapping(address => bool) public whitelist;\\n\\n    modifier onlyWhitelisted() {\\n        require(whitelist[msg.sender], \\\"Creation: not whitelisted\\\");\\n        _;\\n    }\\n\\n    function addToWhitelist(address user) external onlyOwner {\\n        whitelist[user] = true;\\n    }\\n    function removeFromWhitelist(address user) external onlyOwner {\\n        whitelist[user] = false;\\n    }\\n\\n\\n    \\n    constructor(\\n        address _vaultFactory,\\n        address _tokenFactory,\\n        address _fundFactory,\\n        address _YieldFactory\\n    ) {\\n        vaultFactory = VaultFactory(_vaultFactory);\\n        tokenFactory = TokenFactory(_tokenFactory);\\n        fundFactory = FundFactory(_fundFactory);\\n        yieldFactory = YieldFactory(_YieldFactory);\\n        \\n        // \\u786e\\u4fdd owner \\u88ab\\u6b63\\u786e\\u8bbe\\u7f6e\\n        _transferOwnership(msg.sender);\\n        whitelist[msg.sender] = true;\\n    }\\n    \\n    // \\u5b9e\\u73b0\\u63a5\\u53e3\\u7684deployAll\\u65b9\\u6cd5\\n    function deployAll(\\n        string memory projectName,\\n        uint256 vaultTemplateId,\\n        bytes memory vaultInitData,\\n        uint256 tokenTemplateId,\\n        bytes memory tokenInitData,\\n        uint256 fundTemplateId,\\n        bytes memory fundInitData,\\n        uint256 dividendTemplateId,\\n        bytes memory dividendInitData\\n    ) external override onlyWhitelisted returns (DeploymentResult memory result) {\\n        // \\u53c2\\u6570\\u5408\\u6cd5\\u6027\\u6821\\u9a8c\\n        require(bytes(projectName).length > 0, \\\"Creation: project name cannot be empty\\\");\\n        require(bytes(projects[projectName].name).length == 0, \\\"Creation: project name already exists\\\");\\n        \\n        // \\u6821\\u9a8c Vault \\u521d\\u59cb\\u5316\\u6570\\u636e\\n        require(vaultInitData.length > 0, \\\"Creation: vault init data cannot be empty\\\");\\n        try this.validateVaultInitData(vaultInitData) {\\n            // \\u9a8c\\u8bc1\\u901a\\u8fc7\\n        } catch {\\n            revert(\\\"Creation: invalid vault init data format\\\");\\n        }\\n        \\n        // \\u6821\\u9a8c Token \\u521d\\u59cb\\u5316\\u6570\\u636e\\n        require(tokenInitData.length > 0, \\\"Creation: token init data cannot be empty\\\");\\n        try this.validateTokenInitData(tokenInitData) {\\n            // \\u9a8c\\u8bc1\\u901a\\u8fc7\\n        } catch {\\n            revert(\\\"Creation: invalid token init data format\\\");\\n        }\\n        \\n        // \\u6821\\u9a8c Fund \\u521d\\u59cb\\u5316\\u6570\\u636e\\n        require(fundInitData.length > 0, \\\"Creation: fund init data cannot be empty\\\");\\n        try this.validateFundInitData(fundInitData) {\\n            // \\u9a8c\\u8bc1\\u901a\\u8fc7\\n        } catch {\\n            revert(\\\"Creation: invalid fund init data format\\\");\\n        }\\n        \\n        // \\u6821\\u9a8c Dividend \\u521d\\u59cb\\u5316\\u6570\\u636e\\n        require(dividendInitData.length > 0, \\\"Creation: dividend init data cannot be empty\\\");\\n        try this.validateDividendInitData(dividendInitData) {\\n            // \\u9a8c\\u8bc1\\u901a\\u8fc7\\n        } catch {\\n            revert(\\\"Creation: invalid dividend init data format\\\");\\n        }\\n        // 1. \\u90e8\\u7f72Vault\\n        address vault = vaultFactory.createVault(vaultTemplateId, vaultInitData);\\n        require(vault != address(0), \\\"Creation: vault creation failed\\\");\\n        \\n        // 2. \\u90e8\\u7f72Token\\uff08\\u9700\\u8981vault\\u53c2\\u6570\\uff09\\n        address token = tokenFactory.createToken(tokenTemplateId, vault, tokenInitData);\\n        require(token != address(0), \\\"Creation: token creation failed\\\");\\n        \\n        // 3. \\u90e8\\u7f72Fund\\n        address fund = fundFactory.createFund(fundTemplateId, vault, fundInitData);\\n        require(fund != address(0), \\\"Creation: fund creation failed\\\");\\n        \\n        // 4. \\u90e8\\u7f72AccumulatedYield\\n        address accumulatedYield = yieldFactory.createYield(\\n            dividendTemplateId,\\n            vault,\\n            token,\\n            dividendInitData\\n        );\\n        require(accumulatedYield != address(0), \\\"Creation: accumulatedYield creation failed\\\");\\n        \\n        // 5. \\u521b\\u5efa\\u9879\\u76ee\\u8bb0\\u5f55        \\n        projects[projectName] = Project({\\n            name: projectName,\\n            vault: vault,\\n            token: token,\\n            fund: fund,\\n            accumulatedYield: accumulatedYield,\\n            createdAt: block.timestamp,\\n            deployer: msg.sender\\n        });\\n        \\n        userProjects[msg.sender].push(projectName);\\n        \\n        // 7. \\u6784\\u9020\\u8fd4\\u56de\\u7ed3\\u679c\\n        result = DeploymentResult({\\n            vault: vault,\\n            token: token,\\n            fund: fund,\\n            accumulatedYield: accumulatedYield\\n        });\\n        \\n        emit ProjectCreated(projectName, vault, token, fund, accumulatedYield, msg.sender);\\n        \\n        return result;\\n    }\\n    \\n    // \\u9a8c\\u8bc1 Vault \\u521d\\u59cb\\u5316\\u6570\\u636e\\u683c\\u5f0f\\n    function validateVaultInitData(bytes memory vaultInitData) external pure {\\n        (address manager, address validator, bool whitelistEnabled, address[] memory initialWhitelist) =\\n            abi.decode(vaultInitData, (address, address, bool, address[]));\\n        \\n        require(manager != address(0), \\\"Creation: vault manager cannot be zero address\\\");\\n        require(validator != address(0), \\\"Creation: vault validator cannot be zero address\\\");\\n        \\n        // \\u5982\\u679c\\u542f\\u7528\\u767d\\u540d\\u5355\\uff0c\\u68c0\\u67e5\\u521d\\u59cb\\u767d\\u540d\\u5355\\n        if (whitelistEnabled) {\\n            require(initialWhitelist.length > 0, \\\"Creation: initial whitelist cannot be empty when whitelist is enabled\\\");\\n            for (uint256 i = 0; i < initialWhitelist.length; i++) {\\n                require(initialWhitelist[i] != address(0), \\\"Creation: whitelist address cannot be zero\\\");\\n            }\\n        }\\n    }\\n    \\n    // \\u9a8c\\u8bc1 Token \\u521d\\u59cb\\u5316\\u6570\\u636e\\u683c\\u5f0f\\n    function validateTokenInitData(bytes memory tokenInitData) external pure {\\n        (string memory name, string memory symbol, uint8 decimals) =\\n            abi.decode(tokenInitData, (string, string, uint8));\\n        \\n        require(bytes(name).length > 0, \\\"Creation: token name cannot be empty\\\");\\n        require(bytes(symbol).length > 0, \\\"Creation: token symbol cannot be empty\\\");\\n        require(decimals <= 18, \\\"Creation: token decimals cannot exceed 18\\\");\\n    }\\n    \\n    // \\u9a8c\\u8bc1 Fund \\u521d\\u59cb\\u5316\\u6570\\u636e\\u683c\\u5f0f\\n    function validateFundInitData(bytes memory fundInitData) external pure {\\n        (\\n            uint256 startTime,\\n            uint256 endTime,\\n            address assetToken,\\n            uint256 maxSupply,\\n            uint256 softCap,\\n            uint256 sharePrice,\\n            uint256 minDepositAmount,\\n            uint256 manageFeeBps,\\n            address fundingReceiver,\\n            address manageFeeReceiver,\\n            uint256 decimalsMultiplier\\n        ) = abi.decode(fundInitData, (uint256, uint256, address, uint256, uint256, uint256, uint256, uint256, address, address, uint256));\\n        \\n        require(startTime > 0, \\\"Creation: start time must be greater than 0\\\");\\n        require(endTime > startTime, \\\"Creation: end time must be after start time\\\");\\n        require(assetToken != address(0), \\\"Creation: asset token cannot be zero address\\\");\\n        require(maxSupply > 0, \\\"Creation: max supply must be greater than 0\\\");\\n        require(softCap > 0 && softCap <= maxSupply, \\\"Creation: soft cap must be greater than 0 and not exceed max supply\\\");\\n        require(sharePrice > 0, \\\"Creation: share price must be greater than 0\\\");\\n        require(minDepositAmount > 0, \\\"Creation: min deposit amount must be greater than 0\\\");\\n        require(manageFeeBps <= 10000, \\\"Creation: manage fee cannot exceed 100%\\\");\\n        require(fundingReceiver != address(0), \\\"Creation: funding receiver cannot be zero address\\\");\\n        require(manageFeeReceiver != address(0), \\\"Creation: manage fee receiver cannot be zero address\\\");\\n        require(decimalsMultiplier > 0, \\\"Creation: decimals multiplier must be greater than 0\\\");\\n    }\\n    \\n    // \\u9a8c\\u8bc1 Dividend \\u521d\\u59cb\\u5316\\u6570\\u636e\\u683c\\u5f0f\\n    function validateDividendInitData(bytes memory dividendInitData) external pure {\\n        (address rewardToken, address rewardManager, address dividendTreasury) =\\n            abi.decode(dividendInitData, (address, address, address));\\n        \\n        require(rewardToken != address(0), \\\"Creation: reward token cannot be zero address\\\");\\n        require(rewardManager != address(0), \\\"Creation: reward manager cannot be zero address\\\");\\n        require(dividendTreasury != address(0), \\\"Creation: dividend treasury cannot be zero address\\\");\\n    }\\n    \\n    // \\u5b9e\\u73b0\\u63a5\\u53e3\\u7684\\u5176\\u4ed6\\u65b9\\u6cd5\\n    function setFactories(\\n        address _vaultFactory,\\n        address _tokenFactory,\\n        address _fundFactory,\\n        address _dividendFactory\\n    ) external override onlyOwner {\\n        vaultFactory = VaultFactory(_vaultFactory);\\n        tokenFactory = TokenFactory(_tokenFactory);\\n        fundFactory = FundFactory(_fundFactory);\\n        yieldFactory = YieldFactory(_dividendFactory);\\n        \\n        emit FactoriesUpdated(_vaultFactory, _tokenFactory, _fundFactory, _dividendFactory);\\n    }\\n    \\n    function getFactories() external view override returns (\\n        address,\\n        address,\\n        address,\\n        address\\n    ) {\\n        return (address(vaultFactory), address(tokenFactory), address(fundFactory), address(yieldFactory));\\n    }\\n    \\n    function deployVault(uint256 templateId, bytes memory initData) external override returns (address vault) {\\n        vault = vaultFactory.createVault(templateId, initData);\\n        emit VaultCreated(vault);\\n        return vault;\\n    }\\n    \\n    function deployToken(uint256 templateId, address vault, bytes memory initData) external override returns (address token) {\\n        token = tokenFactory.createToken(templateId, vault, initData);\\n        emit TokenCreated(token);\\n        return token;\\n    }\\n    \\n    function deployFund(uint256 templateId, address vault, bytes memory initData) external override returns (address fund) {\\n        fund = fundFactory.createFund(templateId, vault, initData);\\n        emit FundCreated(fund);\\n        return fund;\\n    }\\n    \\n    function deployDividend(uint256 templateId, address vault, address vaultToken, bytes memory initData) external override returns (address dividend) {\\n        dividend = yieldFactory.createYield(templateId, vault, vaultToken, initData);\\n        emit YieldCreated(dividend);\\n        return dividend;\\n    }\\n    \\n\\n    \\n\\n    \\n    // \\u6839\\u636e\\u9879\\u76ee\\u540d\\u79f0\\u83b7\\u53d6\\u9879\\u76ee\\u8be6\\u60c5\\n    function getProjectByName(string memory projectName) external view returns (Project memory) {\\n        Project memory project = projects[projectName];\\n        require(bytes(project.name).length > 0, \\\"Creation: project not found\\\");\\n        return project;\\n    }\\n    \\n    // \\u83b7\\u53d6\\u7528\\u6237\\u7684\\u6240\\u6709\\u9879\\u76ee\\u8be6\\u60c5\\n    function getUserProjectDetails(address user) external view returns (Project[] memory) {\\n        string[] memory projectNames = userProjects[user];\\n        Project[] memory userProjectDetails = new Project[](projectNames.length);\\n        \\n        for (uint256 i = 0; i < projectNames.length; i++) {\\n            userProjectDetails[i] = projects[projectNames[i]];\\n        }\\n        \\n        return userProjectDetails;\\n    }\\n    \\n    // \\u83b7\\u53d6\\u7528\\u6237\\u7684\\u6240\\u6709\\u9879\\u76ee\\uff08\\u8fd4\\u56de DeploymentResult \\u6570\\u7ec4\\uff09\\n    function getUserProjects(address user) external view override returns (DeploymentResult[] memory result) {\\n        string[] memory projectNames = userProjects[user];\\n        result = new DeploymentResult[](projectNames.length);\\n        \\n        for (uint256 i = 0; i < projectNames.length; i++) {\\n            Project memory project = projects[projectNames[i]];\\n            result[i] = DeploymentResult({\\n                vault: project.vault,\\n                token: project.token,\\n                fund: project.fund,\\n                accumulatedYield: project.accumulatedYield\\n            });\\n        }\\n        \\n        return result;\\n    }\\n} \",\"keccak256\":\"0xa56795d57f6e6f4f78bc7b7b01ab24df140d8e94737e1bc0c2ec3be3ee68536d\",\"license\":\"MIT\"},\"contracts/v2/factories/FundFactory.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.26;\\n\\nimport \\\"@openzeppelin/contracts/proxy/Clones.sol\\\";\\nimport \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\nimport \\\"../interfaces/IFactory.sol\\\";\\n\\ncontract FundFactory is IFundFactory, Ownable {\\n    using Clones for address;\\n    \\n    mapping(uint256 => address) public templates;\\n    uint256 public templateCount;\\n    \\n    function addTemplate(uint256 templateId, address template) external override onlyOwner {\\n        require(template != address(0), \\\"FundFactory: invalid template\\\");\\n        require(templates[templateId] == address(0), \\\"FundFactory: template already exists\\\");\\n        \\n        templates[templateId] = template;\\n        if (templateId >= templateCount) {\\n            templateCount = templateId + 1;\\n        }\\n        emit TemplateAdded(templateId, template);\\n    }\\n    \\n    function createFund(uint256 templateId, address vault, bytes memory initData) external override returns (address fund) {\\n        address template = templates[templateId];\\n        require(template != address(0), \\\"FundFactory: template not found\\\");\\n        \\n        fund = template.clone();\\n        \\n        bytes memory fullInitData = abi.encodeWithSignature(\\n            \\\"initiate(address,bytes)\\\",\\n            vault, initData\\n        );\\n        \\n        (bool success, ) = fund.call(fullInitData);\\n        require(success, \\\"FundFactory: initialization failed\\\");\\n        \\n        emit FundCreated(templateId, fund, msg.sender);\\n        \\n        return fund;\\n    }\\n    \\n    function getTemplate(uint256 templateId) external view override returns (address) {\\n        return templates[templateId];\\n    }\\n    \\n    function getTemplateCount() external view override returns (uint256) {\\n        return templateCount;\\n    }\\n} \",\"keccak256\":\"0x996e12ebee9c8831ead2a9b50e82eef94507e6e5a044e9068d1095b97d5e5471\",\"license\":\"MIT\"},\"contracts/v2/factories/TokenFactory.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.26;\\n\\nimport \\\"@openzeppelin/contracts/proxy/Clones.sol\\\";\\nimport \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\nimport \\\"../interfaces/IFactory.sol\\\";\\n\\ncontract TokenFactory is ITokenFactory, Ownable {\\n    using Clones for address;\\n    \\n    mapping(uint256 => address) public templates;\\n    uint256 public templateCount;\\n    \\n    function addTemplate(uint256 templateId, address template) external override onlyOwner {\\n        require(template != address(0), \\\"TokenFactory: invalid template\\\");\\n        require(templates[templateId] == address(0), \\\"TokenFactory: template already exists\\\");\\n        \\n        templates[templateId] = template;\\n        if (templateId >= templateCount) {\\n            templateCount = templateId + 1;\\n        }\\n        emit TemplateAdded(templateId, template);\\n    }\\n    \\n    function createToken(uint256 templateId, address vault, bytes memory initData) external override returns (address token) {\\n        address template = templates[templateId];\\n        require(template != address(0), \\\"TokenFactory: template not found\\\");\\n        \\n        token = template.clone();\\n        \\n        bytes memory fullInitData = abi.encodeWithSignature(\\n            \\\"initiate(address,bytes)\\\",\\n            vault, initData\\n        );\\n        \\n        (bool success, ) = token.call(fullInitData);\\n        require(success, \\\"TokenFactory: initialization failed\\\");\\n        \\n        emit TokenCreated(templateId, token, msg.sender);\\n        \\n        return token;\\n    }\\n    \\n    function getTemplate(uint256 templateId) external view override returns (address) {\\n        return templates[templateId];\\n    }\\n    \\n    function getTemplateCount() external view override returns (uint256) {\\n        return templateCount;\\n    }\\n} \",\"keccak256\":\"0x5169c8b547834b3ee495d33a7ea5c5b31b48b3dfe118166b87fca77290aaf60d\",\"license\":\"MIT\"},\"contracts/v2/factories/VaultFactory.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\nimport \\\"@openzeppelin/contracts/proxy/Clones.sol\\\";\\nimport \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\nimport \\\"../interfaces/IFactory.sol\\\";\\n\\ncontract VaultFactory is IVaultFactory, Ownable {\\n    using Clones for address;\\n    \\n    mapping(uint256 => address) public templates;\\n    uint256 public templateCount;\\n    \\n    function addTemplate(uint256 templateId, address template) external override onlyOwner {\\n        require(template != address(0), \\\"VaultFactory: invalid template\\\");\\n        require(templates[templateId] == address(0), \\\"VaultFactory: template already exists\\\");\\n        \\n        templates[templateId] = template;\\n        if (templateId >= templateCount) {\\n            templateCount = templateId + 1;\\n        }\\n        \\n        emit TemplateAdded(templateId, template);\\n    }\\n    \\n    function createVault(uint256 templateId, bytes memory initData) external override returns (address vault) {\\n        address template = templates[templateId];\\n        require(template != address(0), \\\"VaultFactory: template not found\\\");\\n        \\n        vault = template.clone();\\n        \\n        bytes memory fullInitData = abi.encodeWithSignature(\\n            \\\"initiate(bytes)\\\",\\n            initData\\n        );\\n        \\n        (bool success, ) = vault.call(fullInitData);\\n        require(success, \\\"VaultFactory: initialization failed\\\");\\n        \\n        emit VaultCreated(templateId, vault, msg.sender);\\n        \\n        return vault;\\n    }\\n    \\n    function getTemplate(uint256 templateId) external view override returns (address) {\\n        return templates[templateId];\\n    }\\n    \\n    function getTemplateCount() external view override returns (uint256) {\\n        return templateCount;\\n    }\\n} \",\"keccak256\":\"0x23bd65127f07df8eb986f0c56f6b1d6d41dfb02216821c1094143aa3012026de\",\"license\":\"MIT\"},\"contracts/v2/factories/YieldFactory.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.26;\\n\\nimport \\\"@openzeppelin/contracts/proxy/Clones.sol\\\";\\nimport \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\nimport \\\"../interfaces/IFactory.sol\\\";\\n\\ncontract YieldFactory is IYieldFactory, Ownable {\\n    using Clones for address;\\n    \\n    mapping(uint256 => address) public templates;\\n    uint256 public templateCount;\\n    \\n    function addTemplate(uint256 templateId, address template) external override onlyOwner {\\n        require(template != address(0), \\\"YieldFactory: invalid template\\\");\\n        require(templates[templateId] == address(0), \\\"YieldFactory: template already exists\\\");\\n        \\n        templates[templateId] = template;\\n        if (templateId >= templateCount) {\\n            templateCount = templateId + 1;\\n        }\\n        emit TemplateAdded(templateId, template);\\n    }\\n    \\n    function createYield(uint256 templateId, address vault, address vaultToken, bytes memory initData) external override returns (address accumulatedYield) {\\n        address template = templates[templateId];\\n        require(template != address(0), \\\"YieldFactory: template not found\\\");\\n        \\n        accumulatedYield = template.clone();\\n        \\n        bytes memory fullInitData = abi.encodeWithSignature(\\n            \\\"initiate(address,address,bytes)\\\",\\n            vault, \\n            vaultToken,\\n            initData\\n        );\\n        \\n        // \\u8c03\\u7528\\u521d\\u59cb\\u5316\\u51fd\\u6570\\n        (bool success, ) = accumulatedYield.call(fullInitData);\\n        require(success, \\\"YieldFactory: initialization failed\\\");\\n        \\n        emit YieldCreated(templateId, accumulatedYield, msg.sender);\\n        \\n        return accumulatedYield;\\n    }\\n    \\n    function getTemplate(uint256 templateId) external view override returns (address) {\\n        return templates[templateId];\\n    }\\n    \\n    function getTemplateCount() external view override returns (uint256) {\\n        return templateCount;\\n    }\\n} \",\"keccak256\":\"0x14b591aacdff7cff5b54185ee7cb1b79e95b000cfcc0d3aead2bb0ac735be381\",\"license\":\"MIT\"},\"contracts/v2/interfaces/ICreation.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.26;\\n\\n/**\\n * @title ICreation\\n * @dev \\u4e00\\u952e\\u90e8\\u7f72\\u5668\\u63a5\\u53e3 - \\u57fa\\u4e8e\\u5de5\\u5382\\u6a21\\u5f0f\\u7684\\u8bbe\\u8ba1\\n */\\ninterface ICreation {\\n    // ============ \\u7ed3\\u6784\\u4f53\\u5b9a\\u4e49 ============\\n    \\n    /**\\n     * @dev Vault\\u521d\\u59cb\\u5316\\u6570\\u636e\\n     */\\n    struct VaultInitData {\\n        address validator;        // \\u9a8c\\u8bc1\\u8005\\u5730\\u5740\\n        bool whitelistEnabled;    // \\u662f\\u5426\\u542f\\u7528\\u767d\\u540d\\u5355\\n        address[] initialWhitelist; // \\u521d\\u59cb\\u767d\\u540d\\u5355\\n    }\\n    \\n    /**\\n     * @dev Token\\u521d\\u59cb\\u5316\\u6570\\u636e\\n     */\\n    struct TokenInitData {\\n        string name;      // \\u4ee3\\u5e01\\u540d\\u79f0\\n        string symbol;    // \\u4ee3\\u5e01\\u7b26\\u53f7\\n        uint8 decimals;   // \\u4ee3\\u5e01\\u7cbe\\u5ea6\\n    }\\n    \\n    /**\\n     * @dev Fund\\u521d\\u59cb\\u5316\\u6570\\u636e\\n     */\\n    struct FundInitData {\\n        uint256 startTime;           // \\u5f00\\u59cb\\u65f6\\u95f4\\uff08UNIX\\u65f6\\u95f4\\u6233\\uff09\\n        uint256 endTime;             // \\u7ed3\\u675f\\u65f6\\u95f4\\uff08UNIX\\u65f6\\u95f4\\u6233\\uff09\\n        address assetToken;          // \\u878d\\u8d44\\u4ee3\\u5e01\\u5730\\u5740\\uff08\\u5982USDT\\uff09\\n        uint256 maxSupply;           // \\u6700\\u5927\\u878d\\u8d44\\u4ee3\\u5e01\\u6570\\u91cf\\n        uint256 softCap;             // \\u878d\\u8d44\\u6210\\u529f\\u9608\\u503c\\n        uint256 sharePrice;          // \\u4ee3\\u5e01\\u4ef7\\u683c\\uff08\\u5355\\u4f4d\\uff1a\\u878d\\u8d44\\u4ee3\\u5e01\\uff09\\n        uint256 minDepositAmount;    // \\u6700\\u5c0f\\u6295\\u8d44\\u91d1\\u989d\\n        uint256 manageFeeBps;        // \\u7ba1\\u7406\\u8d39\\u57fa\\u70b9\\uff08\\u5982200 = 2%\\uff09\\n        address fundingReceiver;     // \\u878d\\u8d44\\u63a5\\u6536\\u5730\\u5740\\n        address manageFeeReceiver;   // \\u7ba1\\u7406\\u8d39\\u63a5\\u6536\\u5730\\u5740\\n        uint256 decimalsMultiplier;  // \\u7cbe\\u5ea6\\u4e58\\u6570\\uff0810^\\u878d\\u8d44\\u4ee3\\u5e01\\u7cbe\\u5ea6\\uff09\\n    }\\n    \\n    /**\\n     * @dev Dividend\\u521d\\u59cb\\u5316\\u6570\\u636e\\n     */\\n    struct DividendInitData {\\n        address rewardToken;   // \\u6536\\u76ca\\u4ee3\\u5e01\\u5730\\u5740\\uff08\\u5982USDT\\uff09\\n        address rewardManager; // \\u6536\\u76ca\\u8d44\\u91d1\\u7ba1\\u7406\\u5458\\n    }\\n    \\n    /**\\n     * @dev \\u90e8\\u7f72\\u7ed3\\u679c\\u7ed3\\u6784\\u4f53\\n     */\\n    struct DeploymentResult {\\n        address vault;\\n        address token;\\n        address fund;\\n        address accumulatedYield;\\n    }\\n    \\n    /**\\n     * @dev \\u9879\\u76ee\\u7ed3\\u6784\\u4f53\\n     */\\n    struct Project {\\n        string name;\\n        address vault;\\n        address token;\\n        address fund;\\n        address accumulatedYield;\\n        uint256 createdAt;\\n        address deployer;\\n    }\\n    \\n    // ============ \\u4e8b\\u4ef6\\u5b9a\\u4e49 ============\\n    \\n    event VaultCreated(address indexed vault);\\n    event TokenCreated(address indexed token);\\n    event FundCreated(address indexed fund);\\n    event YieldCreated(address indexed yield);\\n    \\n    \\n    event ProjectCreated(\\n        string name,\\n        address vault,\\n        address token,\\n        address fund,\\n        address yield,\\n        address deployer\\n        );\\n    \\n    event FactoriesUpdated(\\n        address vaultFactory,\\n        address tokenFactory,\\n        address fundFactory,\\n        address dividendFactory\\n    );\\n    \\n    // ============ \\u5de5\\u5382\\u7ba1\\u7406\\u63a5\\u53e3 ============\\n    \\n    /**\\n     * @dev \\u8bbe\\u7f6e\\u5de5\\u5382\\u5408\\u7ea6\\u5730\\u5740\\n     * @param _vaultFactory Vault\\u5de5\\u5382\\u5730\\u5740\\n     * @param _tokenFactory Token\\u5de5\\u5382\\u5730\\u5740\\n     * @param _fundFactory Fund\\u5de5\\u5382\\u5730\\u5740\\n     * @param _dividendFactory Dividend\\u5de5\\u5382\\u5730\\u5740\\n     */\\n    function setFactories(\\n        address _vaultFactory,\\n        address _tokenFactory,\\n        address _fundFactory,\\n        address _dividendFactory\\n    ) external;\\n    \\n    /**\\n     * @dev \\u83b7\\u53d6\\u5de5\\u5382\\u5730\\u5740\\n     * @return vaultFactory Vault\\u5de5\\u5382\\u5730\\u5740\\n     * @return tokenFactory Token\\u5de5\\u5382\\u5730\\u5740\\n     * @return fundFactory Fund\\u5de5\\u5382\\u5730\\u5740\\n     * @return dividendFactory Dividend\\u5de5\\u5382\\u5730\\u5740\\n     */\\n    function getFactories() external view returns (\\n        address vaultFactory,\\n        address tokenFactory,\\n        address fundFactory,\\n        address dividendFactory\\n    );\\n\\n    // ============ \\u767d\\u540d\\u5355\\u7ba1\\u7406\\u63a5\\u53e3 ============\\n    \\n    function addToWhitelist(address user) external;\\n    function removeFromWhitelist(address user) external;\\n    \\n    // ============ \\u90e8\\u7f72\\u63a5\\u53e3 ============\\n    \\n    /**\\n     * @dev \\u6838\\u5fc3\\u90e8\\u7f72\\u51fd\\u6570\\uff08\\u4f7f\\u7528bytes\\u6570\\u636e\\uff0c\\u63a8\\u8350\\u4f7f\\u7528\\uff09\\n     * @param projectName \\u9879\\u76ee\\u540d\\u79f0\\n     * @param vaultTemplateId Vault\\u6a21\\u677fID\\n     * @param vaultInitData Vault\\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\\n     * @param tokenTemplateId Token\\u6a21\\u677fID\\n     * @param tokenInitData Token\\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\\n     * @param fundTemplateId Fund\\u6a21\\u677fID\\n     * @param fundInitData Fund\\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\\n     * @param dividendTemplateId Dividend\\u6a21\\u677fID\\n     * @param dividendInitData Dividend\\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\\n     * @return result \\u90e8\\u7f72\\u7ed3\\u679c\\n     */\\n    function deployAll(\\n        // \\u9879\\u76ee\\u540d\\u79f0\\n        string memory projectName,\\n        \\n        // Vault\\u53c2\\u6570\\n        uint256 vaultTemplateId,\\n        bytes memory vaultInitData,\\n        \\n        // Token\\u53c2\\u6570\\n        uint256 tokenTemplateId,\\n        bytes memory tokenInitData,\\n        \\n        // Fund\\u53c2\\u6570\\n        uint256 fundTemplateId,\\n        bytes memory fundInitData,\\n        \\n        // Dividend\\u53c2\\u6570\\n        uint256 dividendTemplateId,\\n        bytes memory dividendInitData\\n    ) external returns (DeploymentResult memory result);\\n    \\n\\n    \\n    /**\\n     * @dev \\u5355\\u72ec\\u90e8\\u7f72Vault\\n     * @param templateId \\u6a21\\u677fID\\n     * @param initData \\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\\n     * @return vault Vault\\u5730\\u5740\\n     */\\n    function deployVault(\\n        uint256 templateId,\\n        bytes memory initData\\n    ) external returns (address vault);\\n    \\n    /**\\n     * @dev \\u5355\\u72ec\\u90e8\\u7f72Token\\n     * @param templateId \\u6a21\\u677fID\\n     * @param vault Vault\\u5730\\u5740\\n     * @param initData \\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\\n     * @return token Token\\u5730\\u5740\\n     */\\n    function deployToken(\\n        uint256 templateId,\\n        address vault,\\n        bytes memory initData\\n    ) external returns (address token);\\n    \\n    /**\\n     * @dev \\u5355\\u72ec\\u90e8\\u7f72Fund\\n     * @param templateId \\u6a21\\u677fID\\n     * @param vault Vault\\u5730\\u5740\\n     * @param initData \\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\\n     * @return fund Fund\\u5730\\u5740\\n     */\\n    function deployFund(\\n        uint256 templateId,\\n        address vault,\\n        bytes memory initData\\n    ) external returns (address fund);\\n    \\n    /**\\n     * @dev \\u5355\\u72ec\\u90e8\\u7f72Dividend\\n     * @param templateId \\u6a21\\u677fID\\n     * @param vault Vault\\u5730\\u5740\\n     * @param token Token\\u5730\\u5740\\n     * @param initData \\u521d\\u59cb\\u5316\\u6570\\u636e\\uff08bytes\\u683c\\u5f0f\\uff09\\n     * @return dividend Dividend\\u5730\\u5740\\n     */\\n    function deployDividend(\\n        uint256 templateId,\\n        address vault,\\n        address token,\\n        bytes memory initData\\n    ) external returns (address dividend);\\n    \\n    // ============ \\u67e5\\u8be2\\u63a5\\u53e3 ============\\n    \\n    /**\\n     * @dev \\u67e5\\u8be2\\u7528\\u6237\\u90e8\\u7f72\\u7684\\u9879\\u76ee\\n     * @param user \\u7528\\u6237\\u5730\\u5740\\n     * @return projects \\u7528\\u6237\\u7684\\u9879\\u76ee\\u6570\\u7ec4\\n     */\\n    function getUserProjects(address user) external view returns (DeploymentResult[] memory projects);\\n    \\n    /**\\n     * @dev \\u6839\\u636e\\u9879\\u76ee\\u540d\\u79f0\\u83b7\\u53d6\\u9879\\u76ee\\u8be6\\u60c5\\n     * @param projectName \\u9879\\u76ee\\u540d\\u79f0\\n     * @return project \\u9879\\u76ee\\u8be6\\u60c5\\n     */\\n    function getProjectByName(string memory projectName) external view returns (Project memory);\\n    \\n    /**\\n     * @dev \\u83b7\\u53d6\\u7528\\u6237\\u7684\\u6240\\u6709\\u9879\\u76ee\\u8be6\\u60c5\\n     * @param user \\u7528\\u6237\\u5730\\u5740\\n     * @return projects \\u9879\\u76ee\\u8be6\\u60c5\\u6570\\u7ec4\\n     */\\n    function getUserProjectDetails(address user) external view returns (Project[] memory);\\n} \",\"keccak256\":\"0xfadc6d7835128718b64411b8abb02096db9cd280c294adfff33092c64fcf0b12\",\"license\":\"MIT\"},\"contracts/v2/interfaces/IFactory.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.26;\\n\\n/**\\n * @title IVaultFactory\\n * @dev Vault\\u5de5\\u5382\\u63a5\\u53e3\\n */\\ninterface IVaultFactory {\\n    event TemplateAdded(uint256 indexed templateId, address indexed template);\\n    event VaultCreated(uint256 indexed templateId, address indexed vault, address indexed deployer);\\n    \\n    function createVault(uint256 templateId, bytes memory initData) external returns (address);\\n    function addTemplate(uint256 templateId, address template) external;\\n    function getTemplate(uint256 templateId) external view returns (address);\\n    function getTemplateCount() external view returns (uint256);\\n}\\n\\n/**\\n * @title ITokenFactory\\n * @dev Token\\u5de5\\u5382\\u63a5\\u53e3\\n */\\ninterface ITokenFactory {\\n    event TemplateAdded(uint256 indexed templateId, address indexed template);\\n    event TokenCreated(uint256 indexed templateId, address indexed token, address indexed vault);\\n    \\n    function createToken(uint256 templateId, address vault, bytes memory initData) external returns (address);\\n    function addTemplate(uint256 templateId, address template) external;\\n    function getTemplate(uint256 templateId) external view returns (address);\\n    function getTemplateCount() external view returns (uint256);\\n}\\n\\n/**\\n * @title IFundFactory\\n * @dev Fund\\u5de5\\u5382\\u63a5\\u53e3\\n */\\ninterface IFundFactory {\\n    event TemplateAdded(uint256 indexed templateId, address indexed template);\\n    event FundCreated(uint256 indexed templateId, address indexed fund, address indexed vault);\\n    \\n    function createFund(uint256 templateId, address vault, bytes memory initData) external returns (address);\\n    function addTemplate(uint256 templateId, address template) external;\\n    function getTemplate(uint256 templateId) external view returns (address);\\n    function getTemplateCount() external view returns (uint256);\\n}\\n\\n/**\\n * @title IYieldFactory\\n * @dev Yield\\u5de5\\u5382\\u63a5\\u53e3\\n */\\ninterface IYieldFactory {\\n    event TemplateAdded(uint256 indexed templateId, address indexed template);\\n    event YieldCreated(uint256 indexed templateId, address indexed accumulatedYield, address indexed vault);\\n    \\n    function createYield(uint256 templateId, address vault, address token, bytes memory initData) external returns (address);\\n    function addTemplate(uint256 templateId, address template) external;\\n    function getTemplate(uint256 templateId) external view returns (address);\\n    function getTemplateCount() external view returns (uint256);\\n} \",\"keccak256\":\"0x4df21f3df021dfbf8aec071425732d0b4054dd92b824a5625cc1bbc243ae436f\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x6080346100f757601f612d8338819003918201601f19168301916001600160401b038311848410176100fc578084926080946040528339810103126100f75761004781610112565b9061005460208201610112565b61006c606061006560408501610112565b9301610112565b9261007633610126565b600180546001600160a01b03199081166001600160a01b0393841617909155600280548216938316939093179092556003805483169382169390931790925560048054909116929091169190911790556100cf33610126565b3360005260076020526040600020600160ff19825416179055604051612c15908161016e8239f35b600080fd5b634e487b7160e01b600052604160045260246000fd5b51906001600160a01b03821682036100f757565b600080546001600160a01b039283166001600160a01b03198216811783559216907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09080a356fe608080604052600436101561001357600080fd5b600090813560e01c90816316fd84f7146125cf5750806329e5213a146124ed5780632e600c0214611fd65780632fa9c00714611f6b5780633239298e14611dc25780633dea9e6614611d9957806343417cea146111fa5780634b77f269146110d15780636c96768014610fd4578063715018a614610f7a57806377bdbaba14610eb05780637e6cbb6a14610e5e5780638525aff114610caa5780638ab1d68114610c695780638da5cb5b14610c4257806391c9b26814610b705780639803ba4114610aa65780639b19251a14610a675780639de4ae011461089b578063d8a06f7314610872578063e32e723c14610652578063e43252d71461060e578063e45917671461032f578063e77772fe14610306578063f2fde38b146102405763f5839fa71461013f57600080fd5b3461023d57604036600319011261023d57806024356001600160401b03811161023a576101a461017560209236906004016126c3565b6001546040516325920b2160e01b81529586936001600160a01b03909216928492839160048035908401612969565b03925af1801561022d5781906101ed575b6020925060018060a01b0316807f2e49a5810fda2439a23771848b4acec786b0a64d4de3d124ac57fc8739c388756040519380a28152f35b50906020813d602011610225575b8161020860209383612687565b81010312610221579061021c602092612930565b6101b5565b5080fd5b3d91506101fb565b50604051903d90823e3d90fd5b50fd5b80fd5b503461023d57602036600319011261023d5761025a6125f4565b610262612b87565b6001600160a01b031680156102b25781546001600160a01b03198116821783556001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08380a380f35b60405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b6064820152608490fd5b503461023d578060031936011261023d576002546040516001600160a01b039091168152602090f35b503461023d57602036600319011261023d576004356001600160401b038111610221576103609036906004016126c3565b80518101906080816020840193031261060a5761037f60208201612930565b61038b60408301612930565b906060830151928315158403610602576080810151906001600160401b03821161060657019380603f860112156106025760208501516103ca81612b5c565b956103d86040519788612687565b8187526020808089019360051b830101019283116105fe57604001905b8282106105e6575050506001600160a01b03161561058a576001600160a01b03161561052c57610423575080f35b8051156104b357815b81518110156104ae576001600160a01b036104478284612b73565b5116156104565760010161042c565b60405162461bcd60e51b815260206004820152602a60248201527f4372656174696f6e3a2077686974656c69737420616464726573732063616e6e6044820152696f74206265207a65726f60b01b6064820152608490fd5b505080f35b60405162461bcd60e51b815260206004820152604560248201527f4372656174696f6e3a20696e697469616c2077686974656c6973742063616e6e60448201527f6f7420626520656d707479207768656e2077686974656c69737420697320656e60648201526418589b195960da1b608482015260a490fd5b60405162461bcd60e51b815260206004820152603060248201527f4372656174696f6e3a207661756c742076616c696461746f722063616e6e6f7460448201526f206265207a65726f206164647265737360801b6064820152608490fd5b60405162461bcd60e51b815260206004820152602e60248201527f4372656174696f6e3a207661756c74206d616e616765722063616e6e6f74206260448201526d65207a65726f206164647265737360901b6064820152608490fd5b602080916105f384612930565b8152019101906103f5565b8780fd5b8580fd5b8680fd5b8280fd5b503461023d57602036600319011261023d576106286125f4565b610630612b87565b6001600160a01b03168152600760205260408120805460ff1916600117905580f35b503461023d57602036600319011261023d576001600160a01b036106746125f4565b168152600660205260408120805461068b81612b5c565b916106996040519384612687565b81835283526020808420849184015b8383106108555785858051906106bd82612b5c565b916106cb6040519384612687565b8083526106da601f1991612b5c565b01835b81811061083e575050825b81518110156107be578061070761070160019385612b73565b5161290a565b604051906107148261263b565b61071d81612770565b8252838060a01b03848201541691826020820152848060a01b03600283015416806040830152858060a01b036003840154169182606082015260c0878060a01b0360048601541694856080840152600581015460a08401526006898060a01b0391015416910152604051936107918561266c565b84526020840152604083015260608201526107ac8286612b73565b526107b78185612b73565b50016106e8565b505090604051918291602083016020845282518091526020604085019301915b8181106107ec575050500390f35b919350916020608082610830600194885180516001600160a01b03908116835260208083015182169084015260408083015182169084015260609182015116910152565b0194019101918493926107de565b602090610849612944565b828287010152016106dd565b60016020819261086485612770565b8152019201920191906106a8565b503461023d578060031936011261023d576001546040516001600160a01b039091168152602090f35b503461023d57602036600319011261023d576001600160a01b036108bd6125f4565b16815260066020526040812080546108d481612b5c565b916108e26040519384612687565b81835283526020808420849184015b838310610a4a57858580519061090682612b5c565b916109146040519384612687565b808352610923601f1991612b5c565b01835b818110610a33575050825b81518110156109cb578061094a61070160019385612b73565b604051906109578261263b565b61096081612770565b82528084015460a085811b86900391821660208501526002830154821660408501526003830154821660608501526004830154821660808501526005830154908401526006909101541660c08201526109b98286612b73565b526109c48185612b73565b5001610931565b5050906040519182916020830160208452825180915260408401602060408360051b870101940192905b828210610a0457505050500390f35b91936001919395506020610a238192603f198a8203018652885161285c565b96019201920185949391926109f5565b602090610a3e612ae2565b82828701015201610926565b600160208192610a5985612770565b8152019201920191906108f1565b503461023d57602036600319011261023d5760209060ff906040906001600160a01b03610a926125f4565b168152600784522054166040519015158152f35b503461023d57610aeb906020610abb366128c5565b600354604051632e24c42b60e21b81529687946001600160a01b0390921693859388938593929060048501612980565b03925af1801561022d578190610b34575b6020925060018060a01b0316807fbeacbaab8887097be64d667b2a06e62db7e00cc1429a8ebe02535e97a6cc8fcd6040519380a28152f35b50906020813d602011610b68575b81610b4f60209383612687565b810103126102215790610b63602092612930565b610afc565b3d9150610b42565b503461023d57602036600319011261023d57600435906001600160401b03821161023d57610c1f610bbc6020610ba936600487016126c3565b8160405193828580945193849201612814565b81016005815203019020610bcf81612770565b6001820154600283015460038401546004850154600586015460069096015460405160e0808252909889986001600160a01b03978816989388169790969481169581169416929091890190612837565b95602088015260408701526060860152608085015260a084015260c08301520390f35b503461023d578060031936011261023d57546040516001600160a01b039091168152602090f35b503461023d57602036600319011261023d57610c836125f4565b610c8b612b87565b6001600160a01b03168152600760205260408120805460ff1916905580f35b503461023d57602036600319011261023d576004356001600160401b03811161022157610cdb9036906004016126c3565b80518101906060816020840193031261060a5760208101516001600160401b038111610e5657826020610d1092840101612b1a565b9160408201516001600160401b038111610e5a576060916020610d3592850101612b1a565b9101519160ff8316809303610e56575115610e05575115610db157601210610d5a5780f35b60405162461bcd60e51b815260206004820152602960248201527f4372656174696f6e3a20746f6b656e20646563696d616c732063616e6e6f74206044820152680caf0c6cacac84062760bb1b6064820152608490fd5b60405162461bcd60e51b815260206004820152602660248201527f4372656174696f6e3a20746f6b656e2073796d626f6c2063616e6e6f7420626560448201526520656d70747960d01b6064820152608490fd5b60405162461bcd60e51b8152602060048201526024808201527f4372656174696f6e3a20746f6b656e206e616d652063616e6e6f7420626520656044820152636d70747960e01b6064820152608490fd5b8380fd5b8480fd5b503461023d578060031936011261023d57600154600254600354600454604080516001600160a01b039586168152938516602085015291841691830191909152919091166060820152608090f35b0390f35b503461023d57610ef5906020610ec5366128c5565b60025460405163870837d760e01b81529687946001600160a01b0390921693859388938593929060048501612980565b03925af1801561022d578190610f3e575b6020925060018060a01b0316807f2e2b3f61b70d2d131b2a807371103cc98d51adcaa5e9a8f9c32658ad8426e74e6040519380a28152f35b50906020813d602011610f72575b81610f5960209383612687565b810103126102215790610f6d602092612930565b610f06565b3d9150610f4c565b503461023d578060031936011261023d57610f93612b87565b80546001600160a01b03198116825581906001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08280a380f35b503461023d57608036600319011261023d57610fee61260f565b610ff6612625565b906064356001600160401b038111610e56579160209161101e61104c959436906004016126c3565b918460018060a01b0360045416926040519788958694859363d16ce86f60e01b8552600435600486016129a8565b03925af1801561022d578190611095575b6020925060018060a01b0316807f49b83e87fd3fc3e573ac9d92e450ad140ef4835d0b7c83ad39d3a49d8f2246c76040519380a28152f35b50906020813d6020116110c9575b816110b060209383612687565b8101031261022157906110c4602092612930565b61105d565b3d91506110a3565b503461023d57602036600319011261023d57600435906001600160401b03821161023d57611123602061110736600486016126c3565b61110f612ae2565b508160405193828580945193849201612814565b810160058152030190206040519061113a8261263b565b61114381612770565b80835260018201546001600160a01b039081166020850152600283015481166040850152600383015481166060850152600483015481166080850152600583015460a085015260069092015490911660c083015251156111b557610eac9060405191829160208352602083019061285c565b60405162461bcd60e51b815260206004820152601b60248201527f4372656174696f6e3a2070726f6a656374206e6f7420666f756e6400000000006044820152606490fd5b503461023d5761012036600319011261023d576004356001600160401b0381116102215761122c9036906004016126c3565b906044356001600160401b0381116102215761124c9036906004016126c3565b6084356001600160401b03811161060a5761126b9036906004016126c3565b9060c4356001600160401b038111610e565761128b9036906004016126c3565b92610104356001600160401b038111610221576112ac9036906004016126c3565b906112b5612944565b50338152600760205260ff60408220541615611d5457855115611d0057604051926112fe875194602081818b01976112ee81838b612814565b8101600581520301902054612736565b611cad57805115611c5657303b156102215760405163e459176760e01b8152602060048201528281806113346024820186612837565b0381305afa9081611c42575b5061139b5760405162461bcd60e51b815260206004820152602860248201527f4372656174696f6e3a20696e76616c6964207661756c7420696e6974206461746044820152671848199bdc9b585d60c21b6064820152608490fd5b845115611beb57303b1561022157604051638525aff160e01b815260206004820152828082806113ce602482018b612837565b0381305afa9182611bd6575b50506114365760405162461bcd60e51b815260206004820152602860248201527f4372656174696f6e3a20696e76616c696420746f6b656e20696e6974206461746044820152671848199bdc9b585d60c21b6064820152608490fd5b855115611b8057303b1561022157604051631730060160e11b81526020600482015282808280611469602482018c612837565b0381305afa9182611b6b575b50506114d05760405162461bcd60e51b815260206004820152602760248201527f4372656174696f6e3a20696e76616c69642066756e6420696e6974206461746160448201526608199bdc9b585d60ca1b6064820152608490fd5b825115611b1157303b156102215760405163191c94c760e11b815260206004820152828082806115036024820189612837565b0381305afa9182611afc575b505061156e5760405162461bcd60e51b815260206004820152602b60248201527f4372656174696f6e3a20696e76616c6964206469766964656e6420696e69742060448201526a19185d1848199bdc9b585d60aa1b6064820152608490fd5b60206115a0839260018060a01b0360015416906040519485809481936325920b2160e01b835260243560048401612969565b03925af190811561195e578291611ac2575b506001600160a01b038116948515611a7d5760206115f7849260018060a01b03600254169060405194858094819363870837d760e01b83528960643560048501612980565b03925af1908115611a72578391611a38575b506001600160a01b0381169687156119f357602061164e859260018060a01b036003541690604051948580948193632e24c42b60e21b83528a60a43560048501612980565b03925af19081156119e85784916119ae575b506001600160a01b0316938415611969576116a5926020928560018060a01b0360045416926040519687958694859363d16ce86f60e01b855260e435600486016129a8565b03925af190811561195e578291611924575b506001600160a01b03169283156118cc57600687604051926116d88461263b565b81845260208401888152604085018a8152606086019088825260808701928a8452611734611722602060a08b019742895260c08c0199338b52604051938492839251928391612814565b810160058152030190209851896129d7565b516001880180546001600160a01b03199081166001600160a01b039384161790915591516002890180548416918316919091179055915160038801805483169184169190911790559151600487018054841691831691909117905591516005860155915192909301805490911691909216179055338152600660205260408120805490680100000000000000008210156118b857906117d891600182018155612708565b9190916118a457509261184a9286926118146080987f402345b597346bb627a93715b6a25cf10dae5136cdeb4ecb107d6e63616a1b04976129d7565b604051966118218861266c565b83885280602089015281604089015282606089015260405195869560c0875260c0870190612837565b93602086015260408501526060840152868301523360a08301520390a16118a2604051809280516001600160a01b03908116835260208083015182169084015260408083015182169084015260609182015116910152565bf35b634e487b7160e01b81526004819052602490fd5b634e487b7160e01b83526041600452602483fd5b60405162461bcd60e51b815260206004820152602a60248201527f4372656174696f6e3a20616363756d756c617465645969656c642063726561746044820152691a5bdb8819985a5b195960b21b6064820152608490fd5b90506020813d602011611956575b8161193f60209383612687565b810103126102215761195090612930565b386116b7565b3d9150611932565b6040513d84823e3d90fd5b60405162461bcd60e51b815260206004820152601e60248201527f4372656174696f6e3a2066756e64206372656174696f6e206661696c656400006044820152606490fd5b90506020813d6020116119e0575b816119c960209383612687565b81010312610e56576119da90612930565b38611660565b3d91506119bc565b6040513d86823e3d90fd5b60405162461bcd60e51b815260206004820152601f60248201527f4372656174696f6e3a20746f6b656e206372656174696f6e206661696c6564006044820152606490fd5b90506020813d602011611a6a575b81611a5360209383612687565b8101031261060a57611a6490612930565b38611609565b3d9150611a46565b6040513d85823e3d90fd5b60405162461bcd60e51b815260206004820152601f60248201527f4372656174696f6e3a207661756c74206372656174696f6e206661696c6564006044820152606490fd5b90506020813d602011611af4575b81611add60209383612687565b8101031261022157611aee90612930565b386115b2565b3d9150611ad0565b81611b0691612687565b61060a57823861150f565b60405162461bcd60e51b815260206004820152602c60248201527f4372656174696f6e3a206469766964656e6420696e697420646174612063616e60448201526b6e6f7420626520656d70747960a01b6064820152608490fd5b81611b7591612687565b61060a578238611475565b60405162461bcd60e51b815260206004820152602860248201527f4372656174696f6e3a2066756e6420696e697420646174612063616e6e6f7420604482015267626520656d70747960c01b6064820152608490fd5b81611be091612687565b61060a5782386113da565b60405162461bcd60e51b815260206004820152602960248201527f4372656174696f6e3a20746f6b656e20696e697420646174612063616e6e6f7460448201526820626520656d70747960b81b6064820152608490fd5b83611c4f91949294612687565b9138611340565b60405162461bcd60e51b815260206004820152602960248201527f4372656174696f6e3a207661756c7420696e697420646174612063616e6e6f7460448201526820626520656d70747960b81b6064820152608490fd5b60405162461bcd60e51b815260206004820152602560248201527f4372656174696f6e3a2070726f6a656374206e616d6520616c72656164792065604482015264786973747360d81b6064820152608490fd5b60405162461bcd60e51b815260206004820152602660248201527f4372656174696f6e3a2070726f6a656374206e616d652063616e6e6f7420626560448201526520656d70747960d01b6064820152608490fd5b60405162461bcd60e51b815260206004820152601960248201527f4372656174696f6e3a206e6f742077686974656c6973746564000000000000006044820152606490fd5b503461023d578060031936011261023d576003546040516001600160a01b039091168152602090f35b503461023d57602036600319011261023d576004356001600160401b03811161022157611df39036906004016126c3565b60608180518101031261022157611e0c60208201612930565b90611e256060611e1e60408401612930565b9201612930565b916001600160a01b031615611f10576001600160a01b031615611eb3576001600160a01b031615611e535780f35b60405162461bcd60e51b815260206004820152603260248201527f4372656174696f6e3a206469766964656e642074726561737572792063616e6e6044820152716f74206265207a65726f206164647265737360701b6064820152608490fd5b60405162461bcd60e51b815260206004820152602f60248201527f4372656174696f6e3a20726577617264206d616e616765722063616e6e6f742060448201526e6265207a65726f206164647265737360881b6064820152608490fd5b60405162461bcd60e51b815260206004820152602d60248201527f4372656174696f6e3a2072657761726420746f6b656e2063616e6e6f7420626560448201526c207a65726f206164647265737360981b6064820152608490fd5b503461023d57604036600319011261023d57611f856125f4565b6001600160a01b0316815260066020526040812080546024359081101561060a57611faf91612708565b9190916118a457610eac611fc283612770565b604051918291602083526020830190612837565b503461023d57602036600319011261023d576004356001600160401b038111610221576120079036906004016126c3565b610160818051810103126102215760208101519060408101519161202d60608301612930565b608083015160a084015160c08501519060e086015192610100870151946120576101208901612930565b966101606120686101408b01612930565b99015199811561249457111561243b576001600160a01b0316156123e157801561238857811515918261237d575b50501561230657156122ac571561224b57612710106121f6576001600160a01b031615612197576001600160a01b03161561213557156120d35780f35b60405162461bcd60e51b815260206004820152603460248201527f4372656174696f6e3a20646563696d616c73206d756c7469706c696572206d75604482015273073742062652067726561746572207468616e20360641b6064820152608490fd5b60405162461bcd60e51b815260206004820152603460248201527f4372656174696f6e3a206d616e616765206665652072656365697665722063616044820152736e6e6f74206265207a65726f206164647265737360601b6064820152608490fd5b60405162461bcd60e51b815260206004820152603160248201527f4372656174696f6e3a2066756e64696e672072656365697665722063616e6e6f60448201527074206265207a65726f206164647265737360781b6064820152608490fd5b60405162461bcd60e51b815260206004820152602760248201527f4372656174696f6e3a206d616e616765206665652063616e6e6f7420657863656044820152666564203130302560c81b6064820152608490fd5b60405162461bcd60e51b815260206004820152603360248201527f4372656174696f6e3a206d696e206465706f73697420616d6f756e74206d75736044820152720742062652067726561746572207468616e203606c1b6064820152608490fd5b60405162461bcd60e51b815260206004820152602c60248201527f4372656174696f6e3a207368617265207072696365206d75737420626520677260448201526b06561746572207468616e20360a41b6064820152608490fd5b60405162461bcd60e51b815260206004820152604360248201527f4372656174696f6e3a20736f667420636170206d75737420626520677265617460448201527f6572207468616e203020616e64206e6f7420657863656564206d617820737570606482015262706c7960e81b608482015260a490fd5b111590503880612096565b60405162461bcd60e51b815260206004820152602b60248201527f4372656174696f6e3a206d617820737570706c79206d7573742062652067726560448201526a061746572207468616e20360ac1b6064820152608490fd5b60405162461bcd60e51b815260206004820152602c60248201527f4372656174696f6e3a20617373657420746f6b656e2063616e6e6f742062652060448201526b7a65726f206164647265737360a01b6064820152608490fd5b60405162461bcd60e51b815260206004820152602b60248201527f4372656174696f6e3a20656e642074696d65206d75737420626520616674657260448201526a2073746172742074696d6560a81b6064820152608490fd5b60405162461bcd60e51b815260206004820152602b60248201527f4372656174696f6e3a2073746172742074696d65206d7573742062652067726560448201526a061746572207468616e20360ac1b6064820152608490fd5b503461023d57608036600319011261023d576125076125f4565b61250f61260f565b612517612625565b916064356001600160a01b03811690818103610602577fae4e3fe398aa4a573a52068d6240e84dc4df03ac5a0a80e77168a56711453b5f946125c99261255b612b87565b600180546001600160a01b039687166001600160a01b0319918216811790925560028054988816988216891790556003805494881694821685179055600480549091169290921790915560408051918252602082019690965294850152909116606083015281906080820190565b0390a180f35b9050346102215781600319360112610221576004546001600160a01b03168152602090f35b600435906001600160a01b038216820361260a57565b600080fd5b602435906001600160a01b038216820361260a57565b604435906001600160a01b038216820361260a57565b60e081019081106001600160401b0382111761265657604052565b634e487b7160e01b600052604160045260246000fd5b608081019081106001600160401b0382111761265657604052565b90601f801991011681019081106001600160401b0382111761265657604052565b6001600160401b03811161265657601f01601f191660200190565b81601f8201121561260a576020813591016126dd826126a8565b926126eb6040519485612687565b8284528282011161260a5781600092602092838601378301015290565b80548210156127205760005260206000200190600090565b634e487b7160e01b600052603260045260246000fd5b90600182811c92168015612766575b602083101461275057565b634e487b7160e01b600052602260045260246000fd5b91607f1691612745565b906040519182600082549261278484612736565b80845293600181169081156127f257506001146127ab575b506127a992500383612687565b565b90506000929192526020600020906000915b8183106127d65750509060206127a9928201013861279c565b60209193508060019154838589010152019101909184926127bd565b9050602092506127a994915060ff191682840152151560051b8201013861279c565b60005b8381106128275750506000910152565b8181015183820152602001612817565b9060209161285081518092818552858086019101612814565b601f01601f1916010190565b9060c0612872835160e0845260e0840190612837565b6020808501516001600160a01b039081169185019190915260408086015182169085015260608086015182169085015260808086015182169085015260a080860151908501529382015190931691015290565b606060031982011261260a57600435916024356001600160a01b038116810361260a5791604435906001600160401b03821161260a57612907916004016126c3565b90565b6020612923918160405193828580945193849201612814565b8101600581520301902090565b51906001600160a01b038216820361260a57565b604051906129518261266c565b60006060838281528260208201528260408201520152565b604090612907939281528160208201520190612837565b9081526001600160a01b03909116602082015260606040820181905261290792910190612837565b9081526001600160a01b0391821660208201529116604082015260806060820181905261290792910190612837565b91909182516001600160401b038111612656576129f48254612736565b601f8111612a9a575b506020601f8211600114612a385781929394600092612a2d575b50508160011b916000199060031b1c1916179055565b015190503880612a17565b601f1982169083600052806000209160005b818110612a8257509583600195969710612a69575b505050811b019055565b015160001960f88460031b161c19169055388080612a5f565b9192602060018192868b015181550194019201612a4a565b826000526020600020601f830160051c81019160208410612ad8575b601f0160051c01905b818110612acc57506129fd565b60008155600101612abf565b9091508190612ab6565b60405190612aef8261263b565b600060c083606081528260208201528260408201528260608201528260808201528260a08201520152565b81601f8201121561260a578051612b30816126a8565b92612b3e6040519485612687565b8184526020828401011161260a576129079160208085019101612814565b6001600160401b0381116126565760051b60200190565b80518210156127205760209160051b010190565b6000546001600160a01b03163303612b9b57565b606460405162461bcd60e51b815260206004820152602060248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152fdfea264697066735822122080b8d8a031df3bf56ca979ba7934df0e0edcaf751dde5f7be94c0a22bbbd459864736f6c634300081a0033",
+  "deployedBytecode": "0x608080604052600436101561001357600080fd5b600090813560e01c90816316fd84f7146125cf5750806329e5213a146124ed5780632e600c0214611fd65780632fa9c00714611f6b5780633239298e14611dc25780633dea9e6614611d9957806343417cea146111fa5780634b77f269146110d15780636c96768014610fd4578063715018a614610f7a57806377bdbaba14610eb05780637e6cbb6a14610e5e5780638525aff114610caa5780638ab1d68114610c695780638da5cb5b14610c4257806391c9b26814610b705780639803ba4114610aa65780639b19251a14610a675780639de4ae011461089b578063d8a06f7314610872578063e32e723c14610652578063e43252d71461060e578063e45917671461032f578063e77772fe14610306578063f2fde38b146102405763f5839fa71461013f57600080fd5b3461023d57604036600319011261023d57806024356001600160401b03811161023a576101a461017560209236906004016126c3565b6001546040516325920b2160e01b81529586936001600160a01b03909216928492839160048035908401612969565b03925af1801561022d5781906101ed575b6020925060018060a01b0316807f2e49a5810fda2439a23771848b4acec786b0a64d4de3d124ac57fc8739c388756040519380a28152f35b50906020813d602011610225575b8161020860209383612687565b81010312610221579061021c602092612930565b6101b5565b5080fd5b3d91506101fb565b50604051903d90823e3d90fd5b50fd5b80fd5b503461023d57602036600319011261023d5761025a6125f4565b610262612b87565b6001600160a01b031680156102b25781546001600160a01b03198116821783556001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08380a380f35b60405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b6064820152608490fd5b503461023d578060031936011261023d576002546040516001600160a01b039091168152602090f35b503461023d57602036600319011261023d576004356001600160401b038111610221576103609036906004016126c3565b80518101906080816020840193031261060a5761037f60208201612930565b61038b60408301612930565b906060830151928315158403610602576080810151906001600160401b03821161060657019380603f860112156106025760208501516103ca81612b5c565b956103d86040519788612687565b8187526020808089019360051b830101019283116105fe57604001905b8282106105e6575050506001600160a01b03161561058a576001600160a01b03161561052c57610423575080f35b8051156104b357815b81518110156104ae576001600160a01b036104478284612b73565b5116156104565760010161042c565b60405162461bcd60e51b815260206004820152602a60248201527f4372656174696f6e3a2077686974656c69737420616464726573732063616e6e6044820152696f74206265207a65726f60b01b6064820152608490fd5b505080f35b60405162461bcd60e51b815260206004820152604560248201527f4372656174696f6e3a20696e697469616c2077686974656c6973742063616e6e60448201527f6f7420626520656d707479207768656e2077686974656c69737420697320656e60648201526418589b195960da1b608482015260a490fd5b60405162461bcd60e51b815260206004820152603060248201527f4372656174696f6e3a207661756c742076616c696461746f722063616e6e6f7460448201526f206265207a65726f206164647265737360801b6064820152608490fd5b60405162461bcd60e51b815260206004820152602e60248201527f4372656174696f6e3a207661756c74206d616e616765722063616e6e6f74206260448201526d65207a65726f206164647265737360901b6064820152608490fd5b602080916105f384612930565b8152019101906103f5565b8780fd5b8580fd5b8680fd5b8280fd5b503461023d57602036600319011261023d576106286125f4565b610630612b87565b6001600160a01b03168152600760205260408120805460ff1916600117905580f35b503461023d57602036600319011261023d576001600160a01b036106746125f4565b168152600660205260408120805461068b81612b5c565b916106996040519384612687565b81835283526020808420849184015b8383106108555785858051906106bd82612b5c565b916106cb6040519384612687565b8083526106da601f1991612b5c565b01835b81811061083e575050825b81518110156107be578061070761070160019385612b73565b5161290a565b604051906107148261263b565b61071d81612770565b8252838060a01b03848201541691826020820152848060a01b03600283015416806040830152858060a01b036003840154169182606082015260c0878060a01b0360048601541694856080840152600581015460a08401526006898060a01b0391015416910152604051936107918561266c565b84526020840152604083015260608201526107ac8286612b73565b526107b78185612b73565b50016106e8565b505090604051918291602083016020845282518091526020604085019301915b8181106107ec575050500390f35b919350916020608082610830600194885180516001600160a01b03908116835260208083015182169084015260408083015182169084015260609182015116910152565b0194019101918493926107de565b602090610849612944565b828287010152016106dd565b60016020819261086485612770565b8152019201920191906106a8565b503461023d578060031936011261023d576001546040516001600160a01b039091168152602090f35b503461023d57602036600319011261023d576001600160a01b036108bd6125f4565b16815260066020526040812080546108d481612b5c565b916108e26040519384612687565b81835283526020808420849184015b838310610a4a57858580519061090682612b5c565b916109146040519384612687565b808352610923601f1991612b5c565b01835b818110610a33575050825b81518110156109cb578061094a61070160019385612b73565b604051906109578261263b565b61096081612770565b82528084015460a085811b86900391821660208501526002830154821660408501526003830154821660608501526004830154821660808501526005830154908401526006909101541660c08201526109b98286612b73565b526109c48185612b73565b5001610931565b5050906040519182916020830160208452825180915260408401602060408360051b870101940192905b828210610a0457505050500390f35b91936001919395506020610a238192603f198a8203018652885161285c565b96019201920185949391926109f5565b602090610a3e612ae2565b82828701015201610926565b600160208192610a5985612770565b8152019201920191906108f1565b503461023d57602036600319011261023d5760209060ff906040906001600160a01b03610a926125f4565b168152600784522054166040519015158152f35b503461023d57610aeb906020610abb366128c5565b600354604051632e24c42b60e21b81529687946001600160a01b0390921693859388938593929060048501612980565b03925af1801561022d578190610b34575b6020925060018060a01b0316807fbeacbaab8887097be64d667b2a06e62db7e00cc1429a8ebe02535e97a6cc8fcd6040519380a28152f35b50906020813d602011610b68575b81610b4f60209383612687565b810103126102215790610b63602092612930565b610afc565b3d9150610b42565b503461023d57602036600319011261023d57600435906001600160401b03821161023d57610c1f610bbc6020610ba936600487016126c3565b8160405193828580945193849201612814565b81016005815203019020610bcf81612770565b6001820154600283015460038401546004850154600586015460069096015460405160e0808252909889986001600160a01b03978816989388169790969481169581169416929091890190612837565b95602088015260408701526060860152608085015260a084015260c08301520390f35b503461023d578060031936011261023d57546040516001600160a01b039091168152602090f35b503461023d57602036600319011261023d57610c836125f4565b610c8b612b87565b6001600160a01b03168152600760205260408120805460ff1916905580f35b503461023d57602036600319011261023d576004356001600160401b03811161022157610cdb9036906004016126c3565b80518101906060816020840193031261060a5760208101516001600160401b038111610e5657826020610d1092840101612b1a565b9160408201516001600160401b038111610e5a576060916020610d3592850101612b1a565b9101519160ff8316809303610e56575115610e05575115610db157601210610d5a5780f35b60405162461bcd60e51b815260206004820152602960248201527f4372656174696f6e3a20746f6b656e20646563696d616c732063616e6e6f74206044820152680caf0c6cacac84062760bb1b6064820152608490fd5b60405162461bcd60e51b815260206004820152602660248201527f4372656174696f6e3a20746f6b656e2073796d626f6c2063616e6e6f7420626560448201526520656d70747960d01b6064820152608490fd5b60405162461bcd60e51b8152602060048201526024808201527f4372656174696f6e3a20746f6b656e206e616d652063616e6e6f7420626520656044820152636d70747960e01b6064820152608490fd5b8380fd5b8480fd5b503461023d578060031936011261023d57600154600254600354600454604080516001600160a01b039586168152938516602085015291841691830191909152919091166060820152608090f35b0390f35b503461023d57610ef5906020610ec5366128c5565b60025460405163870837d760e01b81529687946001600160a01b0390921693859388938593929060048501612980565b03925af1801561022d578190610f3e575b6020925060018060a01b0316807f2e2b3f61b70d2d131b2a807371103cc98d51adcaa5e9a8f9c32658ad8426e74e6040519380a28152f35b50906020813d602011610f72575b81610f5960209383612687565b810103126102215790610f6d602092612930565b610f06565b3d9150610f4c565b503461023d578060031936011261023d57610f93612b87565b80546001600160a01b03198116825581906001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08280a380f35b503461023d57608036600319011261023d57610fee61260f565b610ff6612625565b906064356001600160401b038111610e56579160209161101e61104c959436906004016126c3565b918460018060a01b0360045416926040519788958694859363d16ce86f60e01b8552600435600486016129a8565b03925af1801561022d578190611095575b6020925060018060a01b0316807f49b83e87fd3fc3e573ac9d92e450ad140ef4835d0b7c83ad39d3a49d8f2246c76040519380a28152f35b50906020813d6020116110c9575b816110b060209383612687565b8101031261022157906110c4602092612930565b61105d565b3d91506110a3565b503461023d57602036600319011261023d57600435906001600160401b03821161023d57611123602061110736600486016126c3565b61110f612ae2565b508160405193828580945193849201612814565b810160058152030190206040519061113a8261263b565b61114381612770565b80835260018201546001600160a01b039081166020850152600283015481166040850152600383015481166060850152600483015481166080850152600583015460a085015260069092015490911660c083015251156111b557610eac9060405191829160208352602083019061285c565b60405162461bcd60e51b815260206004820152601b60248201527f4372656174696f6e3a2070726f6a656374206e6f7420666f756e6400000000006044820152606490fd5b503461023d5761012036600319011261023d576004356001600160401b0381116102215761122c9036906004016126c3565b906044356001600160401b0381116102215761124c9036906004016126c3565b6084356001600160401b03811161060a5761126b9036906004016126c3565b9060c4356001600160401b038111610e565761128b9036906004016126c3565b92610104356001600160401b038111610221576112ac9036906004016126c3565b906112b5612944565b50338152600760205260ff60408220541615611d5457855115611d0057604051926112fe875194602081818b01976112ee81838b612814565b8101600581520301902054612736565b611cad57805115611c5657303b156102215760405163e459176760e01b8152602060048201528281806113346024820186612837565b0381305afa9081611c42575b5061139b5760405162461bcd60e51b815260206004820152602860248201527f4372656174696f6e3a20696e76616c6964207661756c7420696e6974206461746044820152671848199bdc9b585d60c21b6064820152608490fd5b845115611beb57303b1561022157604051638525aff160e01b815260206004820152828082806113ce602482018b612837565b0381305afa9182611bd6575b50506114365760405162461bcd60e51b815260206004820152602860248201527f4372656174696f6e3a20696e76616c696420746f6b656e20696e6974206461746044820152671848199bdc9b585d60c21b6064820152608490fd5b855115611b8057303b1561022157604051631730060160e11b81526020600482015282808280611469602482018c612837565b0381305afa9182611b6b575b50506114d05760405162461bcd60e51b815260206004820152602760248201527f4372656174696f6e3a20696e76616c69642066756e6420696e6974206461746160448201526608199bdc9b585d60ca1b6064820152608490fd5b825115611b1157303b156102215760405163191c94c760e11b815260206004820152828082806115036024820189612837565b0381305afa9182611afc575b505061156e5760405162461bcd60e51b815260206004820152602b60248201527f4372656174696f6e3a20696e76616c6964206469766964656e6420696e69742060448201526a19185d1848199bdc9b585d60aa1b6064820152608490fd5b60206115a0839260018060a01b0360015416906040519485809481936325920b2160e01b835260243560048401612969565b03925af190811561195e578291611ac2575b506001600160a01b038116948515611a7d5760206115f7849260018060a01b03600254169060405194858094819363870837d760e01b83528960643560048501612980565b03925af1908115611a72578391611a38575b506001600160a01b0381169687156119f357602061164e859260018060a01b036003541690604051948580948193632e24c42b60e21b83528a60a43560048501612980565b03925af19081156119e85784916119ae575b506001600160a01b0316938415611969576116a5926020928560018060a01b0360045416926040519687958694859363d16ce86f60e01b855260e435600486016129a8565b03925af190811561195e578291611924575b506001600160a01b03169283156118cc57600687604051926116d88461263b565b81845260208401888152604085018a8152606086019088825260808701928a8452611734611722602060a08b019742895260c08c0199338b52604051938492839251928391612814565b810160058152030190209851896129d7565b516001880180546001600160a01b03199081166001600160a01b039384161790915591516002890180548416918316919091179055915160038801805483169184169190911790559151600487018054841691831691909117905591516005860155915192909301805490911691909216179055338152600660205260408120805490680100000000000000008210156118b857906117d891600182018155612708565b9190916118a457509261184a9286926118146080987f402345b597346bb627a93715b6a25cf10dae5136cdeb4ecb107d6e63616a1b04976129d7565b604051966118218861266c565b83885280602089015281604089015282606089015260405195869560c0875260c0870190612837565b93602086015260408501526060840152868301523360a08301520390a16118a2604051809280516001600160a01b03908116835260208083015182169084015260408083015182169084015260609182015116910152565bf35b634e487b7160e01b81526004819052602490fd5b634e487b7160e01b83526041600452602483fd5b60405162461bcd60e51b815260206004820152602a60248201527f4372656174696f6e3a20616363756d756c617465645969656c642063726561746044820152691a5bdb8819985a5b195960b21b6064820152608490fd5b90506020813d602011611956575b8161193f60209383612687565b810103126102215761195090612930565b386116b7565b3d9150611932565b6040513d84823e3d90fd5b60405162461bcd60e51b815260206004820152601e60248201527f4372656174696f6e3a2066756e64206372656174696f6e206661696c656400006044820152606490fd5b90506020813d6020116119e0575b816119c960209383612687565b81010312610e56576119da90612930565b38611660565b3d91506119bc565b6040513d86823e3d90fd5b60405162461bcd60e51b815260206004820152601f60248201527f4372656174696f6e3a20746f6b656e206372656174696f6e206661696c6564006044820152606490fd5b90506020813d602011611a6a575b81611a5360209383612687565b8101031261060a57611a6490612930565b38611609565b3d9150611a46565b6040513d85823e3d90fd5b60405162461bcd60e51b815260206004820152601f60248201527f4372656174696f6e3a207661756c74206372656174696f6e206661696c6564006044820152606490fd5b90506020813d602011611af4575b81611add60209383612687565b8101031261022157611aee90612930565b386115b2565b3d9150611ad0565b81611b0691612687565b61060a57823861150f565b60405162461bcd60e51b815260206004820152602c60248201527f4372656174696f6e3a206469766964656e6420696e697420646174612063616e60448201526b6e6f7420626520656d70747960a01b6064820152608490fd5b81611b7591612687565b61060a578238611475565b60405162461bcd60e51b815260206004820152602860248201527f4372656174696f6e3a2066756e6420696e697420646174612063616e6e6f7420604482015267626520656d70747960c01b6064820152608490fd5b81611be091612687565b61060a5782386113da565b60405162461bcd60e51b815260206004820152602960248201527f4372656174696f6e3a20746f6b656e20696e697420646174612063616e6e6f7460448201526820626520656d70747960b81b6064820152608490fd5b83611c4f91949294612687565b9138611340565b60405162461bcd60e51b815260206004820152602960248201527f4372656174696f6e3a207661756c7420696e697420646174612063616e6e6f7460448201526820626520656d70747960b81b6064820152608490fd5b60405162461bcd60e51b815260206004820152602560248201527f4372656174696f6e3a2070726f6a656374206e616d6520616c72656164792065604482015264786973747360d81b6064820152608490fd5b60405162461bcd60e51b815260206004820152602660248201527f4372656174696f6e3a2070726f6a656374206e616d652063616e6e6f7420626560448201526520656d70747960d01b6064820152608490fd5b60405162461bcd60e51b815260206004820152601960248201527f4372656174696f6e3a206e6f742077686974656c6973746564000000000000006044820152606490fd5b503461023d578060031936011261023d576003546040516001600160a01b039091168152602090f35b503461023d57602036600319011261023d576004356001600160401b03811161022157611df39036906004016126c3565b60608180518101031261022157611e0c60208201612930565b90611e256060611e1e60408401612930565b9201612930565b916001600160a01b031615611f10576001600160a01b031615611eb3576001600160a01b031615611e535780f35b60405162461bcd60e51b815260206004820152603260248201527f4372656174696f6e3a206469766964656e642074726561737572792063616e6e6044820152716f74206265207a65726f206164647265737360701b6064820152608490fd5b60405162461bcd60e51b815260206004820152602f60248201527f4372656174696f6e3a20726577617264206d616e616765722063616e6e6f742060448201526e6265207a65726f206164647265737360881b6064820152608490fd5b60405162461bcd60e51b815260206004820152602d60248201527f4372656174696f6e3a2072657761726420746f6b656e2063616e6e6f7420626560448201526c207a65726f206164647265737360981b6064820152608490fd5b503461023d57604036600319011261023d57611f856125f4565b6001600160a01b0316815260066020526040812080546024359081101561060a57611faf91612708565b9190916118a457610eac611fc283612770565b604051918291602083526020830190612837565b503461023d57602036600319011261023d576004356001600160401b038111610221576120079036906004016126c3565b610160818051810103126102215760208101519060408101519161202d60608301612930565b608083015160a084015160c08501519060e086015192610100870151946120576101208901612930565b966101606120686101408b01612930565b99015199811561249457111561243b576001600160a01b0316156123e157801561238857811515918261237d575b50501561230657156122ac571561224b57612710106121f6576001600160a01b031615612197576001600160a01b03161561213557156120d35780f35b60405162461bcd60e51b815260206004820152603460248201527f4372656174696f6e3a20646563696d616c73206d756c7469706c696572206d75604482015273073742062652067726561746572207468616e20360641b6064820152608490fd5b60405162461bcd60e51b815260206004820152603460248201527f4372656174696f6e3a206d616e616765206665652072656365697665722063616044820152736e6e6f74206265207a65726f206164647265737360601b6064820152608490fd5b60405162461bcd60e51b815260206004820152603160248201527f4372656174696f6e3a2066756e64696e672072656365697665722063616e6e6f60448201527074206265207a65726f206164647265737360781b6064820152608490fd5b60405162461bcd60e51b815260206004820152602760248201527f4372656174696f6e3a206d616e616765206665652063616e6e6f7420657863656044820152666564203130302560c81b6064820152608490fd5b60405162461bcd60e51b815260206004820152603360248201527f4372656174696f6e3a206d696e206465706f73697420616d6f756e74206d75736044820152720742062652067726561746572207468616e203606c1b6064820152608490fd5b60405162461bcd60e51b815260206004820152602c60248201527f4372656174696f6e3a207368617265207072696365206d75737420626520677260448201526b06561746572207468616e20360a41b6064820152608490fd5b60405162461bcd60e51b815260206004820152604360248201527f4372656174696f6e3a20736f667420636170206d75737420626520677265617460448201527f6572207468616e203020616e64206e6f7420657863656564206d617820737570606482015262706c7960e81b608482015260a490fd5b111590503880612096565b60405162461bcd60e51b815260206004820152602b60248201527f4372656174696f6e3a206d617820737570706c79206d7573742062652067726560448201526a061746572207468616e20360ac1b6064820152608490fd5b60405162461bcd60e51b815260206004820152602c60248201527f4372656174696f6e3a20617373657420746f6b656e2063616e6e6f742062652060448201526b7a65726f206164647265737360a01b6064820152608490fd5b60405162461bcd60e51b815260206004820152602b60248201527f4372656174696f6e3a20656e642074696d65206d75737420626520616674657260448201526a2073746172742074696d6560a81b6064820152608490fd5b60405162461bcd60e51b815260206004820152602b60248201527f4372656174696f6e3a2073746172742074696d65206d7573742062652067726560448201526a061746572207468616e20360ac1b6064820152608490fd5b503461023d57608036600319011261023d576125076125f4565b61250f61260f565b612517612625565b916064356001600160a01b03811690818103610602577fae4e3fe398aa4a573a52068d6240e84dc4df03ac5a0a80e77168a56711453b5f946125c99261255b612b87565b600180546001600160a01b039687166001600160a01b0319918216811790925560028054988816988216891790556003805494881694821685179055600480549091169290921790915560408051918252602082019690965294850152909116606083015281906080820190565b0390a180f35b9050346102215781600319360112610221576004546001600160a01b03168152602090f35b600435906001600160a01b038216820361260a57565b600080fd5b602435906001600160a01b038216820361260a57565b604435906001600160a01b038216820361260a57565b60e081019081106001600160401b0382111761265657604052565b634e487b7160e01b600052604160045260246000fd5b608081019081106001600160401b0382111761265657604052565b90601f801991011681019081106001600160401b0382111761265657604052565b6001600160401b03811161265657601f01601f191660200190565b81601f8201121561260a576020813591016126dd826126a8565b926126eb6040519485612687565b8284528282011161260a5781600092602092838601378301015290565b80548210156127205760005260206000200190600090565b634e487b7160e01b600052603260045260246000fd5b90600182811c92168015612766575b602083101461275057565b634e487b7160e01b600052602260045260246000fd5b91607f1691612745565b906040519182600082549261278484612736565b80845293600181169081156127f257506001146127ab575b506127a992500383612687565b565b90506000929192526020600020906000915b8183106127d65750509060206127a9928201013861279c565b60209193508060019154838589010152019101909184926127bd565b9050602092506127a994915060ff191682840152151560051b8201013861279c565b60005b8381106128275750506000910152565b8181015183820152602001612817565b9060209161285081518092818552858086019101612814565b601f01601f1916010190565b9060c0612872835160e0845260e0840190612837565b6020808501516001600160a01b039081169185019190915260408086015182169085015260608086015182169085015260808086015182169085015260a080860151908501529382015190931691015290565b606060031982011261260a57600435916024356001600160a01b038116810361260a5791604435906001600160401b03821161260a57612907916004016126c3565b90565b6020612923918160405193828580945193849201612814565b8101600581520301902090565b51906001600160a01b038216820361260a57565b604051906129518261266c565b60006060838281528260208201528260408201520152565b604090612907939281528160208201520190612837565b9081526001600160a01b03909116602082015260606040820181905261290792910190612837565b9081526001600160a01b0391821660208201529116604082015260806060820181905261290792910190612837565b91909182516001600160401b038111612656576129f48254612736565b601f8111612a9a575b506020601f8211600114612a385781929394600092612a2d575b50508160011b916000199060031b1c1916179055565b015190503880612a17565b601f1982169083600052806000209160005b818110612a8257509583600195969710612a69575b505050811b019055565b015160001960f88460031b161c19169055388080612a5f565b9192602060018192868b015181550194019201612a4a565b826000526020600020601f830160051c81019160208410612ad8575b601f0160051c01905b818110612acc57506129fd565b60008155600101612abf565b9091508190612ab6565b60405190612aef8261263b565b600060c083606081528260208201528260408201528260608201528260808201528260a08201520152565b81601f8201121561260a578051612b30816126a8565b92612b3e6040519485612687565b8184526020828401011161260a576129079160208085019101612814565b6001600160401b0381116126565760051b60200190565b80518210156127205760209160051b010190565b6000546001600160a01b03163303612b9b57565b606460405162461bcd60e51b815260206004820152602060248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152fdfea264697066735822122080b8d8a031df3bf56ca979ba7934df0e0edcaf751dde5f7be94c0a22bbbd459864736f6c634300081a0033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "deployAll(string,uint256,bytes,uint256,bytes,uint256,bytes,uint256,bytes)": {
+        "details": "核心部署函数（使用bytes数据，推荐使用）",
+        "params": {
+          "dividendInitData": "Dividend初始化数据（bytes格式）",
+          "dividendTemplateId": "Dividend模板ID",
+          "fundInitData": "Fund初始化数据（bytes格式）",
+          "fundTemplateId": "Fund模板ID",
+          "projectName": "项目名称",
+          "tokenInitData": "Token初始化数据（bytes格式）",
+          "tokenTemplateId": "Token模板ID",
+          "vaultInitData": "Vault初始化数据（bytes格式）",
+          "vaultTemplateId": "Vault模板ID"
+        },
+        "returns": {
+          "result": "部署结果"
+        }
+      },
+      "deployFund(uint256,address,bytes)": {
+        "details": "单独部署Fund",
+        "params": {
+          "initData": "初始化数据（bytes格式）",
+          "templateId": "模板ID",
+          "vault": "Vault地址"
+        },
+        "returns": {
+          "fund": "Fund地址"
+        }
+      },
+      "deployToken(uint256,address,bytes)": {
+        "details": "单独部署Token",
+        "params": {
+          "initData": "初始化数据（bytes格式）",
+          "templateId": "模板ID",
+          "vault": "Vault地址"
+        },
+        "returns": {
+          "token": "Token地址"
+        }
+      },
+      "deployVault(uint256,bytes)": {
+        "details": "单独部署Vault",
+        "params": {
+          "initData": "初始化数据（bytes格式）",
+          "templateId": "模板ID"
+        },
+        "returns": {
+          "vault": "Vault地址"
+        }
+      },
+      "getFactories()": {
+        "details": "获取工厂地址",
+        "returns": {
+          "_0": "Vault工厂地址",
+          "_1": "Token工厂地址",
+          "_2": "Fund工厂地址",
+          "_3": "Dividend工厂地址"
+        }
+      },
+      "getProjectByName(string)": {
+        "details": "根据项目名称获取项目详情",
+        "params": {
+          "projectName": "项目名称"
+        },
+        "returns": {
+          "_0": "project 项目详情"
+        }
+      },
+      "getUserProjectDetails(address)": {
+        "details": "获取用户的所有项目详情",
+        "params": {
+          "user": "用户地址"
+        },
+        "returns": {
+          "_0": "projects 项目详情数组"
+        }
+      },
+      "getUserProjects(address)": {
+        "details": "查询用户部署的项目",
+        "params": {
+          "user": "用户地址"
+        },
+        "returns": {
+          "result": "用户的项目数组"
+        }
+      },
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
+      },
+      "setFactories(address,address,address,address)": {
+        "details": "设置工厂合约地址",
+        "params": {
+          "_dividendFactory": "Dividend工厂地址",
+          "_fundFactory": "Fund工厂地址",
+          "_tokenFactory": "Token工厂地址",
+          "_vaultFactory": "Vault工厂地址"
+        }
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 7,
+        "contract": "contracts/v2/creation/Creation.sol:Creation",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 238,
+        "contract": "contracts/v2/creation/Creation.sol:Creation",
+        "label": "vaultFactory",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_contract(VaultFactory)1817"
+      },
+      {
+        "astId": 241,
+        "contract": "contracts/v2/creation/Creation.sol:Creation",
+        "label": "tokenFactory",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_contract(TokenFactory)1659"
+      },
+      {
+        "astId": 244,
+        "contract": "contracts/v2/creation/Creation.sol:Creation",
+        "label": "fundFactory",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_contract(FundFactory)1498"
+      },
+      {
+        "astId": 247,
+        "contract": "contracts/v2/creation/Creation.sol:Creation",
+        "label": "yieldFactory",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_contract(YieldFactory)1981"
+      },
+      {
+        "astId": 297,
+        "contract": "contracts/v2/creation/Creation.sol:Creation",
+        "label": "projects",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_mapping(t_string_memory_ptr,t_struct(Project)2057_storage)"
+      },
+      {
+        "astId": 302,
+        "contract": "contracts/v2/creation/Creation.sol:Creation",
+        "label": "userProjects",
+        "offset": 0,
+        "slot": "6",
+        "type": "t_mapping(t_address,t_array(t_string_storage)dyn_storage)"
+      },
+      {
+        "astId": 306,
+        "contract": "contracts/v2/creation/Creation.sol:Creation",
+        "label": "whitelist",
+        "offset": 0,
+        "slot": "7",
+        "type": "t_mapping(t_address,t_bool)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_string_storage)dyn_storage": {
+        "base": "t_string_storage",
+        "encoding": "dynamic_array",
+        "label": "string[]",
+        "numberOfBytes": "32"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_contract(FundFactory)1498": {
+        "encoding": "inplace",
+        "label": "contract FundFactory",
+        "numberOfBytes": "20"
+      },
+      "t_contract(TokenFactory)1659": {
+        "encoding": "inplace",
+        "label": "contract TokenFactory",
+        "numberOfBytes": "20"
+      },
+      "t_contract(VaultFactory)1817": {
+        "encoding": "inplace",
+        "label": "contract VaultFactory",
+        "numberOfBytes": "20"
+      },
+      "t_contract(YieldFactory)1981": {
+        "encoding": "inplace",
+        "label": "contract YieldFactory",
+        "numberOfBytes": "20"
+      },
+      "t_mapping(t_address,t_array(t_string_storage)dyn_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => string[])",
+        "numberOfBytes": "32",
+        "value": "t_array(t_string_storage)dyn_storage"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_string_memory_ptr,t_struct(Project)2057_storage)": {
+        "encoding": "mapping",
+        "key": "t_string_memory_ptr",
+        "label": "mapping(string => struct ICreation.Project)",
+        "numberOfBytes": "32",
+        "value": "t_struct(Project)2057_storage"
+      },
+      "t_string_memory_ptr": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      },
+      "t_string_storage": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      },
+      "t_struct(Project)2057_storage": {
+        "encoding": "inplace",
+        "label": "struct ICreation.Project",
+        "members": [
+          {
+            "astId": 2044,
+            "contract": "contracts/v2/creation/Creation.sol:Creation",
+            "label": "name",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 2046,
+            "contract": "contracts/v2/creation/Creation.sol:Creation",
+            "label": "vault",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address"
+          },
+          {
+            "astId": 2048,
+            "contract": "contracts/v2/creation/Creation.sol:Creation",
+            "label": "token",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address"
+          },
+          {
+            "astId": 2050,
+            "contract": "contracts/v2/creation/Creation.sol:Creation",
+            "label": "fund",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address"
+          },
+          {
+            "astId": 2052,
+            "contract": "contracts/v2/creation/Creation.sol:Creation",
+            "label": "accumulatedYield",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_address"
+          },
+          {
+            "astId": 2054,
+            "contract": "contracts/v2/creation/Creation.sol:Creation",
+            "label": "createdAt",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 2056,
+            "contract": "contracts/v2/creation/Creation.sol:Creation",
+            "label": "deployer",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_address"
+          }
+        ],
+        "numberOfBytes": "224"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

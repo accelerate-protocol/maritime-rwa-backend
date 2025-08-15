@@ -127,6 +127,11 @@ interface ICreation {
         address fundFactory,
         address dividendFactory
     );
+
+    // ============ 白名单管理接口 ============
+    
+    function addToWhitelist(address user) external;
+    function removeFromWhitelist(address user) external;
     
     // ============ 部署接口 ============
     
@@ -219,8 +224,6 @@ interface ICreation {
     ) external returns (address dividend);
     
     // ============ 查询接口 ============
-    
-
     
     /**
      * @dev 查询用户部署的项目

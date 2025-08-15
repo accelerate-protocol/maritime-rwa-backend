@@ -50,35 +50,35 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   console.log("=== 添加 Mock 模板到工厂 ===");
 
-  // 获取已部署的模板合约
-  const mockBasicVault = await get("MockBasicVault");
-  const mockERC20 = await get("MockERC20");
-  const mockCrowdsale = await get("MockCrowdsale");
-  const mockAccumulatedYield = await get("MockAccumulatedYield");
+  // 获取已部署的真实模板合约
+  const basicVault = await get("BasicVault");
+  const vaultToken = await get("VaultToken");
+  const crowdsale = await get("Crowdsale");
+  const accumulatedYield = await get("AccumulatedYield");
 
   // 5. 添加模板到 VaultFactory
-  console.log("添加 MockBasicVault 到 VaultFactory...");
+  console.log("添加 BasicVault 到 VaultFactory...");
   const vaultFactoryContract = await hre.ethers.getContractAt("contracts/v2/factories/VaultFactory.sol:VaultFactory", vaultFactory.address);
-  await (await vaultFactoryContract.addTemplate(0, mockBasicVault.address)).wait();
-  console.log("MockBasicVault 已添加到 VaultFactory (templateId: 0)");
+  await (await vaultFactoryContract.addTemplate(0, basicVault.address)).wait();
+  console.log("BasicVault 已添加到 VaultFactory (templateId: 0)");
 
   // 6. 添加模板到 TokenFactory
-  console.log("添加 MockERC20 到 TokenFactory...");
+  console.log("添加 VaultToken 到 TokenFactory...");
   const tokenFactoryContract = await hre.ethers.getContractAt("contracts/v2/factories/TokenFactory.sol:TokenFactory", tokenFactory.address);
-  await (await tokenFactoryContract.addTemplate(0, mockERC20.address)).wait();
-  console.log("MockERC20 已添加到 TokenFactory (templateId: 0)");
+  await (await tokenFactoryContract.addTemplate(0, vaultToken.address)).wait();
+  console.log("VaultToken 已添加到 TokenFactory (templateId: 0)");
 
   // 7. 添加模板到 FundFactory
-  console.log("添加 MockCrowdsale 到 FundFactory...");
+  console.log("添加 Crowdsale 到 FundFactory...");
   const fundFactoryContract = await hre.ethers.getContractAt("contracts/v2/factories/FundFactory.sol:FundFactory", fundFactory.address);
-  await (await fundFactoryContract.addTemplate(0, mockCrowdsale.address)).wait();
-  console.log("MockCrowdsale 已添加到 FundFactory (templateId: 0)");
+  await (await fundFactoryContract.addTemplate(0, crowdsale.address)).wait();
+  console.log("Crowdsale 已添加到 FundFactory (templateId: 0)");
 
   // 8. 添加模板到 YieldFactory
-  console.log("添加 MockAccumulatedYield 到 YieldFactory...");
+  console.log("添加 AccumulatedYield 到 YieldFactory...");
   const YieldFactoryContract = await hre.ethers.getContractAt("contracts/v2/factories/YieldFactory.sol:YieldFactory", YieldFactory.address);
-  await (await YieldFactoryContract.addTemplate(0, mockAccumulatedYield.address)).wait();
-  console.log("MockAccumulatedYield 已添加到 YieldFactory (templateId: 0)");
+  await (await YieldFactoryContract.addTemplate(0, accumulatedYield.address)).wait();
+  console.log("AccumulatedYield 已添加到 YieldFactory (templateId: 0)");
 
   console.log("=== V2 工厂合约部署完成 ===");
 };

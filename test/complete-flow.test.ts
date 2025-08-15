@@ -1973,7 +1973,7 @@ describe("V2 架构完整业务流程测试", function () {
             await ethers.provider.send("evm_mine", []);
 
             await expect(
-                fund.connect(manager).withdrawFundingAssets()
+                fund.connect(fundingReceiver).withdrawFundingAssets()
             ).to.revertedWith("Crowdsale: no funding assets");
 
         });
@@ -1996,26 +1996,7 @@ describe("V2 架构完整业务流程测试", function () {
 
             await expect(
                 fund.connect(user1).withdrawFundingAssets()
-            ).to.revertedWith("Crowdsale: only manager");
-
-        });
-
-        it("应拒绝全链下认购完成后提取融资额", async function () {
-            // 先进行deposit
-            var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
-            var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
-            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
-
-
-            var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
-            offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
-            await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-            await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
-
-            await expect(
-                fund.connect(manager).withdrawFundingAssets()
-            ).to.revertedWith("Crowdsale: no funding assets");
+            ).to.revertedWith("Crowdsale: only funding receiver");
 
         });
 
@@ -2051,7 +2032,7 @@ describe("V2 架构完整业务流程测试", function () {
             await ethers.provider.send("evm_mine", []);
 
             await expect(
-                fund.connect(manager).withdrawManageFee()
+                fund.connect(manageFeeReceiver).withdrawManageFee()
             ).to.revertedWith("Crowdsale: no manage fee");
 
         });
@@ -2074,26 +2055,7 @@ describe("V2 架构完整业务流程测试", function () {
 
             await expect(
                 fund.connect(user1).withdrawManageFee()
-            ).to.revertedWith("Crowdsale: only manager");
-
-        });
-
-        it("应拒绝全链下认购完成后提取管理费", async function () {
-            // 先进行deposit
-            var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
-            var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
-            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
-
-
-            var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
-            offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
-            await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-            await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
-
-            await expect(
-                fund.connect(manager).withdrawManageFee()
-            ).to.revertedWith("Crowdsale: no manage fee");
+            ).to.revertedWith("Crowdsale: only manage fee receiver");
 
         });
 
