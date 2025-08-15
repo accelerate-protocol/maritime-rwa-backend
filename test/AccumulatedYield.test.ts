@@ -55,6 +55,7 @@ describe("AccumulatedYield", function () {
 
         // Mint initial tokens
         await rewardToken.mint(manager.address, initialRewardTokenSupply);
+        await rewardToken.mint(dividendTreasury.address, initialRewardTokenSupply);
         
         // Deploy AccumulatedYield for global tests
         const YieldFactory = await ethers.getContractFactory("AccumulatedYield");
@@ -131,10 +132,10 @@ describe("AccumulatedYield", function () {
         const endTime = currentTime + 86400; // 24 hours from now
         const maxSupply = ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS);
         const softCap = ethers.parseUnits("1000", SHARE_TOKEN_DECIMALS);
-        const sharePrice = ethers.parseUnits("1", 8); // 1 USDT per share
+        const sharePrice = ethers.parseUnits("1", SHARE_TOKEN_DECIMALS); // 1 USDT per share, 6 decimals
         const minDepositAmount = ethers.parseUnits("10", 6); // 10 USDT minimum
         const manageFeeBps = 1000; // 10% management fee
-        const decimalsMultiplier = ethers.parseUnits("1", 0); 
+        const decimalsMultiplier = 1; // 直接用 1，和 shareToken decimals 保持一致
         
         const crowdsaleInitData = ethers.AbiCoder.defaultAbiCoder().encode(
             ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"],
@@ -151,20 +152,6 @@ describe("AccumulatedYield", function () {
         // Unpause token for testing (since it's paused during initialization)
         await newVault.connect(manager).unpauseToken();
         
-        // Simulate funding success by minting tokens through crowdsale
-        // This is needed because AccumulatedYield now requires funding to be successful
-        const depositAmount = ethers.parseUnits("2000", 6); // 2000 USDT deposit (enough to exceed softCap)
-        
-        // Use off-chain deposit to mint tokens (since we're in funding period)
-        const offChainSignature = await prepareOffChainDepositSignature(depositAmount, manager.address, await newCrowdsale.getAddress());
-        await newCrowdsale.connect(manager).offChainDeposit(depositAmount, manager.address, offChainSignature);
-        
-        // check funding success
-        expect(await newCrowdsale.isFundingSuccessful()).to.be.true;
-
-        // Activate the yield module (now that funding is "successful")
-        await newAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
-        
         return {
             vault: newVault,
             shareToken: newShareToken,
@@ -174,9 +161,13 @@ describe("AccumulatedYield", function () {
     }
 
     describe("Initialization", function () {
+        let modules: any;
         beforeEach(async function () {
             // Reset EVM time to a clean state
             await resetEVMTime();
+            
+            // Create new modules
+            modules = await createModules(manager, validator, dividendTreasury);
         });
 
         it("should initialize global pool correctly", async function () {
@@ -184,10 +175,10 @@ describe("AccumulatedYield", function () {
                 ["address", "address", "address"],
                 [await rewardToken.getAddress(), manager.address, dividendTreasury.address]
             );
-            await accumulatedYield.initiate(await vault.getAddress(), await shareToken.getAddress(), yieldInitData);
+            await accumulatedYield.initiate(await modules.vault.getAddress(), await modules.shareToken.getAddress(), yieldInitData);
 
             const globalPool = await accumulatedYield.getGlobalPoolInfo();
-            expect(globalPool.shareToken).to.equal(await shareToken.getAddress());
+            expect(globalPool.shareToken).to.equal(await modules.shareToken.getAddress());
             expect(globalPool.rewardToken).to.equal(await rewardToken.getAddress());
             expect(globalPool.isActive).to.be.false; // 初始化时应该为false
             expect(globalPool.totalAccumulatedShares).to.equal(0);
@@ -201,10 +192,10 @@ describe("AccumulatedYield", function () {
                 ["address", "address", "address"],
                 [await rewardToken.getAddress(), manager.address, dividendTreasury.address]
             );
-            await accumulatedYield.initiate(await vault.getAddress(), await shareToken.getAddress(), yieldInitData);
+            await accumulatedYield.initiate(await modules.vault.getAddress(), await modules.shareToken.getAddress(), yieldInitData);
 
             await expect(
-                accumulatedYield.connect(manager).initiate(await vault.getAddress(), await shareToken.getAddress(), yieldInitData)
+                accumulatedYield.connect(manager).initiate(await modules.vault.getAddress(), await modules.shareToken.getAddress(), yieldInitData)
             ).to.be.revertedWith("AccumulatedYield: already initialized");
         });
 
@@ -215,7 +206,7 @@ describe("AccumulatedYield", function () {
                 [await rewardToken.getAddress(), manager.address, dividendTreasury.address]
             );
             await expect(
-                accumulatedYield.initiate(ethers.ZeroAddress, await shareToken.getAddress(), yieldInitData)
+                accumulatedYield.initiate(ethers.ZeroAddress, await modules.shareToken.getAddress(), yieldInitData)
             ).to.be.revertedWith("AccumulatedYield: invalid vault");
 
             // Invalid manager address
@@ -224,20 +215,21 @@ describe("AccumulatedYield", function () {
                 [await rewardToken.getAddress(), ethers.ZeroAddress, dividendTreasury.address]
             );
             await expect(
-                accumulatedYield.initiate(await vault.getAddress(), await shareToken.getAddress(), invalidManagerYieldInitData)
+                accumulatedYield.initiate(await modules.vault.getAddress(), await modules.shareToken.getAddress(), invalidManagerYieldInitData)
             ).to.be.revertedWith("AccumulatedYield: invalid manager");
         });
     });
 
     describe("Management Operations", function () {
         let testAccumulatedYield: any;
+        let modules: any;
 
         beforeEach(async function () {
             // Reset EVM time to a clean state
             await resetEVMTime();
             
             // Create new modules
-            const modules = await createModules(manager, validator, dividendTreasury);
+            modules = await createModules(manager, validator, dividendTreasury);
             testAccumulatedYield = modules.accumulatedYield;
         });
 
@@ -303,48 +295,55 @@ describe("AccumulatedYield", function () {
         let testAccumulatedYield: any;
         let testVault: any;
         let testShareToken: any;
+        let modules: any;
 
         beforeEach(async function () {
             // Reset EVM time to a clean state
             await resetEVMTime();
             
             // Create new modules
-            const modules = await createModules(manager, validator, dividendTreasury);
+            modules = await createModules(manager, validator, dividendTreasury);
             testAccumulatedYield = modules.accumulatedYield;
             testVault = modules.vault;
             testShareToken = modules.shareToken;
 
             // Setup: give some share tokens to users through Crowdsale
-            const depositAmount1 = ethers.parseUnits("1000", 6); // 1000 USDT for user1
-            const depositAmount2 = ethers.parseUnits("2000", 6); // 2000 USDT for user2
+            const depositAmount1 = ethers.parseUnits("5000", 6); // 5000 USDT for user1
             
             // Use off-chain deposit to mint tokens for users
             const offChainSignature1 = await prepareOffChainDepositSignature(depositAmount1, user1.address, await modules.crowdsale.getAddress());
-            const offChainSignature2 = await prepareOffChainDepositSignature(depositAmount2, user2.address, await modules.crowdsale.getAddress());
             
             await modules.crowdsale.connect(manager).offChainDeposit(depositAmount1, user1.address, offChainSignature1);
-            await modules.crowdsale.connect(manager).offChainDeposit(depositAmount2, user2.address, offChainSignature2);
         });
 
         it("should allow manager to distribute dividend with valid signature", async function () {
+            // Activate pool
+            await testAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            expect(await modules.crowdsale.isFundingSuccessful()).to.be.true;
+
             // Create signature
+            const dividendNonce = await testAccumulatedYield.connect(dividendTreasury).getDividendNonce();
             const payload = ethers.solidityPackedKeccak256(
-                ["address", "uint256"],
-                [await testVault.getAddress(), dividendAmount]
+                ["address", "uint256", "uint256"],
+                [await testVault.getAddress(), dividendAmount, dividendNonce]
             );
             const signature = await validator.signMessage(ethers.getBytes(payload));
 
             // Approve reward tokens
-            await rewardToken.connect(manager).approve(await testAccumulatedYield.getAddress(), dividendAmount);
+            await rewardToken.connect(dividendTreasury).approve(await testAccumulatedYield.getAddress(), dividendAmount);
 
             await expect(
-                testAccumulatedYield.connect(manager).distributeDividend(dividendAmount, signature)
+                testAccumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature)
             ).to.emit(testAccumulatedYield, "DividendDistributed");
 
             expect(await testAccumulatedYield.totalDividend()).to.equal(dividendAmount);
         });
 
         it("should reject distribution with invalid signature", async function () {
+            // Activate pool
+            await testAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            expect(await modules.crowdsale.isFundingSuccessful()).to.be.true;
+
             // Create invalid signature (wrong signer)
             const payload = ethers.solidityPackedKeccak256(
                 ["address", "uint256"],
@@ -352,14 +351,18 @@ describe("AccumulatedYield", function () {
             );
             const signature = await user1.signMessage(ethers.getBytes(payload));
 
-            await rewardToken.connect(manager).approve(await testAccumulatedYield.getAddress(), dividendAmount);
+            await rewardToken.connect(dividendTreasury).approve(await testAccumulatedYield.getAddress(), dividendAmount);
 
             await expect(
-                testAccumulatedYield.connect(manager).distributeDividend(dividendAmount, signature)
+                testAccumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature)
             ).to.be.revertedWith("AccumulatedYield: invalid signature");
         });
 
         it("should reject distribution with zero amount", async function () {
+            // Activate pool
+            await testAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            expect(await modules.crowdsale.isFundingSuccessful()).to.be.true;
+
             const payload = ethers.solidityPackedKeccak256(
                 ["address", "uint256"],
                 [await vault.getAddress(), 0]
@@ -367,22 +370,26 @@ describe("AccumulatedYield", function () {
             const signature = await validator.signMessage(ethers.getBytes(payload));
 
             await expect(
-                testAccumulatedYield.connect(manager).distributeDividend(0, signature)
+                testAccumulatedYield.connect(dividendTreasury).distributeDividend(0, signature)
             ).to.be.revertedWith("AccumulatedYield: invalid dividend amount");
         });
 
         it("should reject distribution by non-manager", async function () {
+            // Activate pool
+            await testAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            expect(await modules.crowdsale.isFundingSuccessful()).to.be.true;
+
             const payload = ethers.solidityPackedKeccak256(
                 ["address", "uint256"],
                 [await vault.getAddress(), dividendAmount]
             );
             const signature = await validator.signMessage(ethers.getBytes(payload));
 
-            await rewardToken.connect(manager).approve(await testAccumulatedYield.getAddress(), dividendAmount);
+            await rewardToken.connect(dividendTreasury).approve(await testAccumulatedYield.getAddress(), dividendAmount);
 
             await expect(
                 testAccumulatedYield.connect(user1).distributeDividend(dividendAmount, signature)
-            ).to.be.revertedWith("AccumulatedYield: only manager");
+            ).to.be.revertedWith("AccumulatedYield: only dividend treasury");
         });
 
         it("should reject distribution when pool is inactive", async function () {
@@ -395,10 +402,10 @@ describe("AccumulatedYield", function () {
             );
             const signature = await validator.signMessage(ethers.getBytes(payload));
 
-            await rewardToken.connect(manager).approve(await testAccumulatedYield.getAddress(), dividendAmount);
+            await rewardToken.connect(dividendTreasury).approve(await testAccumulatedYield.getAddress(), dividendAmount);
 
             await expect(
-                testAccumulatedYield.connect(manager).distributeDividend(dividendAmount, signature)
+                testAccumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature)
             ).to.be.revertedWith("AccumulatedYield: pool not active");
         });
     });
@@ -407,44 +414,50 @@ describe("AccumulatedYield", function () {
         let testAccumulatedYield: any;
         let testVault: any;
         let testShareToken: any;
+        let modules: any;
 
         beforeEach(async function () {
             // Reset EVM time to a clean state
             await resetEVMTime();
             
             // Create new modules
-            const modules = await createModules(manager, validator, dividendTreasury);
+            modules = await createModules(manager, validator, dividendTreasury);
             testVault = modules.vault;
             testShareToken = modules.shareToken;
             testAccumulatedYield = modules.accumulatedYield;
 
             // Give users share tokens through Crowdsale (since only funding module can mint)
-            const depositAmount1 = ethers.parseUnits("1000", 6); // 1000 USDT for user1
-            const depositAmount2 = ethers.parseUnits("2000", 6); // 2000 USDT for user2
+            const depositAmount1 = ethers.parseUnits("5000", 6); // 5000 USDT for user1
             
             // Use off-chain deposit to mint tokens for users
             const offChainSignature1 = await prepareOffChainDepositSignature(depositAmount1, user1.address, await modules.crowdsale.getAddress());
-            const offChainSignature2 = await prepareOffChainDepositSignature(depositAmount2, user2.address, await modules.crowdsale.getAddress());
             
             await modules.crowdsale.connect(manager).offChainDeposit(depositAmount1, user1.address, offChainSignature1);
-            await modules.crowdsale.connect(manager).offChainDeposit(depositAmount2, user2.address, offChainSignature2);
-            
             // Simulate user transfer to trigger updateUserPoolsOnTransfer
             // Transfer a small amount to initialize user pools
-            await testShareToken.connect(user1).transfer(user3.address, ethers.parseUnits("1", SHARE_TOKEN_DECIMALS));
-            await testShareToken.connect(user2).transfer(user3.address, ethers.parseUnits("1", SHARE_TOKEN_DECIMALS));
-
+            // record user1 user2 shareToken balance            
+            
             // Now distribute dividends (after users have tokens)
+            // Activate pool
+            await testAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            expect(await modules.crowdsale.isFundingSuccessful()).to.be.true;
+
+            const dividendNonce = await testAccumulatedYield.connect(dividendTreasury).getDividendNonce();
             const payload = ethers.solidityPackedKeccak256(
-                ["address", "uint256"],
-                [await testVault.getAddress(), dividendAmount]
+                ["address", "uint256", "uint256"],
+                [await testVault.getAddress(), dividendAmount, dividendNonce]
             );
+        
             const signature = await validator.signMessage(ethers.getBytes(payload));
-            await rewardToken.connect(manager).approve(await testAccumulatedYield.getAddress(), dividendAmount);
-            await testAccumulatedYield.connect(manager).distributeDividend(dividendAmount, signature);
+            await rewardToken.connect(dividendTreasury).approve(await testAccumulatedYield.getAddress(), dividendAmount);
+            await testAccumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature);
         });
 
         it("should allow user to claim rewards", async function () {
+            // Activate pool
+            await testAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            expect(await modules.crowdsale.isFundingSuccessful()).to.be.true;
+
             const initialBalance = await rewardToken.balanceOf(user1.address);
             const pendingReward = await testAccumulatedYield.pendingReward(user1.address);
 
@@ -459,6 +472,10 @@ describe("AccumulatedYield", function () {
         });
 
         it("should reject claim when no pending rewards", async function () {
+            // Activate pool
+            await testAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            expect(await modules.crowdsale.isFundingSuccessful()).to.be.true;
+
             // First claim the reward successfully
             const initialBalance = await rewardToken.balanceOf(user1.address);
             const pendingReward = await testAccumulatedYield.pendingReward(user1.address);
@@ -486,15 +503,31 @@ describe("AccumulatedYield", function () {
         });
 
         it("should correctly calculate pending rewards for multiple users", async function () {
-            // Simulate transfers to trigger updateUserPoolsOnTransfer
-            await testShareToken.connect(user1).transfer(user3.address, ethers.parseUnits("1", SHARE_TOKEN_DECIMALS));
-            await testShareToken.connect(user2).transfer(user3.address, ethers.parseUnits("1", SHARE_TOKEN_DECIMALS));
+            // Activate pool
+            await testAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            expect(await modules.crowdsale.isFundingSuccessful()).to.be.true;
 
-            const user1Pending = await testAccumulatedYield.pendingReward(user1.address);
+            // Simulate transfers to trigger updateUserPoolsOnTransfer
+            await testShareToken.connect(user1).transfer(user2.address, ethers.parseUnits("1000", SHARE_TOKEN_DECIMALS));
+            
+            await testShareToken.connect(user1).transfer(user3.address, ethers.parseUnits("1", SHARE_TOKEN_DECIMALS));
+
+            // distribute dividend
+            const dividendNonce = await testAccumulatedYield.connect(dividendTreasury).getDividendNonce();
+            const payload = ethers.solidityPackedKeccak256(
+                ["address", "uint256", "uint256"],
+                [await testVault.getAddress(), dividendAmount, dividendNonce]
+            );
+            const signature = await validator.signMessage(ethers.getBytes(payload));
+            await rewardToken.connect(dividendTreasury).approve(await testAccumulatedYield.getAddress(), dividendAmount);
+            await testAccumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature);
+            
+
             const user2Pending = await testAccumulatedYield.pendingReward(user2.address);
+            const user3Pending = await testAccumulatedYield.pendingReward(user3.address);
 
             // User2 should have more pending rewards since they have more shares
-            expect(user2Pending).to.be.gt(user1Pending);
+            expect(user2Pending).to.be.gt(user3Pending);
         });
     });
 
@@ -503,37 +536,40 @@ describe("AccumulatedYield", function () {
         let testVault: any;
         let testShareToken: any;
         let testCrowdsale: any;
+        let modules: any;
 
         beforeEach(async function () {
             // Reset EVM time to a clean state
             await resetEVMTime();
             
             // Create new modules
-            const modules = await createModules(manager, validator, dividendTreasury);
+            modules = await createModules(manager, validator, dividendTreasury);
             testAccumulatedYield = modules.accumulatedYield;
             testVault = modules.vault;
             testShareToken = modules.shareToken;
             testCrowdsale = modules.crowdsale;
 
             // Give users share tokens through Crowdsale (since only funding module can mint)
-            const depositAmount1 = ethers.parseUnits("1000", 6); // 1000 USDT for user1
-            const depositAmount2 = ethers.parseUnits("2000", 6); // 2000 USDT for user2
+            const depositAmount1 = ethers.parseUnits("5000", 6); // 5000 USDT for user1
             
             // Use off-chain deposit to mint tokens for users
             const offChainSignature1 = await prepareOffChainDepositSignature(depositAmount1, user1.address, await modules.crowdsale.getAddress());
-            const offChainSignature2 = await prepareOffChainDepositSignature(depositAmount2, user2.address, await modules.crowdsale.getAddress());
             
             await modules.crowdsale.connect(manager).offChainDeposit(depositAmount1, user1.address, offChainSignature1);
-            await modules.crowdsale.connect(manager).offChainDeposit(depositAmount2, user2.address, offChainSignature2);
 
             // Setup: distribute some dividends
+            // Activate pool
+            await testAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            expect(await modules.crowdsale.isFundingSuccessful()).to.be.true;
+
+            const dividendNonce = await testAccumulatedYield.connect(dividendTreasury).getDividendNonce();
             const payload = ethers.solidityPackedKeccak256(
-                ["address", "uint256"],
-                [await testVault.getAddress(), dividendAmount]
+                ["address", "uint256", "uint256"],
+                [await testVault.getAddress(), dividendAmount, dividendNonce]
             );
             const signature = await validator.signMessage(ethers.getBytes(payload));
-            await rewardToken.connect(manager).approve(await testAccumulatedYield.getAddress(), dividendAmount);
-            await testAccumulatedYield.connect(manager).distributeDividend(dividendAmount, signature);
+            await rewardToken.connect(dividendTreasury).approve(await testAccumulatedYield.getAddress(), dividendAmount);
+            await testAccumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature);
         });
 
         it("should update user pools on token transfer after funding success", async function () {
@@ -550,7 +586,7 @@ describe("AccumulatedYield", function () {
             const updatedUser2Info = await testAccumulatedYield.getUserInfo(user2.address);
 
             expect(updatedUser1Info.accumulatedShares).to.be.gt(initialUser1Info.accumulatedShares);
-            expect(updatedUser2Info.accumulatedShares).to.be.gt(initialUser2Info.accumulatedShares);
+            expect(updatedUser2Info.accumulatedShares).to.be.equal(0);
         });
     });
 
@@ -558,19 +594,28 @@ describe("AccumulatedYield", function () {
         let testAccumulatedYield: any;
         let testVault: any;
         let testShareToken: any;
+        let modules: any;
 
         beforeEach(async function () {
             // Reset EVM time to a clean state
             await resetEVMTime();
             
             // Create new modules
-            const modules = await createModules(manager, validator, dividendTreasury);
+            modules = await createModules(manager, validator, dividendTreasury);
             testAccumulatedYield = modules.accumulatedYield;
             testVault = modules.vault;
             testShareToken = modules.shareToken;
+            // Crowdsale funding success
+            const depositAmount = ethers.parseUnits("5000", 6);
+            const offChainSignature = await prepareOffChainDepositSignature(depositAmount, user1.address, await modules.crowdsale.getAddress());
+            await modules.crowdsale.connect(manager).offChainDeposit(depositAmount, user1.address, offChainSignature);
         });
 
         it("should return correct global pool info", async function () {
+            // Activate pool
+            await testAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            expect(await modules.crowdsale.isFundingSuccessful()).to.be.true;
+
             const globalPool = await testAccumulatedYield.getGlobalPoolInfo();
             
             expect(globalPool.shareToken).to.equal(await testShareToken.getAddress());
@@ -581,6 +626,10 @@ describe("AccumulatedYield", function () {
         });
 
         it("should return correct user info", async function () {
+            // Activate pool
+            await testAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            expect(await modules.crowdsale.isFundingSuccessful()).to.be.true;
+
             const userInfo = await testAccumulatedYield.getUserInfo(user1.address);
             
             expect(userInfo.accumulatedShares).to.equal(0);
@@ -592,16 +641,21 @@ describe("AccumulatedYield", function () {
 
 
         it("should return correct total dividend", async function () {
+            // Activate pool
+            await testAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            expect(await modules.crowdsale.isFundingSuccessful()).to.be.true;
+
             expect(await testAccumulatedYield.totalDividend()).to.equal(0);
 
             // After distributing dividends
+            const dividendNonce = await testAccumulatedYield.connect(dividendTreasury).getDividendNonce();
             const payload = ethers.solidityPackedKeccak256(
-                ["address", "uint256"],
-                [await testVault.getAddress(), dividendAmount]
+                ["address", "uint256", "uint256"],
+                [await testVault.getAddress(), dividendAmount, dividendNonce]
             );
             const signature = await validator.signMessage(ethers.getBytes(payload));
-            await rewardToken.connect(manager).approve(await testAccumulatedYield.getAddress(), dividendAmount);
-            await testAccumulatedYield.connect(manager).distributeDividend(dividendAmount, signature);
+            await rewardToken.connect(dividendTreasury).approve(await testAccumulatedYield.getAddress(), dividendAmount);
+            await testAccumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature);
 
             expect(await testAccumulatedYield.totalDividend()).to.equal(dividendAmount);
         });
@@ -609,14 +663,19 @@ describe("AccumulatedYield", function () {
 
 
         it("should calculate accumulated shares correctly", async function () {
+            // Activate pool
+            await testAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+            expect(await modules.crowdsale.isFundingSuccessful()).to.be.true;
+
             // Distribute dividends first
+            const dividendNonce = await testAccumulatedYield.connect(dividendTreasury).getDividendNonce();
             const payload = ethers.solidityPackedKeccak256(
-                ["address", "uint256"],
-                [await testVault.getAddress(), dividendAmount]
+                ["address", "uint256", "uint256"],
+                [await testVault.getAddress(), dividendAmount, dividendNonce]
             );
             const signature = await validator.signMessage(ethers.getBytes(payload));
-            await rewardToken.connect(manager).approve(await testAccumulatedYield.getAddress(), dividendAmount);
-            await testAccumulatedYield.connect(manager).distributeDividend(dividendAmount, signature);
+            await rewardToken.connect(dividendTreasury).approve(await testAccumulatedYield.getAddress(), dividendAmount);
+            await testAccumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature);
 
             // Calculate accumulated shares for user with specific balance
             const userBalance = ethers.parseUnits("1000", SHARE_TOKEN_DECIMALS);

@@ -142,10 +142,7 @@ contract Creation is ICreation, Ownable {
         );
         require(accumulatedYield != address(0), "Creation: accumulatedYield creation failed");
         
-        // 5. 配置模块间的依赖关系
-        _configureModules(vault, token, fund, accumulatedYield);
-        
-        // 6. 创建项目记录        
+        // 5. 创建项目记录        
         projects[projectName] = Project({
             name: projectName,
             vault: vault,
@@ -235,15 +232,6 @@ contract Creation is ICreation, Ownable {
         require(rewardToken != address(0), "Creation: reward token cannot be zero address");
         require(rewardManager != address(0), "Creation: reward manager cannot be zero address");
         require(dividendTreasury != address(0), "Creation: dividend treasury cannot be zero address");
-    }
-    
-    function _configureModules(address vault, address token, address fund, address accumulatedYield) internal {
-        // 注意：在 Clones 模式下，这些配置函数需要在初始化后由 manager 调用
-        // 由于 Creation 合约不是 manager，我们需要在部署后由用户手动配置
-        // 或者修改这些函数的权限控制
-        
-        // 暂时跳过自动配置，让用户手动配置
-        // 这样可以确保正确的权限控制
     }
     
     // 实现接口的其他方法

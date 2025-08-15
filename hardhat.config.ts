@@ -53,7 +53,8 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 84532
     },
-    bscTestnet:{
+    bscTestnet: {
+      // BSC 测试网 RPC
       url: "https://bsc-testnet.bnbchain.org",
       accounts: [
         process.env.PRIVATE_KEY_1!,

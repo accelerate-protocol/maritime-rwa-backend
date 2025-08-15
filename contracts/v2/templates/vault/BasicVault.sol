@@ -225,39 +225,48 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     }
     
     // ============ Vault Token Management ============
+
+    function configureModules(address _vaultToken, address _funding, address _yield) external override onlyOwner whenInitialized {
+        _setVaultToken(_vaultToken);
+        _setFundingModule(_funding);
+        _setDividendModule(_yield);
+    }
     
-    /**
-     * @dev Set vault token address (can only be set once)
-     * @param _vaultToken Vault token address
-     */
-    function setVaultToken(address _vaultToken) external override onlyOwner whenInitialized {
+    // 内部方法
+    function _setVaultToken(address _vaultToken) internal {
         require(vaultToken == address(0), "BasicVault: token already set");
         require(_vaultToken != address(0), "BasicVault: invalid token address");
         vaultToken = _vaultToken;
-        
-        // Note: Token will be paused when it's initialized with this vault
-        // The pause will be handled during token initialization
-        emit TokenPaused();
+    }
+    // 外部接口
+    function setVaultToken(address _vaultToken) external override onlyOwner whenInitialized {
+        _setVaultToken(_vaultToken);
     }
     
     /**
      * @dev Set funding module address (can only be set once)
      * @param _funding Funding module address
      */
-    function setFundingModule(address _funding) external override onlyOwner whenInitialized {
+    function _setFundingModule(address _funding) internal {
         require(funding == address(0), "BasicVault: funding already set");
         require(_funding != address(0), "BasicVault: invalid funding address");
         funding = _funding;
+    }
+    function setFundingModule(address _funding) external override onlyOwner whenInitialized {
+        _setFundingModule(_funding);
     }
     
     /**
      * @dev Set dividend module address (can only be set once)
      * @param _dividendModule Dividend module address
      */
-    function setDividendModule(address _dividendModule) external override onlyOwner whenInitialized {
+    function _setDividendModule(address _dividendModule) internal {
         require(accumulatedYield == address(0), "BasicVault: dividend module already set");
         require(_dividendModule != address(0), "BasicVault: invalid dividend module address");
         accumulatedYield = _dividendModule;
+    }
+    function setDividendModule(address _dividendModule) external override onlyOwner whenInitialized {
+        _setDividendModule(_dividendModule);
     }
     
     // ============ Query Functions ============
