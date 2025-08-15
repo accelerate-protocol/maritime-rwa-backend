@@ -56,8 +56,17 @@ const config: HardhatUserConfig = {
     bscTestnet: {
       // BSC 测试网 RPC
       url: "https://bsc-testnet.bnbchain.org",
-      // 你的 .env 文件中应包含 PRIVATE_KEY=0x...（测试网私钥，带 0x 前缀）
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      accounts: [
+        process.env.PRIVATE_KEY_1!,
+        process.env.PRIVATE_KEY_2!,
+        process.env.PRIVATE_KEY_3!,
+        process.env.PRIVATE_KEY_4!,
+        process.env.PRIVATE_KEY_5!,
+        process.env.PRIVATE_KEY_6!,
+        process.env.PRIVATE_KEY_7!,
+        process.env.PRIVATE_KEY_8!,
+        process.env.PRIVATE_KEY_9!,
+      ],
       chainId: 97
     },
     bscMainnet:{
@@ -65,11 +74,8 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 56 
     },
-
-
-
-
   },
+  
 };
 
 export default config;
