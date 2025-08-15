@@ -648,6 +648,29 @@ describe("V2 架构完整业务流程测试", function () {
             // 验证代币仍然处于暂停状态（融资期间）
             expect(await token.paused()).to.be.true;
         });
+
+        it("approve测试", async function () {
+            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
+
+            // await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
+            // const tx = await fund.connect(user1).offChainDeposit(depositAmount, user1.address, signature);
+
+            const tx = await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+
+
+            // 验证份额计算
+            const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
+            const actualShares = await token.balanceOf(user1.address);
+
+            // console.log("actualShares", actualShares);
+            // console.log("expectedShares", expectedShares);
+
+            expect(actualShares).to.equal(expectedShares);
+
+            // 验证代币仍然处于暂停状态（融资期间）
+            expect(await token.paused()).to.be.true;
+        });
         it("应该拒绝offDeposit金额为0", async function () {
             const depositAmount = ethers.parseUnits("0", TEST_CONFIG.TOKEN_DECIMALS);
             const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);

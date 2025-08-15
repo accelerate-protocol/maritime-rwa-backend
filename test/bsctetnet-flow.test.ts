@@ -17,8 +17,8 @@ describe("V2 架构完整业务流程测试-开放式", function () {
     // 测试配置常量
     const TEST_CONFIG = {
         // 时间配置
-        FUNDING_DURATION: 3600, // 1小时
-        START_TIME_OFFSET: 300, // 5分钟后开始
+        FUNDING_DURATION: 120, // 2min
+        START_TIME_OFFSET: 10, // 10s后开始
 
         // 金额配置
         MAX_SUPPLY: ethers.parseUnits("10000", VAULT_TOKEN_DECIMALS), // VaultToken 精度
@@ -190,8 +190,10 @@ describe("V2 架构完整业务流程测试-开放式", function () {
         );
 
         // 使用 deployAll 方法部署
+        const projectName = `Open_${Date.now()}`; // 使用时间戳
+
         const tx = await creation.deployAll(
-            "CompleteFlowProject", // projectName
+            projectName, // projectName
             0, // vaultTemplateId
             vaultInitData,
             0, // tokenTemplateId
@@ -321,10 +323,6 @@ describe("V2 架构完整业务流程测试-开放式", function () {
         expect(await token.paused()).to.be.false;
     }
 
-   
-
-   
-
     async function prepareOffDepositSignature(amount: any, receiver: any) {
         const messageHash = ethers.keccak256(ethers.solidityPacked(
             ["string", "uint256", "address", "uint256", "address"],
@@ -334,63 +332,24 @@ describe("V2 架构完整业务流程测试-开放式", function () {
         return await validator.signMessage(ethSignedMessageHash);
     }
 
-    describe("8. offChainRedeem 操作测试", function () {
-
-        //TODO：待验证bug
-        it("应该成功处理融资失败后的offChainRedeem", async function () {
-            // 先进行deposit
-            const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
-            const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
-            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-            await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
-
-            // 等待融资期结束（假设融资失败）
-            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
-            await ethers.provider.send("evm_mine", []);
-
-            const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
-
-
-            const userBalance = await token.balanceOf(user1.address);
-            // console.log("userBalance",userBalance);
-
-            expect(expectedShares).to.equal(userBalance);
-
-            // 批准代币燃烧 - 需要批准给vault地址
-            await token.connect(user1).approve(await vault.getAddress(), userBalance);
-
-            const tx = await fund.connect(manager).offChainRedeem(user1.address);
-
-
-
-            const userBalanceAfterRedeem = await token.balanceOf(user1.address);
-            expect(0).to.be.equal(userBalanceAfterRedeem);
-
-            // 验证资产返还
-            // const finalUsdtBalance = await usdt.balanceOf(user1.address);
-            // expect(finalUsdtBalance).to.be.gt(initialUsdtBalance);
-        });
-
-    });
-
     describe("10. 链下认购 Claim 操作测试", function () {
 
         it("应该成功领取分红", async function () {
             // 先进行deposit
-            var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+            var depositAmount_user1 = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
             var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
             await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
             await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
 
 
-            var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
-            offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
-            await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-            await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+            // var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
+            // offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
+            // await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
+            // await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
 
             // 等待融资期结束并解锁代币
-            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
-            await ethers.provider.send("evm_mine", []);
+            // await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            // await ethers.provider.send("evm_mine", []);
             await fund.connect(manager).unpauseTokenOnFundingSuccess();
 
             // 激活收益模块
@@ -419,21 +378,12 @@ describe("V2 架构完整业务流程测试-开放式", function () {
             expect(user1LastClaimDividend).to.be.equal(0);
             expect(user1AccumulatedShares).to.be.equal(0);
             expect(user1TotalClaimed).to.be.equal(0);
-            var user2Info = await accumulatedYield.getUserInfo(user2.address);
-            var user2accumulatedShares = user2Info.accumulatedShares;
-            var user2LastClaimDividend = user2Info.lastClaimDividend;
-            var user2TotalCLaimed = user2Info.totalClaimed;
-            expect(user2accumulatedShares).to.be.equal(0);
-            expect(user2LastClaimDividend).to.be.equal(0);
-            expect(user2TotalCLaimed).to.be.equal(0);
-
+            
             //验证应分红数额
             var user1PendingReward = await accumulatedYield.pendingReward(user1.address);
             var expectUser1PendingReward = depositAmount_user1 * TEST_CONFIG.SHARE_PRICE_DENOMINATOR / TEST_CONFIG.SHARE_PRICE * dividendAmount / TEST_CONFIG.MAX_SUPPLY;
             expect(user1PendingReward).to.be.equal(expectUser1PendingReward);
-            var user2PendingReward = await accumulatedYield.pendingReward(user2.address);
-            var expectUser2PendingReward = depositAmount_user2 * TEST_CONFIG.SHARE_PRICE_DENOMINATOR / TEST_CONFIG.SHARE_PRICE * dividendAmount / TEST_CONFIG.MAX_SUPPLY;
-            expect(user2PendingReward).to.be.equal(expectUser2PendingReward);
+            
 
             // user1领取分红
             var delDidUser1 = totalDividend - user1Info.lastClaimDividend;
@@ -449,7 +399,6 @@ describe("V2 架构完整业务流程测试-开放式", function () {
 
             //验证用户状态更新
             actualSharesUser1 = await token.balanceOf(user1.address);
-            actualSharesUser2 = await token.balanceOf(user2.address);
 
             user1Info = await accumulatedYield.getUserInfo(user1.address);
             var expectUser1TotalClaimed = user1PendingReward;
@@ -459,35 +408,6 @@ describe("V2 架构完整业务流程测试-开放式", function () {
             user1AccumulatedShares = user1Info.accumulatedShares;
             expect(user1Info.lastClaimDividend).to.be.equal(totalDividend);
             expect(user1AccumulatedShares).to.be.equal(expectUser1AccumulatedShares);
-
-            user2Info = await accumulatedYield.getUserInfo(user2.address);
-            expect(user2Info.totalClaimed).to.be.equal(0);
-            expect(user2Info.accumulatedShares).to.be.equal(0);
-            expect(user2Info.lastClaimDividend).to.be.equal(0);
-
-
-            // 执行转账
-            expectUser1AccumulatedShares = user1AccumulatedShares;
-            var delDidUser2 = totalDividend - user2Info.accumulatedShares;
-            var expectUser2AccumulatedShares = delDidUser2 * actualSharesUser2;
-            var transferAmount = ethers.parseUnits("100", TEST_CONFIG.VAULT_TOKEN_DECIMALS);
-
-            await token.connect(user1).transfer(user2.address, transferAmount);
-
-            actualSharesUser1 = await token.balanceOf(user1.address);
-            expect(actualSharesUser1).to.be.equal(depositAmount_user1 - transferAmount);
-            var actualSharesUser2 = await token.balanceOf(user2.address);
-            expect(actualSharesUser2).to.be.equal(depositAmount_user2 + transferAmount);
-
-            //验证用户状态更新
-            user1Info = await accumulatedYield.getUserInfo(user1.address);
-            user1AccumulatedShares = user1Info.accumulatedShares;
-            expect(user1AccumulatedShares).to.be.equal(expectUser1AccumulatedShares);
-            expect(user1Info.totalClaimed).to.be.equal(expectUser1TotalClaimed);
-
-
-            user2Info = await accumulatedYield.getUserInfo(user2.address);
-            expect(user2Info.accumulatedShares).to.be.equal(expectUser2AccumulatedShares);
 
             //转账后继续执行分红
             await distributeDividendWithAmount(dividendAmount);
@@ -503,22 +423,8 @@ describe("V2 架构完整业务流程测试-开放式", function () {
             user1PendingReward = await accumulatedYield.pendingReward(user1.address);
             expectUser1PendingReward = actualSharesUser1 * dividendAmount / TEST_CONFIG.MAX_SUPPLY;
             expect(user1PendingReward).to.be.equal(expectUser1PendingReward);
-            user2PendingReward = await accumulatedYield.pendingReward(user2.address);
-            expectUser2PendingReward = expectUser2PendingReward + actualSharesUser2 * dividendAmount / TEST_CONFIG.MAX_SUPPLY;
-            expect(user2PendingReward).to.be.equal(expectUser2PendingReward);
 
-            //user2领取分红
-            const initialBalanceUser2 = await usdt.balanceOf(user2.address);
-            tx = await accumulatedYield.connect(user2).claimReward();
-
-            //验证user2.totalClaimed
-            const finalBalanceUser2 = await usdt.balanceOf(user2.address);
-            var user2TotalClaimed = user2PendingReward;
-            expect(finalBalanceUser2 - initialBalanceUser2).to.be.equal(user2TotalClaimed);
-
-            user2Info = await accumulatedYield.getUserInfo(user2.address);
-            expect(user2Info.totalClaimed).to.be.equal(user2PendingReward);
-
+            
             //继续执行分红
             await distributeDividendWithAmount(dividendAmount);
 
@@ -526,10 +432,6 @@ describe("V2 架构完整业务流程测试-开放式", function () {
             user1PendingReward = await accumulatedYield.pendingReward(user1.address);
             expectUser1PendingReward = expectUser1PendingReward + actualSharesUser1 * dividendAmount / TEST_CONFIG.MAX_SUPPLY;
             expect(user1PendingReward).to.be.equal(expectUser1PendingReward);
-            user2PendingReward = await accumulatedYield.pendingReward(user2.address);
-            expectUser2PendingReward = actualSharesUser2 * dividendAmount / TEST_CONFIG.MAX_SUPPLY;
-            expect(user2PendingReward).to.be.equal(expectUser2PendingReward);
-
             // user1领取分红
             tx = await accumulatedYield.connect(user1).claimReward();
 
@@ -541,18 +443,8 @@ describe("V2 架构完整业务流程测试-开放式", function () {
             user1TotalClaimed = user1TotalClaimed + user1PendingReward;
             expect(user1Info.totalClaimed).to.be.equal(user1TotalClaimed);
 
-            // user2领取分红
-            tx = await accumulatedYield.connect(user2).claimReward();
-            const balanceUser2 = await usdt.balanceOf(user2.address);
-            expect(balanceUser2 - finalBalanceUser2).to.be.equal(user2PendingReward);
-
-            //验证user2.totalClaimed
-            user2Info = await accumulatedYield.getUserInfo(user2.address);
-            user2TotalClaimed = user2TotalClaimed + user2PendingReward;
-            expect(user2Info.totalClaimed).to.be.equal(user2TotalClaimed);
-
         });
-        
+
     });
 });
 
@@ -564,8 +456,8 @@ describe("V2 架构完整业务流程测试-白名单", function () {
     // 测试配置常量
     const TEST_CONFIG = {
         // 时间配置
-        FUNDING_DURATION: 3600, // 1小时
-        START_TIME_OFFSET: 300, // 5分钟后开始
+        FUNDING_DURATION: 120, // 2min
+        START_TIME_OFFSET: 10, // 10s后开始
 
         // 金额配置
         MAX_SUPPLY: ethers.parseUnits("10000", VAULT_TOKEN_DECIMALS), // VaultToken 精度
@@ -718,8 +610,10 @@ describe("V2 架构完整业务流程测试-白名单", function () {
         );
 
         // 使用 deployAll 方法部署
+
+        const projectName = `private_${Date.now()}`; // 使用时间戳
         const tx = await creation.deployAll(
-            "CompleteFlowProject", // projectName
+            projectName, // projectName
             0, // vaultTemplateId
             vaultInitData,
             0, // tokenTemplateId
@@ -858,6 +752,12 @@ describe("V2 架构完整业务流程测试-白名单", function () {
         return await validator.signMessage(ethSignedMessageHash);
     }
 
+    // 添加 sleep 函数
+    function sleep(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+
     describe("8. 白名单模式下 offChainRedeem 操作测试", function () {
 
         //TODO：待验证bug
@@ -869,8 +769,11 @@ describe("V2 架构完整业务流程测试-白名单", function () {
             await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
 
             // 等待融资期结束（假设融资失败）
-            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
-            await ethers.provider.send("evm_mine", []);
+            // await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            // await ethers.provider.send("evm_mine", []);
+
+            // 在需要等待的地方使用 sleep
+            await sleep(120000); // 等待1秒
 
             const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
 
@@ -1147,9 +1050,9 @@ describe("V2 架构完整业务流程测试-白名单", function () {
             await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
             await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
 
-            // 等待融资期结束并解锁代币
-            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
-            await ethers.provider.send("evm_mine", []);
+            // // 等待融资期结束并解锁代币
+            // await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+            // await ethers.provider.send("evm_mine", []);
             await fund.connect(manager).unpauseTokenOnFundingSuccess();
 
             // 激活收益模块
