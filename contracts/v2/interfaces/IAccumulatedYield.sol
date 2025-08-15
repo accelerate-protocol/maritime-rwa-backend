@@ -213,6 +213,12 @@ interface IAccumulatedYield {
     function getDividendTreasury() external view returns (address);
     
     /**
+     * @dev get demanded dividend nonce
+     * @return dividend nonce
+     */
+    function getDividendNonce() external view returns (uint256);
+    
+    /**
      * @dev Calculate user's accumulated shares at specified balance
      * @param user User address
      * @param userBalance Specified user balance
