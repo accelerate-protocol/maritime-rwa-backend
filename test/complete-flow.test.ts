@@ -162,7 +162,7 @@ describe("V2 架构完整业务流程测试", function () {
             [
                 await usdt.getAddress(), // rewardToken
                 manager.address, // rewardManager
-                manager.address // dividendTreasury
+                dividendTreasury.address // dividendTreasury
             ]
         );
 
@@ -238,9 +238,10 @@ describe("V2 架构完整业务流程测试", function () {
 
     async function prepareDividendSignature(amount: any) {
         // AccumulatedYield 使用不同的签名方式：keccak256(abi.encodePacked(vault, dividendAmount))
+        const nounce = await accumulatedYield.connect(dividendTreasury).getDividendNonce();
         const payload = ethers.keccak256(ethers.solidityPacked(
-            ["address", "uint256"],
-            [await vault.getAddress(), amount]
+            ["address", "uint256", "uint256"],
+            [await vault.getAddress(), amount,nounce]
         ));
         return await validator.signMessage(ethers.getBytes(payload));
     }
@@ -277,8 +278,8 @@ describe("V2 架构完整业务流程测试", function () {
 
         const dividendAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
         const signature = await prepareDividendSignature(dividendAmount);
-        await usdt.connect(manager).approve(await accumulatedYield.getAddress(), dividendAmount);
-        return await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature);
+        await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), dividendAmount);
+        return await accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature);
     }
 
     async function distributeDividendWithAmount(amount: any) {
@@ -290,8 +291,8 @@ describe("V2 架构完整业务流程测试", function () {
 
         // const dividendAmount = ethers.parseUnits(amount, TEST_CONFIG.TOKEN_DECIMALS);
         const signature = await prepareDividendSignature(amount);
-        await usdt.connect(manager).approve(await accumulatedYield.getAddress(), amount);
-        return await accumulatedYield.connect(manager).distributeDividend(amount, signature);
+        await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), amount);
+        return await accumulatedYield.connect(dividendTreasury).distributeDividend(amount, signature);
     }
 
     async function verifyFinalState() {
@@ -535,10 +536,13 @@ describe("V2 架构完整业务流程测试", function () {
             await accumulatedYield.connect(manager).updateGlobalPoolStatus(true);
 
             const dividendAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
+            
             const signature2 = await prepareDividendSignature(dividendAmount);
+            
 
-            await usdt.connect(manager).approve(await accumulatedYield.getAddress(), dividendAmount);
-            const tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
+            await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), dividendAmount);
+            const tx = await accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2);
+           
 
             // 验证分红状态
             const globalPool = await accumulatedYield.getGlobalPoolInfo();
@@ -1085,8 +1089,8 @@ describe("V2 架构完整业务流程测试", function () {
             const dividendAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
             const signature2 = await prepareDividendSignature(dividendAmount);
 
-            await usdt.connect(manager).approve(await accumulatedYield.getAddress(), dividendAmount);
-            const tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
+            await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), dividendAmount);
+            const tx = await accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2);
 
             // 验证分红状态
             var globalPool = await accumulatedYield.getGlobalPoolInfo();
@@ -1135,8 +1139,8 @@ describe("V2 架构完整业务流程测试", function () {
             const dividendAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
             const signature2 = await prepareDividendSignature(dividendAmount);
 
-            await usdt.connect(manager).approve(await accumulatedYield.getAddress(), dividendAmount);
-            const tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
+            await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), dividendAmount);
+            const tx = await accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2);
 
             // 验证分红状态
             var globalPool = await accumulatedYield.getGlobalPoolInfo();
@@ -1233,11 +1237,11 @@ describe("V2 架构完整业务流程测试", function () {
             const dividendAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
             const signature2 = await prepareDividendSignature(dividendAmount);
 
-            await usdt.connect(manager).approve(await accumulatedYield.getAddress(), dividendAmount);
+            await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), dividendAmount);
             // const tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
 
             await expect(
-                accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2)
+                accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2)
             ).to.be.revertedWith("AccumulatedYield: pool not active");
 
             //验证应分红数额
@@ -1271,7 +1275,7 @@ describe("V2 架构完整业务流程测试", function () {
 
         });
 
-        it("应拒绝非管理员执行分红", async function () {
+        it("应拒绝非金库地址执行分红", async function () {
             // 先解锁代币交易
             var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
             var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
@@ -1294,12 +1298,12 @@ describe("V2 架构完整业务流程测试", function () {
             const dividendAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
             const signature2 = await prepareDividendSignature(dividendAmount);
 
-            await usdt.connect(manager).approve(await accumulatedYield.getAddress(), dividendAmount);
+            await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), dividendAmount);
             // const tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
 
             await expect(
                 accumulatedYield.connect(user1).distributeDividend(dividendAmount, signature2)
-            ).to.be.revertedWith("AccumulatedYield: only manager");
+            ).to.be.revertedWith("AccumulatedYield: only dividend treasury");
         });
 
         it("应拒绝未批准的情况下执行分红", async function () {
@@ -1329,7 +1333,7 @@ describe("V2 架构完整业务流程测试", function () {
             // const tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
 
             await expect(
-                accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2)
+                accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2)
             ).to.be.revertedWith("ERC20: insufficient allowance");
         });
 
@@ -1356,15 +1360,15 @@ describe("V2 架构完整业务流程测试", function () {
             const dividendAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
             const signature2 = await prepareDividendSignature(dividendAmount);
 
-            await usdt.connect(manager).approve(await accumulatedYield.getAddress(), dividendAmount - 1000000n);
+            await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), dividendAmount - 1000000n);
             // const tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
 
             await expect(
-                accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2)
+                accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2)
             ).to.be.revertedWith("ERC20: insufficient allowance");
         });
 
-        it("应拒绝非管理员批准的情况下执行分红", async function () {
+        it("应拒绝非金库地址批准的情况下执行分红", async function () {
             // 先解锁代币交易
             var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
             var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
@@ -1391,7 +1395,7 @@ describe("V2 架构完整业务流程测试", function () {
             // const tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
 
             await expect(
-                accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2)
+                accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2)
             ).to.be.revertedWith("ERC20: insufficient allowance");
         });
 
@@ -1424,7 +1428,7 @@ describe("V2 架构完整业务流程测试", function () {
             // const tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
 
             await expect(
-                accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2)
+                accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2)
             ).to.be.revertedWith("AccumulatedYield: invalid signature");
         });
 
@@ -1451,11 +1455,11 @@ describe("V2 架构完整业务流程测试", function () {
             const dividendAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
             const signature2 = await prepareDividendSignature(dividendAmount * 2n);
 
-            await usdt.connect(user1).approve(await accumulatedYield.getAddress(), dividendAmount);
+            await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), dividendAmount);
             // const tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
 
             await expect(
-                accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2)
+                accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2)
             ).to.be.revertedWith("AccumulatedYield: invalid signature");
         });
 
@@ -1485,7 +1489,7 @@ describe("V2 架构完整业务流程测试", function () {
             // const tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
 
             await expect(
-                accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2)
+                accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2)
             ).to.be.revertedWith("AccumulatedYield: invalid dividend amount");
         });
     });
@@ -1517,8 +1521,8 @@ describe("V2 架构完整业务流程测试", function () {
             const signature2 = await prepareDividendSignature(dividendAmount);
 
             //执行分红
-            await usdt.connect(manager).approve(await accumulatedYield.getAddress(), dividendAmount);
-            var tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
+            await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), dividendAmount);
+            var tx = await accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2);
 
             // 验证分红状态
             var globalPool = await accumulatedYield.getGlobalPoolInfo();
@@ -1608,8 +1612,8 @@ describe("V2 架构完整业务流程测试", function () {
             const signature2 = await prepareDividendSignature(dividendAmount);
 
             //执行分红
-            await usdt.connect(manager).approve(await accumulatedYield.getAddress(), dividendAmount);
-            var tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
+            await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), dividendAmount);
+            var tx = await accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2);
 
             // 验证分红状态
             var globalPool = await accumulatedYield.getGlobalPoolInfo();
@@ -1721,8 +1725,8 @@ describe("V2 架构完整业务流程测试", function () {
             const signature2 = await prepareDividendSignature(dividendAmount);
 
             //执行分红
-            await usdt.connect(manager).approve(await accumulatedYield.getAddress(), dividendAmount);
-            var tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
+            await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), dividendAmount);
+            var tx = await accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2);
 
             // 验证分红状态
             var globalPool = await accumulatedYield.getGlobalPoolInfo();
