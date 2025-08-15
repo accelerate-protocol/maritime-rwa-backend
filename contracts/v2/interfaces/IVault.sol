@@ -47,6 +47,7 @@ interface IVault {
     function onTokenTransfer(address from, address to, uint256 amount) external;
     
     // ============ 模块配置接口 ============
+    function configureModules(address _vaultToken, address _funding, address _yield) external;
     function setVaultToken(address _vaultToken) external;
     function setFundingModule(address _funding) external;
     function setDividendModule(address _dividendModule) external;

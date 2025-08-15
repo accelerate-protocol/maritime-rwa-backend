@@ -89,7 +89,7 @@ interface ICreation {
         address fund,
         address yield,
         address deployer
-    );
+        );
     
     event FactoriesUpdated(
         address vaultFactory,

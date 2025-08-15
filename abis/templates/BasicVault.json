@@ -138,6 +138,29 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_vaultToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_funding",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_yield",
+        "type": "address"
+      }
+    ],
+    "name": "configureModules",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "dataHash",
     "outputs": [
