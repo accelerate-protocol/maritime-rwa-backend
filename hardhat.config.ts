@@ -55,8 +55,22 @@ const config: HardhatUserConfig = {
     },
     bscTestnet:{
       url: "https://bsc-testnet.bnbchain.org",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 97
+      //url: "https://bsc-testnet.publicnode.com",
+      accounts: [
+        process.env.PRIVATE_KEY_1!,
+        process.env.PRIVATE_KEY_2!,
+        process.env.PRIVATE_KEY_3!,
+        process.env.PRIVATE_KEY_4!,
+        process.env.PRIVATE_KEY_5!,
+        process.env.PRIVATE_KEY_6!,
+        process.env.PRIVATE_KEY_7!,
+        process.env.PRIVATE_KEY_8!,
+        process.env.PRIVATE_KEY_9!,
+      ],
+      chainId: 97,
+      gasPrice: 5000000000, // 5 Gwei
+      gas: 8000000, // 8M gas
+      timeout: 120000, // 2 分钟超时
     },
     bscMainnet:{
       url: "https://bsc-dataseed.bnbchain.org",
