@@ -32,6 +32,8 @@ describe("RWA:", function () {
   var rbf: any;
   var vault: any;
   var priceFeed: any;
+  var rbfDecimals=6;
+  var decimals=6;
 
   before(async () => {
     const namedAccounts = await getNamedAccounts();
@@ -67,12 +69,13 @@ describe("RWA:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [
           rbfId,
           "RBF",
           "RBF",
+          rbfDecimals,
           usdt.address,
           depositTreasury,
           deployer,
@@ -113,6 +116,7 @@ describe("RWA:", function () {
       vaultId: vaultId,
       name: "RbfVault",
       symbol: "RbfVault",
+      decimals:decimals,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       maxSupply: maxSupply,
@@ -157,12 +161,13 @@ describe("RWA:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [
           rbfId,
           "RBF",
           "RBF",
+          rbfDecimals,
           usdt.address,
           depositTreasury,
           deployer,
@@ -185,12 +190,13 @@ describe("RWA:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [
           rbfId - 1n,
           "RBF",
           "RBF",
+          rbfDecimals,
           usdt.address,
           depositTreasury,
           deployer,
@@ -213,13 +219,14 @@ describe("RWA:", function () {
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
       [
-        "(uint64,string,string,address,address,uint256,address,address,address)",
+        "(uint64,string,string,uint8,address,address,uint256,address,address,address)",
       ],
       [
         [
           rbfId,
           "RBF",
           "RBF",
+          rbfDecimals,
           usdt.address,
           depositTreasury,
           0,
@@ -273,6 +280,7 @@ describe("RWA:", function () {
     const deployData = {
       name: "RBF",
       symbol: "RBF",
+      decimals:rbfDecimals,
       assetToken: usdt.address,
       maxSupply: "10000000",
       manageFee: "0",
@@ -301,6 +309,7 @@ describe("RWA:", function () {
     const deployData = {
       name: "VAULT",
       symbol: "VAULT",
+      decimals:decimals,
       assetToken: usdt.address,
       rbf: rbf,
       maxSupply: "10000000",

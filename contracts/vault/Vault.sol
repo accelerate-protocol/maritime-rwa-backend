@@ -23,6 +23,7 @@ import "../rbf/RBF.sol";
 struct VaultInitializeData {
     string name; // Vault token name
     string symbol; // Vault token symbol
+    uint8 decimals;
     address assetToken;
     address rbf;
     uint256 maxSupply;
@@ -98,6 +99,8 @@ contract Vault is
     mapping(address => bool) public offChainWLMap;
     // List of offChainWL addresses allowed to interact with the Vault offChain
     address[] public offChainWL;
+    // Vault decimals
+    uint8 public vaultDecimals;
 
 
     modifier onlyOnChainWL(address _address) {
@@ -118,6 +121,9 @@ contract Vault is
     function initialize(VaultInitializeData memory data) public initializer {
         __ERC20_init(data.name, data.symbol);
         __Ownable_init();
+
+        require(data.decimals>=IERC20MetadataUpgradeable(data.assetToken).decimals(),"Decimals must be greater than 0");
+        vaultDecimals = data.decimals;
 
         require(
             data.assetToken != address(0),
@@ -489,11 +495,11 @@ contract Vault is
 
     /**
      * @notice Returns the decimal precision of the vault token.
-     * @dev Overrides the default ERC20 decimals function and sets it to 6.
+     * @dev Overrides the default ERC20 decimals function and sets it to vaultDecimals.
      * @return The number of decimals used for the vault token.
      */
     function decimals() public view virtual override returns (uint8) {
-        return 6;
+        return vaultDecimals;
     }
 
 

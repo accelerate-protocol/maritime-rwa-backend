@@ -39,6 +39,7 @@ contract RBFRouter is IRBFRouter, Ownable {
         uint64 rbfId; // Unique identifier for the RBF contract
         string name; //Name of the RBF token
         string symbol; //Symbol of the RBF token
+        uint8 decimals; //Decimals of the RBF token
         address assetToken; //Address of the asset backing the RBF
         address depositTreasury; //Address of the deposit treasury
         address deployer; //Address of the deployer
@@ -155,6 +156,7 @@ contract RBFRouter is IRBFRouter, Ownable {
         RBFInitializeData memory data = RBFInitializeData({
             name: rbfDeployData.name,
             symbol: rbfDeployData.symbol,
+            decimals: rbfDeployData.decimals,
             assetToken: rbfDeployData.assetToken,
             depositTreasury: rbfDeployData.depositTreasury,
             dividendTreasury: dividendTreasury,
