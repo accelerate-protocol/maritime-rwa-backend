@@ -56,7 +56,7 @@ interface ICrowdsale {
 
     // ============ Funding Operations Interface ============
     // User initiated, requires manager signature
-    function deposit(uint256 amount, address receiver, bytes memory signature) external returns (uint256);
+    function deposit(uint256 amount, address receiver, bytes memory signature) external;
     
     // User initiated, requires manager signature - redeems all user shares
     function redeem(address receiver, bytes memory signature) external;
@@ -83,6 +83,6 @@ interface ICrowdsale {
     function getDepositSignatureMessage(uint256 amount, address receiver, uint256 nonce) external view returns (bytes32);
     function getRedeemSignatureMessage(uint256 amount, address receiver, uint256 nonce) external view returns (bytes32);
     
-    // ============ 统一初始化接口 ============
+    // ============ Unified Initialization Interface ============
     function initiate(address _vault, bytes memory _initData) external;
 } 

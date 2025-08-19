@@ -1,0 +1,260 @@
+[token-engine]
+uuid_node_index = 0
+
+[db]
+  type = 'postgres'
+  is_test = false
+  host = '94.74.111.72'
+  port = 4213
+  user = 'bcds'
+  password = 'ax1omesh@ax'
+  schema = 'public'
+  db_name = 'db_tokenengine_dev'
+  ssl_mode = 'disable'
+
+[http]
+enable = true
+port = 8082
+multipart_memory = 1073741824
+read_timeout = '3m20s'
+write_timeout = '3m20s'
+tls_enable = false
+tls_cert_file_path = ''
+tls_key_file_path = ''
+jwt_token_valid_duration = '30m0s'
+jwt_token_hmac_key = 'alphr@0326.token-engine.jwt'
+
+[cache]
+expired_time = '24h0m0s'
+cleanup_interval = '48h0m0s'
+
+[log]
+level = 'info'
+file_name = 'token-engine'
+max_age = '168h0m0s'
+max_size = '64mb'
+rotation_time = '24h0m0s'
+enable_color = true
+enable_caller = false
+disable_timestamp = false
+
+[log.module_level_map]
+api = 'debug'
+app = 'info'
+sidecar = 'debug'
+
+[file]
+upload_path = './static'
+visit_url_prefix = 'http://localhost:8082/api/v1/images/'
+
+[mq]
+enable = false
+lookupd_addrs = ["20.55.48.104:4161"]
+host = '20.55.48.104'
+port = 4150
+topic = 'token_engine'
+secret = '22222'
+max_in_flight = 100
+default_channel = 'default'
+max_attempts = 5
+default_requeue_delay = '5s'
+
+[key_guardian]
+encrypt_type = 0
+encrypt_pwd = 'alphr@0326.token-engine'
+
+[jupiter]
+stable_urls = ['https://quote-api.jup.ag/v6']
+unstable_url = ['https://quote-api.jup.ag/v6']
+
+[submitter]
+is_test = false
+
+[submitter.tip_percentage]
+low = 50
+avg = 75
+high = 95
+
+[solana]
+vault_program_id = '5jCtZCKkjQHWu1X6BpZ68maSkUC4eb9pUNvgT5bbn4hv'
+raydium_cp_swap_program_id = 'CPMDWBwJDtYax9qW7AyRuVC19Cc4L4Vcy4n2BHAbHkCW'
+raydium_amm_config_account_id = '9zSzfkYy6awexsHvmggeH36pfVUdDGyCcwmjT3AQPBj6'
+raydium_create_pool_fee_receive_account_id = 'G11FKBRaAkHAKuLCgLM6K6NUc9rTjPAznRCjZifrTQe2'
+send_tx_http_rpcs = [
+  "https://quiet-alien-spree.solana-mainnet.quiknode.pro/85cab071979df582851ae018af68086187f471c1",
+  "https://mainnet.helius-rpc.com/?api-key=a95e3765-35c7-459e-808a-9135a21acdf6",
+  "https://solana-mainnet.g.alchemy.com/v2/gN9fcg5Y_oVUVjoNZPYTewKErIQo-uwp",
+]
+stable_http_rpcs = [
+  "https://quiet-alien-spree.solana-mainnet.quiknode.pro/85cab071979df582851ae018af68086187f471c1",
+  "https://mainnet.helius-rpc.com/?api-key=a95e3765-35c7-459e-808a-9135a21acdf6",
+  "https://solana-mainnet.g.alchemy.com/v2/gN9fcg5Y_oVUVjoNZPYTewKErIQo-uwp",
+]
+unstable_http_rpcs = [
+  "https://quiet-alien-spree.solana-mainnet.quiknode.pro/85cab071979df582851ae018af68086187f471c1",
+  "https://mainnet.helius-rpc.com/?api-key=a95e3765-35c7-459e-808a-9135a21acdf6",
+  "https://solana-mainnet.g.alchemy.com/v2/gN9fcg5Y_oVUVjoNZPYTewKErIQo-uwp",
+  "https://crimson-ancient-market.solana-mainnet.quiknode.pro/7b1dfa5a6af169b6c5b4146aa362be45238935b5",
+  "https://mainnet.helius-rpc.com/?api-key=a10fd0ea-2f74-4fb0-bcc3-81dea10eed97",
+  "https://solana-mainnet.g.alchemy.com/v2/FBe0x24tZfDGyFcdLwBtD2IOtqsgf07d",
+  "https://tiniest-wandering-flower.solana-mainnet.quiknode.pro/3f2cf77b66958c08189f7d289df7d0740e554be2",
+  "https://mainnet.helius-rpc.com/?api-key=1678151e-afeb-45d5-9940-5d16fec2606b",
+  "https://solana-mainnet.g.alchemy.com/v2/c0XkSgm_psC_JZmca4iNH51GO9su5j9Q",
+  "https://cool-clean-friday.solana-mainnet.quiknode.pro/5d4f1cb01a8c07492695c52553b7b7d525926a7f",
+  "https://mainnet.helius-rpc.com/?api-key=195f7f46-73d5-46df-989e-9d743bf3caad",
+  "https://solana-mainnet.g.alchemy.com/v2/dTU4nfWu-hyYKKNtP5tggFsk0raZnp-M",
+  "https://little-capable-dream.solana-mainnet.quiknode.pro/d3c1f6637adf56f528716f4ce5c34e177bb24db6",
+  "https://mainnet.helius-rpc.com/?api-key=81b1565c-df1f-40b2-ad85-99e2de973d94",
+  "https://solana-mainnet.g.alchemy.com/v2/M5CUaTI_gFLBNAbpsdpuRJQhQOJVD0T7",
+  "https://ancient-fittest-field.solana-mainnet.quiknode.pro/52870c0fa2aaa478e5e8846f961685fa4eafbe02",
+  "https://mainnet.helius-rpc.com/?api-key=dc144c4f-1adc-4fb8-ac3f-fab305349953",
+  "https://solana-mainnet.g.alchemy.com/v2/4NeBCNniguk9JZj4o9tZZ1Ak2ckIVl9M",
+  "https://serene-wispy-model.solana-mainnet.quiknode.pro/2ebdf944147ac60d02e7030145216e4e1681dd2c",
+  "https://mainnet.helius-rpc.com/?api-key=525e032b-a590-40b4-8326-d3b7e10bfabb",
+  "https://solana-mainnet.g.alchemy.com/v2/czkDI3n01EtS3x7R1CzsvueFDhKL1-Vg",
+  "https://ultra-dry-slug.solana-mainnet.quiknode.pro/fc0324e30c127a9e9286eaab40b161d41b7bee32",
+  "https://mainnet.helius-rpc.com/?api-key=fac4ee8b-871c-45c5-a974-ea807d0e98ab",
+  "https://solana-mainnet.g.alchemy.com/v2/rpkv-tx_piDvLbS3pCmzWQTXs-JjY-7U",
+  "https://prettiest-cold-tent.solana-mainnet.quiknode.pro/64b571f27160605b5497c46f6f80450027b44e25",
+  "https://mainnet.helius-rpc.com/?api-key=4446ea08-ee75-433b-b078-9919068079ef",
+  "https://solana-mainnet.g.alchemy.com/v2/ftBuLF3FjZUVwPUTBKwzBgY-65JkvUIl",
+  "https://broken-purple-breeze.solana-mainnet.quiknode.pro/b087363c02a61ba4c37f9acd5c3c4dcc7b20420f",
+  "https://mainnet.helius-rpc.com/?api-key=7db9bd10-667a-43f7-811d-2d5cc3f86344",
+  "https://solana-mainnet.g.alchemy.com/v2/LnBFwtnd6Z8jy3EuLWOglFWyYncFHyZ9",
+  "https://snowy-silent-aura.solana-mainnet.quiknode.pro/9b28587745372a31c39de4d3bb40a62d39a66232",
+  "https://mainnet.helius-rpc.com/?api-key=fba4fceb-ca23-48ab-b702-f375d2a2316b",
+  "https://solana-mainnet.g.alchemy.com/v2/7tgl3QPrV7aOW8vkYpZk0UvRdNwJFOIL",
+  "https://morning-bitter-violet.solana-mainnet.quiknode.pro/1af8324a8d48dfc7763570a0b6e54b1073905eb4",
+  "https://mainnet.helius-rpc.com/?api-key=097b6306-9cad-46db-86e5-8ed6787a71b7",
+  "https://solana-mainnet.g.alchemy.com/v2/rpfukgnxp68Bl1UKGfX3s00dnTOWK0eK",
+  "https://few-cosmopolitan-patina.solana-mainnet.quiknode.pro/bfbebcccb84ef2d4dc067e930b1340af6302e9ef",
+  "https://mainnet.helius-rpc.com/?api-key=ffff5f0b-b41e-4d08-a85b-56780908eb62",
+  "https://solana-mainnet.g.alchemy.com/v2/7CBPP2HmBAKkdbI4gbO7ruEt_wLCyGQ2",
+  "https://twilight-little-lambo.solana-mainnet.quiknode.pro/8921cc08302d8db948b6235c2eb53fd1c995d0d6",
+  "https://mainnet.helius-rpc.com/?api-key=f293a327-e829-4c21-be96-224e219cbffe",
+  "https://solana-mainnet.g.alchemy.com/v2/ZWDnDI0R0v6eHFg9RBXRbU52kB35QKWt",
+  "https://neat-magical-market.solana-mainnet.quiknode.pro/22f4786138ebd920140d051f0ebdc6da71f058db",
+  "https://mainnet.helius-rpc.com/?api-key=53b061f7-82e6-4436-a39e-fe1cbfdf0394",
+  "https://solana-mainnet.g.alchemy.com/v2/IANcuBWBzVple730F7PQs3q3Zx0Sm6cA",
+]
+ws_rpcs = [
+  # 'wss://api.devnet.solana.com',
+  # 'wss://devnet.helius-rpc.com/?api-key=dc144c4f-1adc-4fb8-ac3f-fab305349953',
+  'wss://devnet.helius-rpc.com/?api-key=adfeb5d6-3c05-4d32-8bd0-3860a795efdc',
+]
+http_timeout = '1m40s'
+
+[solana.jito_config]
+DisableTipTracker = true
+TipStreamURL = 'wss://bundles.jito.wtf/api/v1/bundles/tip_stream'
+CollectTipInfoInterval = 60000000000
+
+[[solana.jito_config.Rpcs]]
+Endpoint = 'https://frankfurt.mainnet.block-engine.jito.wtf'
+APIKey = ''
+
+[[solana.jito_config.Rpcs]]
+Endpoint = 'https://mainnet.block-engine.jito.wtf'
+APIKey = ''
+
+[[solana.jito_config.Rpcs]]
+Endpoint = 'https://amsterdam.mainnet.block-engine.jito.wtf'
+APIKey = ''
+
+[[solana.jito_config.Rpcs]]
+Endpoint = 'https://ny.mainnet.block-engine.jito.wtf'
+APIKey = ''
+
+[[solana.jito_config.Rpcs]]
+Endpoint = 'https://tokyo.mainnet.block-engine.jito.wtf'
+APIKey = ''
+
+[solana.bloxroute_config]
+FrontRunningProtection = false
+UseStakedRPCs = true
+FastBestEffort = false
+DisableTipTracker = true
+TipStreamURL = 'wss://ny.solana.dex.blxrbdn.com/ws'
+TipStreamApiKey = 'MzY2MGQyNDUtNTE4OS00Yzc4LTk5ZjItNWE0Y2M4YWU0YTlkOjBhMDczNGI0YTRiOWE1OTBjMmMxMjhmNjVlOGE2YWFl'
+CollectTipInfoInterval = 60000000000
+
+[[solana.bloxroute_config.Rpcs]]
+Endpoint = 'https://uk.solana.dex.blxrbdn.com'
+APIKey = 'MzY2MGQyNDUtNTE4OS00Yzc4LTk5ZjItNWE0Y2M4YWU0YTlkOjBhMDczNGI0YTRiOWE1OTBjMmMxMjhmNjVlOGE2YWFl'
+
+[[solana.bloxroute_config.Rpcs]]
+Endpoint = 'https://ny.solana.dex.blxrbdn.com'
+APIKey = 'MzY2MGQyNDUtNTE4OS00Yzc4LTk5ZjItNWE0Y2M4YWU0YTlkOjBhMDczNGI0YTRiOWE1OTBjMmMxMjhmNjVlOGE2YWFl'
+
+
+[base]
+send_tx_http_rpcs = [
+  # 'https://api.developer.coinbase.com/rpc/v1/base-sepolia/JmJwHELnrYhdN3YgtwMjYOrnVDdSXppH',
+  # https://api.developer.coinbase.com/rpc/v1/base/JmJwHELnrYhdN3YgtwMjYOrnVDdSXppH
+  # 'https://base-sepolia.infura.io/v3/a15b160b4fde4e4c818e384660ec343d',
+  # "https://base-sepolia.g.alchemy.com/v2/9NAr3qhyUGw766ZqM8HmAqfBrt4FKr0a",
+  "http://10.1.8.91:8545"
+]
+stable_http_rpcs = [
+  # 'https://api.developer.coinbase.com/rpc/v1/base-sepolia/JmJwHELnrYhdN3YgtwMjYOrnVDdSXppH',
+  # 'https://base-sepolia.infura.io/v3/a15b160b4fde4e4c818e384660ec343d',
+  # "https://base-sepolia.g.alchemy.com/v2/9NAr3qhyUGw766ZqM8HmAqfBrt4FKr0a",
+  "http://10.1.8.91:8545"
+]
+unstable_http_rpcs = [
+  # 'https://api.developer.coinbase.com/rpc/v1/base-sepolia/JmJwHELnrYhdN3YgtwMjYOrnVDdSXppH',
+  # 'https://base-sepolia.infura.io/v3/a15b160b4fde4e4c818e384660ec343d',
+  # "https://base-sepolia.g.alchemy.com/v2/9NAr3qhyUGw766ZqM8HmAqfBrt4FKr0a",
+  "http://10.1.8.91:8545"
+]
+
+[bsc]
+active_network = 1
+[[networks]]
+chain_id = 56
+chain_name = 'BNB Smart Chain Mainnet'
+rpc = 'https://bsc-rpc.publicnode.com'
+usdt_contract = '0x55d398326f99059fF775485246999027B3197955'
+usdc_contract = '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d'
+[[networks]]
+chain_id = 97
+chain_name = 'BNB Smart Chain Testnet'
+usdt_contract = '0x337610d27c682E347C9cD60BD4b3b107C9d34dDd'
+usdc_contract = '0xB5A5B8eA5D5B5B5B5B5B5B5B5B5B5B5B5B5B5B5'
+rpc = 'https://bsc-testnet-rpc.publicnode.com'
+
+
+[tron]
+active_network = 1
+[[networks]]
+chain_id = 728126428
+chain_name = 'Tron Mainnet'
+rpc = 'grpc.trongrid.io:50051'
+api_key = 'f2c306d1-9413-43c5-8407-89f096b2f1cc'
+usdt_contract = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
+[[networks]]
+chain_id = 2494104990
+chain_name = 'Tron Shasta'
+rpc = 'https://api.shasta.trongrid.io/jsonrpc'
+usdt_contract = 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs'
+
+[exchange_data_source]
+enable = false
+host = '107.22.60.157'
+port = 8005
+
+[moralis]
+solana_api_endpoint = 'https://solana-gateway.moralis.io'
+solana_network = 'devnet'
+api_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjdmOGQ3ZGI2LWNlN2YtNDA4Ni04NDhmLWE5ODVmOTJmNDdiNyIsIm9yZ0lkIjoiNDUxMDkzIiwidXNlcklkIjoiNDY0MTM5IiwidHlwZUlkIjoiZWFjNDc2NGUtNGVkNC00NjU1LWJlMDMtMzRmMGY1YWFkMGVjIiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3NDkxMTQzOTgsImV4cCI6NDkwNDg3NDM5OH0.OGsCLQByFhsKIGRYlivW8VgWmrd6yBuan4MUlQHqGBs'
+
+[task_exec_interval_seconds]
+exchange_data_price_cap_volume_interval = 60
+exchange_data_holders_interval = 3600
+
+
+[[syncers]]
+enable = false
+program_id = '5CuHZfPdG9cW1HV8Xh41o97LTgeJevcZEjEDr8re1L7W'
+deploy_hash = ''
+deploy_at = '2025-07-28'                                    # vault部署时间

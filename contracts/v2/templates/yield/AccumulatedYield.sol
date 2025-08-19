@@ -61,7 +61,21 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
      */
     constructor() {
     }
+
+
+    // ============ Initialization Function ============
+    /**
+     * @dev Unified initialization interface
+     * @param _vault Vault address
+     * @param _vaultToken Vault token address
+     * @param _initData Encoded initialization data (contains token and original initData)
+     */
+    function initiate(address _vault, address _vaultToken, bytes memory _initData) external override {
+        (address rewardToken, address rewardManager, address dividendTreasuryAddr) = abi.decode(_initData, (address, address, address));
+        _initGlobalPool(_vault, rewardManager, dividendTreasuryAddr, _vaultToken, rewardToken);
+    }
     
+
     // ============ Global Pool Management ============
     
     /**
@@ -91,23 +105,6 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         dividendTreasury = _dividendTreasury;
         
         emit DividendTreasuryUpdated(oldTreasury, _dividendTreasury);
-    }
-
-    /**
-     * @dev Unified initialization interface
-     * @param _vault Vault address
-     * @param _vaultToken Vault token address
-     * @param _initData Encoded initialization data (contains token and original initData)
-     */
-    function initiate(address _vault, address _vaultToken, bytes memory _initData) external override {
-        require(_vault != address(0), "AccumulatedYield: invalid vault");
-        
-        // decode initData
-        (address rewardToken, address rewardManager, address dividendTreasuryAddr) = 
-            abi.decode(_initData, (address, address, address));
-        
-        // init global pool 
-        _initGlobalPool(_vault, rewardManager, dividendTreasuryAddr, _vaultToken, rewardToken);
     }
     
     /**
@@ -144,16 +141,16 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         user.totalClaimed += pending;
         user.lastClaimTime = block.timestamp;
         
-        // Transfer rewards
+        // When a user claims, the contract transfers the user's share of the rewardToken to the user.
         IERC20(globalPool.rewardToken).safeTransfer(msg.sender, pending);
         
-        emit RewardClaimed(msg.sender, pending, pending, block.timestamp);
+        emit RewardClaimed(msg.sender, pending, block.timestamp);
     }
     
     // ============ Yield Distribution ============
     
     /**
-     * @dev Distribute dividend to global pool
+     * @dev Distribute dividend to global pool, only dividend treasury can call 
      * @param dividendAmount Distribution amount
      * @param signature Dividend signature
      */
@@ -192,6 +189,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         emit DividendDistributed(dividendAmount, block.timestamp, validator, signature);
     }
     
+
     // ============ Token Transfer Related ============
     
     /**

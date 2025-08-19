@@ -1,0 +1,15 @@
+[36mINFO[0m [32m[08/11 11:28:13.974] [0mtoken-engine version:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/11 11:28:13.975] [0mSystem version: darwin/arm64[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/11 11:28:13.975] [0mGolang version: go1.24.2[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/11 11:28:13.975] [0mApp build time:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/11 11:28:13.975] [0mGit commit id:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/11 11:28:13.975] [0mRepo path: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/11 11:28:13.975] [0mExecutable: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/tools/bin/token-engine[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/11 11:28:13.975] [0mPID: 45596[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/11 11:28:13.975] [0mUUID node index: 0[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/11 11:28:14.207] [0mcreating new base AxcTxPrepare[32m [base_txprepare][0m[36m[0m
+[36mINFO[0m [32m[08/11 11:28:14.207] [0mcreating new base AxcTxExecutor[32m [base_txexecutor][0m[36m[0m
+[36mINFO[0m [32m[08/11 11:28:14.207] [0mcreate axc vault idl[32m [solana-idl][0m[36m[0m
+[36mINFO[0m [32m[08/11 11:28:14.208] [0mcreate axc vault transaction builder[32m [axc_tx_builder][0m[36m[0m
+[36mINFO[0m [32m[08/11 11:28:14.208] [0mcreating Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[31mERRO[0m [32m[08/11 11:28:14.305] [0mBuild app failed[32m [app][0m[31m [err:map[error:app setup error: could not build arguments for function "github.com/accelerate-protocal/token-engine/cmd/token-engine/cmd".Start.func2 (/Users/yanzhixing/Downloads/GitHub/token-engine/cmd/token-engine/cmd/start.go:77): failed to build *cmd.APP: could not build arguments for function "github.com/accelerate-protocal/token-engine/cmd/token-engine/cmd".NewApp (/Users/yanzhixing/Downloads/GitHub/token-engine/cmd/token-engine/cmd/start.go:26): failed to build *rest.Server: could not build arguments for function "github.com/accelerate-protocal/token-engine/api/rest".New (/Users/yanzhixing/Downloads/GitHub/token-engine/api/rest/server.go:69): failed to build *coreapi.CoreAPI: could not build arguments for function "github.com/accelerate-protocal/token-engine/internal/coreapi".NewCoreAPI (/Users/yanzhixing/Downloads/GitHub/token-engine/internal/coreapi/coreapi.go:40): failed to build *solana_event.SolanaEventsMgr: received non-nil error from function "github.com/accelerate-protocal/token-engine/internal/core/service/solana-event".NewSolanaEventsMgr (/Users/yanzhixing/Downloads/GitHub/token-engine/internal/core/service/solana-event/sol_sub_manager.go:73): failed to initialize definitions: failed to list or save subscriptions: model: failed to assign all query results to EventSubscription slice: bind failed to execute query: ERROR: relation "event_subscription" does not exist (SQLSTATE 42P01) kind:*errors.withStack stack:<nil>]][0m

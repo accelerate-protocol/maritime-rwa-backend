@@ -1,0 +1,24 @@
+[36mINFO[0m [32m[08/18 10:02:48.318] [0mtoken-engine version:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:48.318] [0mSystem version: darwin/arm64[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:48.318] [0mGolang version: go1.24.2[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:48.318] [0mApp build time:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:48.318] [0mGit commit id:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:48.318] [0mRepo path: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:48.318] [0mExecutable: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/tools/bin/token-engine[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:48.318] [0mPID: 34082[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:48.318] [0mUUID node index: 0[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:48.872] [0mcreating new base AxcTxPrepare[32m [base_txprepare][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:48.872] [0mcreating new base AxcTxExecutor[32m [base_txexecutor][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:48.872] [0mcreate axc vault idl[32m [solana-idl][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:48.873] [0mcreate axc vault transaction builder[32m [axc_tx_builder][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:48.873] [0mcreating Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:49.472] [0minitialized all program event definitions[32m [solana_sm][0m[36m [programCount:1][0m
+[36mINFO[0m [32m[08/18 10:02:49.472] [0mRegistered transfer provider[32m [transfer-service][0m[36m [chainID:97] [tokens:[BNB USDT USDC]][0m
+[36mINFO[0m [32m[08/18 10:02:49.473] [0mRegistered transfer provider[32m [transfer-service][0m[36m [chainID:2494104990] [tokens:[TRX USDT]][0m
+[36mINFO[0m [32m[08/18 10:02:49.473] [0mcore api initialized[32m [coreApi][0m[36m[0m
+[36mINFO[0m [32m[08/18 10:02:49.900] [0mComponent[sql-connector] started[32m [sidecar][0m[36m [time_cost:426.80275ms][0m
+[36mINFO[0m [32m[08/18 10:02:51.086] [0mFinished connect to send tx http rpcs[32m [solana-jsonrpc][0m[36m [cost:1.1856895s] [num:3][0m
+[36mINFO[0m [32m[08/18 10:02:51.417] [0mFinished connect to stable http rpcs[32m [solana-jsonrpc][0m[36m [cost:331.391917ms] [num:3][0m
+[36mINFO[0m [32m[08/18 10:03:08.369] [0mFinished connect to unstable http rpcs[32m [solana-jsonrpc][0m[36m [cost:16.951120542s] [num:45][0m
+[31mERRO[0m [32m[08/18 10:03:09.474] [0mStart components failed[32m [sidecar][0m[31m [err:map[error:context deadline exceeded kind:context.deadlineExceededError stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 10:03:09.475] [0mtoken-engine is stopped[32m [app][0m[36m[0m

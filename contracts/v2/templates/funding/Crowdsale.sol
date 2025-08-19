@@ -78,11 +78,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         _;
     }
     
-    modifier whenNotInitialized() {
-        require(!_initialized, "Crowdsale: already initialized");
-        _;
-    }
-    
     // ============ Constructor ============
     
     constructor() {
@@ -95,19 +90,9 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
      * @param _vault Vault address
      * @param _initData Encoded initialization data
      */
-    function initiate(address _vault, bytes memory _initData) external override whenNotInitialized {
-        require(_vault != address(0), "Crowdsale: invalid vault");
-        
-        (uint256 _startTime, uint256 _endTime, address _assetToken, uint256 _maxSupply, uint256 _softCap, 
-         uint256 _sharePrice, uint256 _minDepositAmount, uint256 _manageFeeBps, address _fundingReceiver, 
-         address _manageFeeReceiver, uint256 _decimalsMultiplier, address _manager) = 
-            abi.decode(_initData, (uint256, uint256, address, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address));
-        
-        _initCrowdsale(
-            _vault, _startTime, _endTime, _assetToken, _maxSupply, _softCap, 
-            _sharePrice, _minDepositAmount, _manageFeeBps, _fundingReceiver, 
-            _manageFeeReceiver, _decimalsMultiplier, _manager
-        );
+    function initiate(address _vault, bytes memory _initData) external override {
+        (uint256 _startTime, uint256 _endTime, address _assetToken, uint256 _maxSupply, uint256 _softCap, uint256 _sharePrice, uint256 _minDepositAmount, uint256 _manageFeeBps, address _fundingReceiver, address _manageFeeReceiver, uint256 _decimalsMultiplier, address _manager) = abi.decode(_initData, (uint256, uint256, address, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address));
+        _initCrowdsale(_vault, _startTime, _endTime, _assetToken, _maxSupply, _softCap, _sharePrice, _minDepositAmount, _manageFeeBps, _fundingReceiver, _manageFeeReceiver, _decimalsMultiplier, _manager);
     }
     
     // ============ Funding Operations ============
@@ -117,7 +102,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
      * @param amount Deposit amount
      * @param receiver Receiver address
      * @param signature Manager signature
-     * @return shares Number of shares received
      */
     function deposit(uint256 amount, address receiver, bytes memory signature) 
         external 
@@ -125,7 +109,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         onlyDuringFunding 
         whenInitialized
         nonReentrant 
-        returns (uint256 shares) 
     {
         require(amount >= minDepositAmount, "Crowdsale: amount less than minimum");
         require(receiver != address(0), "Crowdsale: invalid receiver");
@@ -195,7 +178,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         IVault(vault).mintToken(receiver, actualShares);
         
         emit Deposit(receiver, actualAmount, manageFeeAmount, actualShares);
-        return actualShares;
     }
     
     /**
@@ -392,8 +374,10 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         emit TokenUnpausedOnFundingSuccess();
     }
     
-    // ============ Status Queries ============
     
+
+    // ============ Query Interface ============
+
     /**
      * @dev Check if funding is successful
      * @return Whether funding is successful
@@ -427,6 +411,68 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         return maxSupply > currentSupply ? maxSupply - currentSupply : 0;
     }
     
+    /**
+     * @dev Query if initialized
+     */
+    function isInitialized() external view returns (bool) {
+        return _initialized;
+    }
+    
+    /**
+     * @dev Query manager nonce for signature verification
+     * @return Current manager nonce
+     */
+    function getManagerNonce() external view returns (uint256) {
+        return managerNonce;
+    }
+    
+    /**
+     * @dev Generate deposit signature message hash for backend signing
+     * @param amount Deposit amount
+     * @param receiver Receiver address
+     * @param nonce Manager nonce
+     * @return Message hash to be signed
+     */
+    function getDepositSignatureMessage(
+        uint256 amount,
+        address receiver,
+        uint256 nonce
+    ) external view returns (bytes32) {
+        bytes32 messageHash = keccak256(abi.encodePacked(
+            "deposit",
+            amount,
+            receiver,
+            nonce,
+            block.chainid,
+            address(this)
+        ));
+        return messageHash;
+    }
+    
+    /**
+     * @dev Generate redeem signature message hash for backend signing
+     * @param amount Number of shares to redeem
+     * @param receiver Receiver address
+     * @param nonce Manager nonce
+     * @return Message hash to be signed
+     */
+    function getRedeemSignatureMessage(
+        uint256 amount,
+        address receiver,
+        uint256 nonce
+    ) external view returns (bytes32) {
+        bytes32 messageHash = keccak256(abi.encodePacked(
+            "redeem",
+            amount,
+            receiver,
+            nonce,
+            block.chainid,
+            address(this)
+        ));
+        return messageHash;
+    }
+
+    
     // ============ Internal Functions ============
 
     /**
@@ -459,7 +505,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         address _manageFeeReceiver,
         uint256 _decimalsMultiplier,
         address _manager
-    ) internal whenNotInitialized {
+    ) internal {
+        require(!_initialized, "Crowdsale: already initialized");
         require(_vault != address(0), "Crowdsale: invalid vault");
         require(_startTime < _endTime, "Crowdsale: invalid time range");
         require(_endTime > block.timestamp, "Crowdsale: end time in past");
@@ -529,68 +576,5 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         // 2. then scaleDown
         uint256 scaledAmount = (shareAmount * sharePrice) / SHARE_PRICE_DENOMINATOR;
         return _scaleDown(scaledAmount);
-    }
-    
-    // ============ Query Interface ============
-    
-    /**
-     * @dev Query if initialized
-     */
-    function isInitialized() external view returns (bool) {
-        return _initialized;
-    }
-    
-    /**
-     * @dev Query manager nonce for signature verification
-     * @return Current manager nonce
-     */
-    function getManagerNonce() external view returns (uint256) {
-        return managerNonce;
-    }
-    
-    /**
-     * @dev Generate deposit signature message hash for backend signing
-     * @param amount Deposit amount
-     * @param receiver Receiver address
-     * @param nonce Manager nonce
-     * @return Message hash to be signed
-     */
-    function getDepositSignatureMessage(
-        uint256 amount,
-        address receiver,
-        uint256 nonce
-    ) external view returns (bytes32) {
-        bytes32 messageHash = keccak256(abi.encodePacked(
-            "deposit",
-            amount,
-            receiver,
-            nonce,
-            block.chainid,
-            address(this)
-        ));
-        return messageHash;
-    }
-    
-    /**
-     * @dev Generate redeem signature message hash for backend signing
-     * @param amount Number of shares to redeem
-     * @param receiver Receiver address
-     * @param nonce Manager nonce
-     * @return Message hash to be signed
-     */
-    function getRedeemSignatureMessage(
-        uint256 amount,
-        address receiver,
-        uint256 nonce
-    ) external view returns (bytes32) {
-        bytes32 messageHash = keccak256(abi.encodePacked(
-            "redeem",
-            amount,
-            receiver,
-            nonce,
-            block.chainid,
-            address(this)
-        ));
-        return messageHash;
     }
 } 

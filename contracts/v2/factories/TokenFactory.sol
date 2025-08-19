@@ -27,14 +27,19 @@ contract TokenFactory is ITokenFactory, Ownable {
         require(template != address(0), "TokenFactory: template not found");
         
         token = template.clone();
-        
-        bytes memory fullInitData = abi.encodeWithSignature(
-            "initiate(address,bytes)",
-            vault, initData
+        (bool success, bytes memory returndata) = token.call(
+            abi.encodeWithSignature("initiate(address,bytes)", vault, initData)
         );
-        
-        (bool success, ) = token.call(fullInitData);
-        require(success, "TokenFactory: initialization failed");
+        if (!success) {
+            if (returndata.length > 0) {
+                string memory reason;
+                assembly { returndata := add(returndata, 0x04) }
+                reason = abi.decode(returndata, (string));
+                revert(string(abi.encodePacked("TokenFactory: initialization failed: ", reason)));
+            } else {
+                revert("TokenFactory: initialization failed");
+            }
+        }
         
         emit TokenCreated(templateId, token, msg.sender);
         

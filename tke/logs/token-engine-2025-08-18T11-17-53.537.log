@@ -1,0 +1,81 @@
+[36mINFO[0m [32m[08/18 11:06:11.466] [0mtoken-engine version:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.466] [0mSystem version: darwin/arm64[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.466] [0mGolang version: go1.24.2[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.466] [0mApp build time:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.466] [0mGit commit id:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.466] [0mRepo path: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.466] [0mExecutable: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/tools/bin/token-engine[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.466] [0mPID: 3782[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.466] [0mUUID node index: 0[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.662] [0mcreating new base AxcTxPrepare[32m [base_txprepare][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.663] [0mcreating new base AxcTxExecutor[32m [base_txexecutor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.663] [0mcreate axc vault idl[32m [solana-idl][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.663] [0mcreate axc vault transaction builder[32m [axc_tx_builder][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.663] [0mcreating Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.816] [0minitialized all program event definitions[32m [solana_sm][0m[36m [programCount:1][0m
+[36mINFO[0m [32m[08/18 11:06:11.817] [0mRegistered transfer provider[32m [transfer-service][0m[36m [chainID:97] [tokens:[BNB USDT USDC]][0m
+[36mINFO[0m [32m[08/18 11:06:11.817] [0mRegistered transfer provider[32m [transfer-service][0m[36m [chainID:2494104990] [tokens:[TRX USDT]][0m
+[36mINFO[0m [32m[08/18 11:06:11.817] [0mcore api initialized[32m [coreApi][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:11.996] [0mComponent[sql-connector] started[32m [sidecar][0m[36m [time_cost:178.79925ms][0m
+[36mINFO[0m [32m[08/18 11:06:13.176] [0mFinished connect to send tx http rpcs[32m [solana-jsonrpc][0m[36m [cost:1.179767125s] [num:3][0m
+[36mINFO[0m [32m[08/18 11:06:13.644] [0mFinished connect to stable http rpcs[32m [solana-jsonrpc][0m[36m [cost:468.069417ms] [num:3][0m
+[36mINFO[0m [32m[08/18 11:06:19.872] [0mFinished connect to unstable http rpcs[32m [solana-jsonrpc][0m[36m [cost:6.22790275s] [num:45][0m
+[36mINFO[0m [32m[08/18 11:06:20.948] [0mFinished connect to ws rpcs[32m [solana-jsonrpc][0m[36m [cost:1.075180333s] [num:1][0m
+[36mINFO[0m [32m[08/18 11:06:21.466] [0mScheduled task started[32m [sidecar][0m[36m [interval:2s] [task:solana-tx-sender[poll-last-block]][0m
+[36mINFO[0m [32m[08/18 11:06:21.466] [0msolana submitter started[32m [solana-submitter][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:21.466] [0mswap submitter started[32m [submitter][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:21.466] [0mComponent[SwapSubmitter] started[32m [sidecar][0m[36m [time_cost:9.469851417s][0m
+[36mINFO[0m [32m[08/18 11:06:21.466] [0mComponent[ExchangeDataService] started[32m [sidecar][0m[36m [time_cost:29.375µs][0m
+[36mINFO[0m [32m[08/18 11:06:21.466] [0mComponent[ContractMaterials] started[32m [sidecar][0m[36m [time_cost:3.125µs][0m
+[36mINFO[0m [32m[08/18 11:06:21.466] [0mScheduled task started[32m [sidecar][0m[36m [interval:1m0s] [task:StatisticExchangeData][0m
+[36mINFO[0m [32m[08/18 11:06:21.467] [0mstarting Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:21.466] [0mScheduled task started[32m [sidecar][0m[36m [interval:1h0m0s] [task:UpdateExchangeTokenHolders][0m
+[36mINFO[0m [32m[08/18 11:06:21.467] [0mSolana chain adaptor started successfully[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:21.467] [0mComponent[common_chain_adaptor] started[32m [sidecar][0m[36m [time_cost:203.708µs][0m
+[36mINFO[0m [32m[08/18 11:06:21.600] [0mContract materials loaded successfully[32m [basechain][0m[36m [appid:root] [chainId:84532] [contractCount:9] [errors:0][0m
+[36mINFO[0m [32m[08/18 11:06:21.671] [0mSolana syncer started[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:21.671] [0mComponent[Syncer] started[32m [sidecar][0m[36m [time_cost:203.958125ms][0m
+[36mINFO[0m [32m[08/18 11:06:22.159] [0mNSQ consumer component started[32m [msgqueue][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:22.159] [0mComponent[msg_queue] started[32m [sidecar][0m[36m [time_cost:488.017834ms][0m
+[36mINFO[0m [32m[08/18 11:06:22.159] [0mComponent[solana_sm] started[32m [sidecar][0m[36m [time_cost:13.25µs][0m
+[36mINFO[0m [32m[08/18 11:06:22.159] [0mevent processor started[32m [solana_sm][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:22.159] [0mLoading deployment manifest from[32m [base_deploymanager][0m[36m [path:/Users/yanzhixing/Downloads/GitHub/token-engine/deploy/abis][0m
+[36mINFO[0m [32m[08/18 11:06:22.159] [0mSolana events manager started[32m [solana_sm][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:22.159] [0mComponent[deploymanager] started[32m [sidecar][0m[36m [time_cost:160.917µs][0m
+[36mINFO[0m [32m[08/18 11:06:22.160] [0mStarting TokenBalanceService[32m [TokenBalanceService][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:22.160] [0mComponent[TokenBalanceService] started[32m [sidecar][0m[36m [time_cost:117.958µs][0m
+[36mINFO[0m [32m[08/18 11:06:22.161] [0mIPC server listen on: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/ipc.sock[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:22.161] [0mHttp server listen on: 8082[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:22.161] [0mComponent[http-api-server] started[32m [sidecar][0m[36m [time_cost:989.834µs][0m
+[36mINFO[0m [32m[08/18 11:06:22.161] [0mComponent[app] started[32m [sidecar][0m[36m [time_cost:231.875µs][0m
+[36mINFO[0m [32m[08/18 11:06:22.161] [0mtoken-engine is ready[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:22.163] [0m=====================================================================================
+   __            __                                                  _
+  / /_  ____    / /__  ___    ____          ___    ____    ____ _   (_)   ____   ___
+ / __/ / __ \  / //_/ / _ \  / __ \ ______ / _ \  / __ \  / __ `/  / /   / __ \ / _ \
+/ /_  / /_/ / / ,<   /  __/ / / / //_____//  __/ / / / / / /_/ /  / /   / / / //  __/
+\__/  \____/ /_/|_|  \___/ /_/ /_/        \___/ /_/ /_/  \__, /  /_/   /_/ /_/ \___/
+                                                        /____/
+
+=====================================================================================[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:27.834] [0mpreparing create vault transaction[32m [base_txprepare][0m[36m [params:&{84532 {0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266} {TestToken MT 6 https://example.com/token-metadata.json} {VaultCreate 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 1000000 1754832494 1786800494 110 560 1 100000 300 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 1} false}][0m
+[36mINFO[0m [32m[08/18 11:06:29.030] [0mnonce retrieved successfully[32m [base_txprepare][0m[36m [deployer:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266] [nonce:14869][0m
+[31mERRO[0m [32m[08/18 11:06:29.913] [0mfailed to create vault transaction[32m [base_txprepare][0m[31m [error:map[error:429 Too Many Requests: {"id":4,"jsonrpc":"2.0","error":{"code":-32005,"message":"rate limit exceeded"}} kind:rpc.HTTPError stack:<nil>]][0m
+[31mERRO[0m [32m[08/18 11:06:29.914] [0mAPI request failed[32m [api][0m[31m [uri:/api/v2/primary/vault/prepare_create] [err_code:10001] [err_msg:failed to create vault transaction: 429 Too Many Requests: {"id":4,"jsonrpc":"2.0","error":{"code":-32005,"message":"rate limit exceeded"}}] [method:POST] [ip:127.0.0.1] [http_code:200] [time_cost:2.081428833s] [caller:root][0m
+[36mINFO[0m [32m[08/18 11:07:22.183] [0mpreparing create vault transaction[32m [base_txprepare][0m[36m [params:&{84532 {0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266} {TestToken MT 6 https://example.com/token-metadata.json} {VaultCreate 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 1000000 1754832494 1786800494 110 560 1 100000 300 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 1} false}][0m
+[36mINFO[0m [32m[08/18 11:07:22.443] [0mnonce retrieved successfully[32m [base_txprepare][0m[36m [deployer:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266] [nonce:14869][0m
+[31mERRO[0m [32m[08/18 11:07:23.196] [0mfailed to create vault transaction[32m [base_txprepare][0m[31m [error:map[error:429 Too Many Requests: {"id":8,"jsonrpc":"2.0","error":{"code":-32005,"message":"rate limit exceeded"}} kind:rpc.HTTPError stack:<nil>]][0m
+[31mERRO[0m [32m[08/18 11:07:23.196] [0mAPI request failed[32m [api][0m[31m [uri:/api/v2/primary/vault/prepare_create] [err_code:10001] [err_msg:failed to create vault transaction: 429 Too Many Requests: {"id":8,"jsonrpc":"2.0","error":{"code":-32005,"message":"rate limit exceeded"}}] [method:POST] [ip:127.0.0.1] [http_code:200] [time_cost:1.013921833s] [caller:root][0m
+[36mINFO[0m [32m[08/18 11:07:49.823] [0mpreparing create vault transaction[32m [base_txprepare][0m[36m [params:&{84532 {0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266} {TestToken MT 6 https://example.com/token-metadata.json} {VaultCreate 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 1000000 1754832494 1786800494 110 560 1 100000 300 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 1} false}][0m
+[36mINFO[0m [32m[08/18 11:07:50.079] [0mnonce retrieved successfully[32m [base_txprepare][0m[36m [deployer:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266] [nonce:14869][0m
+[36mINFO[0m [32m[08/18 11:07:54.177] [0msuccessfully prepared create vault transaction[32m [base_txprepare][0m[36m [gasLimit:3000000] [gasPrice:2000112] [nonce:14869] [txHash:0x7551cdf7a007d9549be4eb87b09b02e1861eb6af85aad54ac7b48faeb6428b50][0m
+[36mINFO[0m [32m[08/18 11:07:54.177] [0mAPI request[32m [api][0m[36m [uri:/api/v2/primary/vault/prepare_create] [method:POST] [ip:127.0.0.1] [http_code:200] [time_cost:4.354817583s] [caller:root][0m
+[36mINFO[0m [32m[08/18 11:17:51.589] [0mReceive exit signal: interrupt[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:51.595] [0mComponent[app] stopped[32m [sidecar][0m[36m [time_cost:772.958µs][0m
+[36mINFO[0m [32m[08/18 11:17:51.596] [0mIPC server shutdown[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:51.596] [0mHttp server shutdown[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:51.596] [0mComponent[http-api-server] stopped[32m [sidecar][0m[36m [time_cost:904.042µs][0m
+[36mINFO[0m [32m[08/18 11:17:51.596] [0mComponent[TokenBalanceService] stopped[32m [sidecar][0m[36m [time_cost:188.125µs][0m
+[36mINFO[0m [32m[08/18 11:17:51.597] [0mDeployManager stopped[32m [base_deploymanager][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:51.597] [0mComponent[deploymanager] stopped[32m [sidecar][0m[36m [time_cost:507.833µs][0m
+[36mINFO[0m [32m[08/18 11:17:51.597] [0mevent processor stopping[32m [solana_sm][0m[36m[0m

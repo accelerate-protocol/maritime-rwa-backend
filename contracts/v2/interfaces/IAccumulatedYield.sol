@@ -32,8 +32,6 @@ interface IAccumulatedYield {
     
 
     
-
-    
     // ============ Event Definitions ============
     
     /**
@@ -60,8 +58,7 @@ interface IAccumulatedYield {
      */
     event RewardClaimed(
         address indexed user,
-        uint256 claimedAmount,
-        uint256 transferredAmount,
+        uint256 claimedRewardAmount,
         uint256 timestamp
     );
     

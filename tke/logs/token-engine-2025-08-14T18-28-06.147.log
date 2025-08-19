@@ -1,0 +1,109 @@
+[36mINFO[0m [32m[08/14 17:35:03.869] [0mtoken-engine version:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:03.869] [0mSystem version: darwin/arm64[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:03.869] [0mGolang version: go1.24.2[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:03.869] [0mApp build time:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:03.869] [0mGit commit id:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:03.869] [0mRepo path: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:03.869] [0mExecutable: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/tools/bin/token-engine[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:03.869] [0mPID: 11392[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:03.869] [0mUUID node index: 0[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:04.127] [0mcreating new base AxcTxPrepare[32m [base_txprepare][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:04.127] [0mcreating new base AxcTxExecutor[32m [base_txexecutor][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:04.127] [0mcreate axc vault idl[32m [solana-idl][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:04.128] [0mcreate axc vault transaction builder[32m [axc_tx_builder][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:04.128] [0mcreating Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:04.275] [0minitialized all program event definitions[32m [solana_sm][0m[36m [programCount:1][0m
+[36mINFO[0m [32m[08/14 17:35:04.275] [0mRegistered transfer provider[32m [tron-transfer][0m[36m [chainID:97] [tokens:[BNB USDT USDC]][0m
+[36mINFO[0m [32m[08/14 17:35:04.276] [0mRegistered transfer provider[32m [tron-transfer][0m[36m [chainID:2494104990] [tokens:[TRX USDT]][0m
+[36mINFO[0m [32m[08/14 17:35:04.276] [0mcore api initialized[32m [coreApi][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:04.475] [0mComponent[sql-connector] started[32m [sidecar][0m[36m [time_cost:198.971875ms][0m
+[36mINFO[0m [32m[08/14 17:35:05.559] [0mFinished connect to send tx http rpcs[32m [solana-jsonrpc][0m[36m [cost:1.084020875s] [num:1][0m
+[36mINFO[0m [32m[08/14 17:35:06.006] [0mFinished connect to stable http rpcs[32m [solana-jsonrpc][0m[36m [cost:446.436542ms] [num:1][0m
+[36mINFO[0m [32m[08/14 17:35:06.425] [0mFinished connect to unstable http rpcs[32m [solana-jsonrpc][0m[36m [cost:418.479584ms] [num:1][0m
+[36mINFO[0m [32m[08/14 17:35:07.565] [0mFinished connect to ws rpcs[32m [solana-jsonrpc][0m[36m [cost:1.140680042s] [num:1][0m
+[36mINFO[0m [32m[08/14 17:35:08.178] [0mScheduled task started[32m [sidecar][0m[36m [interval:2s] [task:solana-tx-sender[poll-last-block]][0m
+[36mINFO[0m [32m[08/14 17:35:08.179] [0msolana submitter started[32m [solana-submitter][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:08.179] [0mswap submitter started[32m [submitter][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:08.179] [0mComponent[SwapSubmitter] started[32m [sidecar][0m[36m [time_cost:3.703753875s][0m
+[36mINFO[0m [32m[08/14 17:35:08.179] [0mstart to subscribe exchange data by grpc...[32m [ExchangeDataService][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:08.179] [0mScheduled task started[32m [sidecar][0m[36m [interval:1h0m0s] [task:UpdateExchangeTokenHolders][0m
+[36mINFO[0m [32m[08/14 17:35:08.179] [0mScheduled task started[32m [sidecar][0m[36m [interval:1m0s] [task:StatisticExchangeData][0m
+[36mINFO[0m [32m[08/14 17:35:08.894] [0mComponent[ExchangeDataService] started[32m [sidecar][0m[36m [time_cost:714.585375ms][0m
+[36mINFO[0m [32m[08/14 17:35:08.894] [0mComponent[ContractMaterials] started[32m [sidecar][0m[36m [time_cost:5.959µs][0m
+[36mINFO[0m [32m[08/14 17:35:08.894] [0mstarting Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:08.894] [0mSolana chain adaptor started successfully[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:08.894] [0mComponent[common_chain_adaptor] started[32m [sidecar][0m[36m [time_cost:76.667µs][0m
+[33mWARN[0m [32m[08/14 17:35:09.041] [0mbegin compensate swap event[32m [ExchangeDataService][0m[33m [outer_id From:292140][0m
+[36mINFO[0m [32m[08/14 17:35:09.216] [0mContract materials loaded successfully[32m [basechain][0m[36m [appid:root] [chainId:84532] [contractCount:9] [errors:0][0m
+[36mINFO[0m [32m[08/14 17:35:09.400] [0mNSQ consumer component started[32m [msgqueue][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:09.400] [0mComponent[msg_queue] started[32m [sidecar][0m[36m [time_cost:505.732ms][0m
+[36mINFO[0m [32m[08/14 17:35:09.400] [0mComponent[solana_sm] started[32m [sidecar][0m[36m [time_cost:6.542µs][0m
+[36mINFO[0m [32m[08/14 17:35:09.400] [0mLoading deployment manifest from[32m [base_deploymanager][0m[36m [path:/Users/yanzhixing/Downloads/GitHub/token-engine/deploy/abis][0m
+[36mINFO[0m [32m[08/14 17:35:09.400] [0mComponent[deploymanager] started[32m [sidecar][0m[36m [time_cost:75.166µs][0m
+[36mINFO[0m [32m[08/14 17:35:09.401] [0mIPC server listen on: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/ipc.sock[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:09.401] [0mHttp server listen on: 8082[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:09.401] [0mComponent[http-api-server] started[32m [sidecar][0m[36m [time_cost:699.792µs][0m
+[36mINFO[0m [32m[08/14 17:35:09.402] [0mComponent[app] started[32m [sidecar][0m[36m [time_cost:382.792µs][0m
+[36mINFO[0m [32m[08/14 17:35:09.402] [0mtoken-engine is ready[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:09.404] [0m=====================================================================================
+   __            __                                                  _
+  / /_  ____    / /__  ___    ____          ___    ____    ____ _   (_)   ____   ___
+ / __/ / __ \  / //_/ / _ \  / __ \ ______ / _ \  / __ \  / __ `/  / /   / __ \ / _ \
+/ /_  / /_/ / / ,<   /  __/ / / / //_____//  __/ / / / / / /_/ /  / /   / / / //  __/
+\__/  \____/ /_/|_|  \___/ /_/ /_/        \___/ /_/ /_/  \__, /  /_/   /_/ /_/ \___/
+                                                        /____/
+
+=====================================================================================[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:09.498] [0mSolana events manager started[32m [solana_sm][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:09.498] [0mevent processor started[32m [solana_sm][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:16.585] [0mAPI request SubmitTransfer[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:16.586] [0mAPI request SubmitTransfer BaseChainIDs[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:16.586] [0mSubmitting signed transfer[32m [basechain][0m[36m [txHex:0xf86937830f4289825208944d6ca5a0517cc18d66fea10a51486fa0351bf61a85e8d4a510008082422ea0548a6b00a9dbf3e5132c99cffd8b06be9dfc9e93b8fd16139f72d1f7a03b686ba04da4b12a95c629a4fcf94fb00259a3036bd0dd750847118adccfab14383a11e5][0m
+[36mINFO[0m [32m[08/14 17:35:16.586] [0mTransaction details[32m [basechain][0m[36m [dataLen:0] [gasLimit:21000] [gasPrice:1000073] [hash:0x38f2fb193fe87e139d2884e22276a55e3efab6c23341c1a07132dc1415c7393f] [nonce:55] [to:0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A] [transferType:ETH] [value:1000000000000][0m
+[31mERRO[0m [32m[08/14 17:35:17.992] [0mFailed to send transaction[32m [basechain][0m[31m [error:map[error:invalid chain ID kind:*rpc.jsonError stack:<nil>]][0m
+[31mERRO[0m [32m[08/14 17:35:17.992] [0mAPI request failed[32m [api][0m[31m [uri:/api/v2/transfer/submit] [err_code:10001] [err_msg:invalid chain ID] [method:POST] [ip:127.0.0.1] [http_code:200] [time_cost:1.407068459s] [caller:root][0m
+[36mINFO[0m [32m[08/14 17:35:21.297] [0mPreparing transfer[32m [basechain][0m[36m [amount:0.000001] [from:0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A] [to:0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A] [tokenAddr:] [tokenType:ETH][0m
+[36mINFO[0m [32m[08/14 17:35:22.415] [0mETH transfer prepared[32m [basechain][0m[36m [amount:1000000000000] [balance:8252265730947554] [chainID:84532] [gasLimit:21000] [gasPrice:1000070] [nonce:55] [unsignedTxHex:0xb202f083014a3437830f4286831e850c825208944d6ca5a0517cc18d66fea10a51486fa0351bf61a85e8d4a5100080c0808080][0m
+[36mINFO[0m [32m[08/14 17:35:22.416] [0mSigned tx hex: %s[32m [basechain][0m[36m [!BADKEY:0xb87302f87083014a3437830f4286831e850c825208944d6ca5a0517cc18d66fea10a51486fa0351bf61a85e8d4a5100080c001a0bdb1ea68e9b26be79ce1b15e0a9259a24b62edf47a5596706b8eb874539bfab9a06d7c6bd5f3f807c092ea55ec7ae187a9ab6b3cdb2a42323b72bd9bf7db764349][0m
+[36mINFO[0m [32m[08/14 17:35:22.416] [0mAPI request[32m [api][0m[36m [uri:/api/v2/transfer/prepare] [method:POST] [ip:127.0.0.1] [http_code:200] [time_cost:1.118809833s] [caller:root][0m
+[36mINFO[0m [32m[08/14 17:35:26.448] [0mAPI request SubmitTransfer[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:26.448] [0mAPI request SubmitTransfer BaseChainIDs[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:35:26.448] [0mSubmitting signed transfer[32m [basechain][0m[36m [txHex:0xf86937830f4289825208944d6ca5a0517cc18d66fea10a51486fa0351bf61a85e8d4a510008082422ea0548a6b00a9dbf3e5132c99cffd8b06be9dfc9e93b8fd16139f72d1f7a03b686ba04da4b12a95c629a4fcf94fb00259a3036bd0dd750847118adccfab14383a11e5][0m
+[36mINFO[0m [32m[08/14 17:35:26.448] [0mTransaction details[32m [basechain][0m[36m [dataLen:0] [gasLimit:21000] [gasPrice:1000073] [hash:0x38f2fb193fe87e139d2884e22276a55e3efab6c23341c1a07132dc1415c7393f] [nonce:55] [to:0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A] [transferType:ETH] [value:1000000000000][0m
+[31mERRO[0m [32m[08/14 17:35:27.333] [0mFailed to send transaction[32m [basechain][0m[31m [error:map[error:invalid chain ID kind:*rpc.jsonError stack:<nil>]][0m
+[31mERRO[0m [32m[08/14 17:35:27.333] [0mAPI request failed[32m [api][0m[31m [uri:/api/v2/transfer/submit] [err_code:10001] [err_msg:invalid chain ID] [method:POST] [ip:127.0.0.1] [http_code:200] [time_cost:885.471292ms] [caller:root][0m
+[31mERRO[0m [32m[08/14 17:35:34.636] [0msave swap event data failed[32m [ExchangeDataService][0m[31m [error:map[error:model: unable to insert into exchange_token_tx: ERROR: duplicate key value violates unique constraint "exchange_token_tx_outer_id_key" (SQLSTATE 23505) kind:*errors.withStack stack:<nil>]] [txData:&{0 1001 292148 HkCcRG8NbdE32UqpoURRP4t55UauayDAWwQjoJZY7SsF 2zctNkBWYbndQmvWbKKudeJmepnAw6Ap1vimpFwKft9f 4xkEmPMWfPJvBp4wiTWe5J81g9CrQibg5aof2S9dUKpu 1 8158837 8040000 8158837 25385747511 25817353823 1017001914629 10000 Ft5dUC14KJ4r7bwwwX5oRsjgVwbwFoG7ntfowwNd4bFq 53qGwpQRDBMwAiRv3vrJbcWcFKYsb1CEZrcMNxLGt7cUrn2HeDp1y996P55c2JF1g35nusAPMQRhiYkyW8qWR9Pb 401064651 1755164114 2025-08-14 17:35:34.520004 +0800 CST m=+30.680388501 2025-08-14 17:35:34.520005 +0800 CST m=+30.680388626 <nil> {}}][0m
+[31mERRO[0m [32m[08/14 17:35:37.087] [0msave swap event data failed[32m [ExchangeDataService][0m[31m [error:map[error:model: unable to insert into exchange_token_tx: ERROR: duplicate key value violates unique constraint "exchange_token_tx_outer_id_key" (SQLSTATE 23505) kind:*errors.withStack stack:<nil>]] [txData:&{0 1001 292149 E3msGNZ7XFBXWwwacp7hqTs5uryVNyMen1MCi3Y1LPcM 6SjHKEW363NWgN8S73tKgYxrpXBZ9ATL6fbKEhYNZdcB 4xkEmPMWfPJvBp4wiTWe5J81g9CrQibg5aof2S9dUKpu 0 9990000 4160382 9990000 147234353 362648473 2463069695426 10000 8womd2riK6w4fHwkrop7v1ihUJ6dK2ycsq9pH8kZjMiD 2qzAcoDyLSqH9PXzQamjBdrzrgYSZSQriHzsz5Dzf36f8Q6m9JSbsq6NfTUjRk8n7fT7KaJeRvUM1Atik1rcmZLG 401064663 1755164119 2025-08-14 17:35:36.948041 +0800 CST m=+33.108398084 2025-08-14 17:35:36.948041 +0800 CST m=+33.108398126 <nil> {}}][0m
+[31mERRO[0m [32m[08/14 17:35:39.476] [0msave swap event data failed[32m [ExchangeDataService][0m[31m [error:map[error:model: unable to insert into exchange_token_tx: ERROR: duplicate key value violates unique constraint "exchange_token_tx_outer_id_key" (SQLSTATE 23505) kind:*errors.withStack stack:<nil>]] [txData:&{0 1001 292150 9ECeLgwfGi28a8cyjpC5RxLYM2iug5SXmP4N4y4aAZtB 7yLwMHEiP2NyGhw2qDQWG1XkavQrk1PuNEKp24w6keFD 4xkEmPMWfPJvBp4wiTWe5J81g9CrQibg5aof2S9dUKpu 1 23719976 12610000 23719976 2721641596 5108581492 1877022124995 10000 8womd2riK6w4fHwkrop7v1ihUJ6dK2ycsq9pH8kZjMiD 5BYXFSMVLDvz91qBr5bxMsofYEidQ3Y9pmpCo4s79E9Y3fV6EbGCv9DH3iKAMWxg27L6RinniS3wr4ha7ppD7fbo 401064675 1755164125 2025-08-14 17:35:39.385595 +0800 CST m=+35.545925501 2025-08-14 17:35:39.385595 +0800 CST m=+35.545925668 <nil> {}}][0m
+[31mERRO[0m [32m[08/14 17:35:41.972] [0msave swap event data failed[32m [ExchangeDataService][0m[31m [error:map[error:model: unable to insert into exchange_token_tx: ERROR: duplicate key value violates unique constraint "exchange_token_tx_outer_id_key" (SQLSTATE 23505) kind:*errors.withStack stack:<nil>]] [txData:&{0 1001 292151 cbgot6rf3LaEBqhzZp8jRMoU63Qc9JEszZ3BVWXNtgF GKpUBoqvkC9kMJm8kuNDTDkBFAsTvUhr4pniu6eXaS5V 4xkEmPMWfPJvBp4wiTWe5J81g9CrQibg5aof2S9dUKpu 0 8600000 8678749 8600000 44283663997 43780738829 988643099450 10000 8womd2riK6w4fHwkrop7v1ihUJ6dK2ycsq9pH8kZjMiD 5Ca7LgGkCy5NN82qNAfvvVmyJD2JyARE5XYW5FxkoCTftUKwYLod8c4LWKMDqychawknPKwjPV4x3Z6W3MY866HU 401064687 1755164129 2025-08-14 17:35:41.78961 +0800 CST m=+37.949914376 2025-08-14 17:35:41.789611 +0800 CST m=+37.949914501 <nil> {}}][0m
+[31mERRO[0m [32m[08/14 17:35:44.776] [0msave swap event data failed[32m [ExchangeDataService][0m[31m [error:map[error:model: unable to insert into exchange_token_tx: ERROR: duplicate key value violates unique constraint "exchange_token_tx_outer_id_key" (SQLSTATE 23505) kind:*errors.withStack stack:<nil>]] [txData:&{0 1001 292152 5EMN5ZfdZWEF2VjUJhvYfoNoVJEnQUz5X9yTm2NG3Lik 2zKZyDdcs1kWsc5T72bQiufNnv54TxMG1evxb1WfgbKT 4xkEmPMWfPJvBp4wiTWe5J81g9CrQibg5aof2S9dUKpu 1 11608658 11640000 11608658 500085426945 499977261760 999783706584 10000 8womd2riK6w4fHwkrop7v1ihUJ6dK2ycsq9pH8kZjMiD 3P3QjGxLR6ihQsdk6E4hQFyrfZVsV37iKLyApre4oB28C8t2A8J1epmJQQ65fFSgiQkZvhyUDbKkY9LNJEmfkmx5 401064698 1755164133 2025-08-14 17:35:44.704529 +0800 CST m=+40.864800709 2025-08-14 17:35:44.704529 +0800 CST m=+40.864800751 <nil> {}}][0m
+[31mERRO[0m [32m[08/14 17:35:47.287] [0msave swap event data failed[32m [ExchangeDataService][0m[31m [error:map[error:model: unable to insert into exchange_token_tx: ERROR: duplicate key value violates unique constraint "exchange_token_tx_outer_id_key" (SQLSTATE 23505) kind:*errors.withStack stack:<nil>]] [txData:&{0 1001 292153 GBzStFo17kUHyEP3LBbwTsJi5v5zAZW3xqULMmYnRAPd 4VkahQrirfxuXs9yhVLVuMhobmvBQKCv2n8y5tAznfNU 4xkEmPMWfPJvBp4wiTWe5J81g9CrQibg5aof2S9dUKpu 1 18879358 18930000 18879358 40044898119 40018938130 999351727929 10000 8womd2riK6w4fHwkrop7v1ihUJ6dK2ycsq9pH8kZjMiD 2MsaaLLyqdaFTXRWBckWGh9Tinu5nsdfvCRBmbPH6gXyYfqKcEytLA95PDnQT7LVNFeefb3EyUToZaW6j8vrNZnd 401064709 1755164137 2025-08-14 17:35:47.087097 +0800 CST m=+43.247342959 2025-08-14 17:35:47.087097 +0800 CST m=+43.247343001 <nil> {}}][0m
+[33mWARN[0m [32m[08/14 17:35:49.598] [0mstop compensate swap event[32m [ExchangeDataService][0m[33m [outer_id end:292153][0m
+[36mINFO[0m [32m[08/14 17:40:09.789] [0mPreparing transfer[32m [basechain][0m[36m [amount:0.000001] [from:0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A] [to:0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A] [tokenAddr:] [tokenType:ETH][0m
+[36mINFO[0m [32m[08/14 17:40:12.218] [0mETH transfer prepared[32m [basechain][0m[36m [amount:1000000000000] [balance:8252265730947554] [chainID:84532] [gasLimit:21000] [gasPrice:1000074] [nonce:55] [unsignedTxHex:0xb202f083014a3437830f428a831e8514825208944d6ca5a0517cc18d66fea10a51486fa0351bf61a85e8d4a5100080c0808080][0m
+[36mINFO[0m [32m[08/14 17:40:12.218] [0mSigned tx hex: %s[32m [basechain][0m[36m [!BADKEY:0xb87302f87083014a3437830f428a831e8514825208944d6ca5a0517cc18d66fea10a51486fa0351bf61a85e8d4a5100080c001a0ee60645e48489123446868b3a581ef557c64210a894b44604894fb1fa91433b0a00a0a568a7a9386ca08578fd02693e0c53b41cd4aa8ca1fa630cd419aa0ab7b57][0m
+[36mINFO[0m [32m[08/14 17:40:12.218] [0mAPI request[32m [api][0m[36m [uri:/api/v2/transfer/prepare] [method:POST] [ip:127.0.0.1] [http_code:200] [time_cost:2.429051708s] [caller:root][0m
+[36mINFO[0m [32m[08/14 17:40:16.691] [0mAPI request SubmitTransfer[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:40:16.691] [0mAPI request SubmitTransfer BaseChainIDs[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:40:16.691] [0mSubmitting signed transfer[32m [basechain][0m[36m [txHex:0xf86937830f4289825208944d6ca5a0517cc18d66fea10a51486fa0351bf61a85e8d4a510008082422ea0548a6b00a9dbf3e5132c99cffd8b06be9dfc9e93b8fd16139f72d1f7a03b686ba04da4b12a95c629a4fcf94fb00259a3036bd0dd750847118adccfab14383a11e5][0m
+[36mINFO[0m [32m[08/14 17:40:16.692] [0mTransaction details[32m [basechain][0m[36m [dataLen:0] [gasLimit:21000] [gasPrice:1000073] [hash:0x38f2fb193fe87e139d2884e22276a55e3efab6c23341c1a07132dc1415c7393f] [nonce:55] [to:0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A] [transferType:ETH] [value:1000000000000][0m
+[31mERRO[0m [32m[08/14 17:40:17.430] [0mFailed to send transaction[32m [basechain][0m[31m [error:map[error:invalid chain ID kind:*rpc.jsonError stack:<nil>]][0m
+[31mERRO[0m [32m[08/14 17:40:17.430] [0mAPI request failed[32m [api][0m[31m [uri:/api/v2/transfer/submit] [err_code:10001] [err_msg:invalid chain ID] [method:POST] [ip:127.0.0.1] [http_code:200] [time_cost:741.151791ms] [caller:root][0m
+[36mINFO[0m [32m[08/14 17:41:31.616] [0mPreparing transfer[32m [basechain][0m[36m [amount:0.000001] [from:0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A] [to:0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A] [tokenAddr:] [tokenType:ETH][0m
+[36mINFO[0m [32m[08/14 17:41:33.586] [0mETH transfer prepared[32m [basechain][0m[36m [amount:1000000000000] [balance:8252265730947554] [chainID:84532] [gasLimit:21000] [gasPrice:1000073] [nonce:55] [unsignedTxHex:0xb202f083014a3437830f4289831e8512825208944d6ca5a0517cc18d66fea10a51486fa0351bf61a85e8d4a5100080c0808080][0m
+[36mINFO[0m [32m[08/14 17:41:33.586] [0mSigned tx hex: %s[32m [basechain][0m[36m [!BADKEY:0xb87302f87083014a3437830f4289831e8512825208944d6ca5a0517cc18d66fea10a51486fa0351bf61a85e8d4a5100080c001a0903f348d1db77172ea3e650c1e9d77df3f3e8c8ec4f5162a545ef0365510e2c7a0397c877c752d7050539d1c40208b5e730f8954d66576cb6abaf065677a7ffc7e][0m
+[36mINFO[0m [32m[08/14 17:41:33.587] [0mAPI request[32m [api][0m[36m [uri:/api/v2/transfer/prepare] [method:POST] [ip:127.0.0.1] [http_code:200] [time_cost:1.970355916s] [caller:root][0m
+[36mINFO[0m [32m[08/14 17:42:06.973] [0mAPI request SubmitTransfer[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:42:06.974] [0mAPI request SubmitTransfer BaseChainIDs[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 17:42:06.974] [0mSubmitting signed transfer[32m [basechain][0m[36m [txHex:0xb87302f87083014a3437830f4286831e850c825208944d6ca5a0517cc18d66fea10a51486fa0351bf61a85e8d4a5100080c001a0bdb1ea68e9b26be79ce1b15e0a9259a24b62edf47a5596706b8eb874539bfab9a06d7c6bd5f3f807c092ea55ec7ae187a9ab6b3cdb2a42323b72bd9bf7db764349][0m
+[31mERRO[0m [32m[08/14 17:42:06.974] [0mFailed to unmarshal signed transaction[32m [basechain][0m[31m [error:map[error:rlp: expected input list for types.LegacyTx kind:*rlp.decodeError stack:<nil>]][0m
+[31mERRO[0m [32m[08/14 17:42:06.974] [0mAPI request failed[32m [api][0m[31m [uri:/api/v2/transfer/submit] [err_code:10001] [err_msg:rlp: expected input list for types.LegacyTx] [method:POST] [ip:127.0.0.1] [http_code:200] [time_cost:816.208µs] [caller:root][0m
+[36mINFO[0m [32m[08/14 18:27:42.484] [0mReceive exit signal: interrupt[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/14 18:27:42.488] [0mComponent[app] stopped[32m [sidecar][0m[36m [time_cost:591.667µs][0m
+[36mINFO[0m [32m[08/14 18:27:42.489] [0mComponent[http-api-server] stopped[32m [sidecar][0m[36m [time_cost:857.667µs][0m
+[36mINFO[0m [32m[08/14 18:27:42.489] [0mIPC server shutdown[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 18:27:42.489] [0mHttp server shutdown[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 18:27:42.489] [0mDeployManager stopped[32m [base_deploymanager][0m[36m[0m
+[36mINFO[0m [32m[08/14 18:27:42.489] [0mComponent[deploymanager] stopped[32m [sidecar][0m[36m [time_cost:336.25µs][0m
+[36mINFO[0m [32m[08/14 18:27:42.489] [0mevent processor stopping[32m [solana_sm][0m[36m[0m
+[36mINFO[0m [32m[08/14 18:27:42.490] [0mScheduled task stopped[32m [sidecar][0m[36m [interval:2s] [task:solana-tx-sender[poll-last-block]][0m

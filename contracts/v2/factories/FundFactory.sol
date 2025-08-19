@@ -28,13 +28,19 @@ contract FundFactory is IFundFactory, Ownable {
         
         fund = template.clone();
         
-        bytes memory fullInitData = abi.encodeWithSignature(
-            "initiate(address,bytes)",
-            vault, initData
+        (bool success, bytes memory returndata) = fund.call(
+            abi.encodeWithSignature("initiate(address,bytes)", vault, initData)
         );
-        
-        (bool success, ) = fund.call(fullInitData);
-        require(success, "FundFactory: initialization failed");
+        if (!success) {
+            if (returndata.length > 0) {
+                string memory reason;
+                assembly { returndata := add(returndata, 0x04) }
+                reason = abi.decode(returndata, (string));
+                revert(string(abi.encodePacked("FundFactory: initialization failed: ", reason)));
+            } else {
+                revert("FundFactory: initialization failed");
+            }
+        }
         
         emit FundCreated(templateId, fund, msg.sender);
         

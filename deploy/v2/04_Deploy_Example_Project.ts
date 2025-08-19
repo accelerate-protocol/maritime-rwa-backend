@@ -95,7 +95,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("🔨 开始部署项目...");
   
   const tx = await creation.deployAll(
-    "ExampleProject", // projectName
+    "Project1631", // projectName
     0, // Vault模板ID (MockBasicVault)
     vaultInitData,
     0, // Token模板ID (MockERC20)

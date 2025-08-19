@@ -9,7 +9,7 @@
     "deploy:local": "hardhat deploy --tags v2-templates,v2-factories,v2-creation --reset",
     "deploy:v2-overview": "hardhat deploy --tags v2-overview",
     "deploy:v2-templates": "hardhat deploy --tags v2-templates",
-    "deploy:v2-factories": "hardhat deploy --tags v2-factories", 
+    "deploy:v2-factories": "hardhat deploy --tags v2-factories",
     "deploy:v2-creation": "hardhat deploy --tags v2-creation",
     "deploy:v2-all": "hardhat deploy --tags v2-templates,v2-factories,v2-creation --reset",
     "extract-abis": "bash scripts/extract-abis.sh"
@@ -38,7 +38,7 @@
     "@types/mocha": ">=9.1.0",
     "@types/node": "^22.13.5",
     "chai": "^4.2.0",
-    "ethers": "^6.13.5",
+    "ethers": "^6.15.0",
     "hardhat": "^2.19.4",
     "hardhat-deploy": "^0.9.6",
     "hardhat-gas-reporter": "^1.0.8",

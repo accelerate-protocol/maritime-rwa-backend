@@ -1,0 +1,48 @@
+[36mINFO[0m [32m[08/18 11:58:42.891] [0mtoken-engine version:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:42.892] [0mSystem version: darwin/arm64[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:42.892] [0mGolang version: go1.24.2[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:42.892] [0mApp build time:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:42.892] [0mGit commit id:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:42.892] [0mRepo path: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:42.892] [0mExecutable: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/tools/bin/token-engine[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:42.892] [0mPID: 93668[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:42.892] [0mUUID node index: 0[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:43.102] [0mcreating new base AxcTxPrepare[32m [base_txprepare][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:43.102] [0mcreating new base AxcTxExecutor[32m [base_txexecutor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:43.102] [0mcreate axc vault idl[32m [solana-idl][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:43.103] [0mcreate axc vault transaction builder[32m [axc_tx_builder][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:43.103] [0mcreating Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:43.219] [0minitialized all program event definitions[32m [solana_sm][0m[36m [programCount:1][0m
+[36mINFO[0m [32m[08/18 11:58:43.219] [0mRegistered transfer provider[32m [transfer-service][0m[36m [chainID:97] [tokens:[BNB USDT USDC]][0m
+[36mINFO[0m [32m[08/18 11:58:43.220] [0mRegistered transfer provider[32m [transfer-service][0m[36m [chainID:2494104990] [tokens:[TRX USDT]][0m
+[36mINFO[0m [32m[08/18 11:58:43.221] [0mcore api initialized[32m [coreApi][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:43.385] [0mComponent[sql-connector] started[32m [sidecar][0m[36m [time_cost:163.039917ms][0m
+[36mINFO[0m [32m[08/18 11:58:44.726] [0mFinished connect to send tx http rpcs[32m [solana-jsonrpc][0m[36m [cost:1.340787667s] [num:3][0m
+[36mINFO[0m [32m[08/18 11:58:45.015] [0mFinished connect to stable http rpcs[32m [solana-jsonrpc][0m[36m [cost:289.263667ms] [num:3][0m
+[36mINFO[0m [32m[08/18 11:58:47.041] [0mFinished connect to unstable http rpcs[32m [solana-jsonrpc][0m[36m [cost:2.025528917s] [num:45][0m
+[36mINFO[0m [32m[08/18 11:58:48.500] [0mFinished connect to ws rpcs[32m [solana-jsonrpc][0m[36m [cost:1.459342833s] [num:1][0m
+[36mINFO[0m [32m[08/18 11:58:49.219] [0mScheduled task started[32m [sidecar][0m[36m [interval:2s] [task:solana-tx-sender[poll-last-block]][0m
+[36mINFO[0m [32m[08/18 11:58:49.219] [0msolana submitter started[32m [solana-submitter][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:49.219] [0mswap submitter started[32m [submitter][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:49.219] [0mComponent[SwapSubmitter] started[32m [sidecar][0m[36m [time_cost:5.834453417s][0m
+[36mINFO[0m [32m[08/18 11:58:49.220] [0mComponent[ExchangeDataService] started[32m [sidecar][0m[36m [time_cost:5.25µs][0m
+[36mINFO[0m [32m[08/18 11:58:49.220] [0mComponent[ContractMaterials] started[32m [sidecar][0m[36m [time_cost:1.875µs][0m
+[36mINFO[0m [32m[08/18 11:58:49.220] [0mstarting Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:49.220] [0mScheduled task started[32m [sidecar][0m[36m [interval:1m0s] [task:StatisticExchangeData][0m
+[36mINFO[0m [32m[08/18 11:58:49.220] [0mSolana chain adaptor started successfully[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:49.220] [0mComponent[common_chain_adaptor] started[32m [sidecar][0m[36m [time_cost:48.875µs][0m
+[36mINFO[0m [32m[08/18 11:58:49.220] [0mScheduled task started[32m [sidecar][0m[36m [interval:1h0m0s] [task:UpdateExchangeTokenHolders][0m
+[36mINFO[0m [32m[08/18 11:58:49.331] [0mContract materials loaded successfully[32m [basechain][0m[36m [appid:root] [chainId:84532] [contractCount:9] [errors:0][0m
+[36mINFO[0m [32m[08/18 11:58:51.159] [0mSolana syncer started[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:51.159] [0mComponent[Syncer] started[32m [sidecar][0m[36m [time_cost:1.939523041s][0m
+[36mINFO[0m [32m[08/18 11:58:52.161] [0mComponent[Syncer] stopped[32m [sidecar][0m[36m [time_cost:1.25µs][0m
+[36mINFO[0m [32m[08/18 11:58:52.161] [0mScheduled task stopped[32m [sidecar][0m[36m [interval:2s] [task:solana-tx-sender[poll-last-block]][0m
+[36mINFO[0m [32m[08/18 11:58:52.166] [0mComponent[common_chain_adaptor] stopped[32m [sidecar][0m[36m [time_cost:5.2245ms][0m
+[36mINFO[0m [32m[08/18 11:58:52.167] [0mContract materials cleared on stop[32m [basechain][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:52.167] [0mComponent[ContractMaterials] stopped[32m [sidecar][0m[36m [time_cost:74.708µs][0m
+[36mINFO[0m [32m[08/18 11:58:52.167] [0mComponent[ExchangeDataService] stopped[32m [sidecar][0m[36m [time_cost:2.334µs][0m
+[36mINFO[0m [32m[08/18 11:58:52.167] [0msolana submitter stopped[32m [solana-submitter][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:58:52.167] [0mComponent[SwapSubmitter] stopped[32m [sidecar][0m[36m [time_cost:119.875µs][0m
+[36mINFO[0m [32m[08/18 11:58:52.167] [0mComponent[sql-connector] stopped[32m [sidecar][0m[36m [time_cost:2.458µs][0m
+[31mERRO[0m [32m[08/18 11:58:52.167] [0mStart components failed[32m [sidecar][0m[31m [err:map[error:componen[msg_queue] start failed: failed to connect to NSQ: dial tcp 20.55.48.104:4150: i/o timeout kind:*errors.withStack stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:58:52.167] [0mtoken-engine is stopped[32m [app][0m[36m[0m

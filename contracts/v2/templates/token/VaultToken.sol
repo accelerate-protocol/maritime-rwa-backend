@@ -50,17 +50,9 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
         _;
     }
     
-    modifier whenNotInitialized() {
-        require(!_initialized, "VaultToken: already initialized");
-        _;
-    }
-    
     // ============ Constructor ============
     
-    constructor() ERC20("", "") {
-        // Empty constructor, supports Clones pattern
-        // 在 Clones 模式下，owner 将在 initToken 中设置
-    }
+    constructor() ERC20("", "") {}
     
     // ============ Initialization Function ============
     /**
@@ -68,12 +60,8 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
      * @param _vault Vault address
      * @param _initData Encoded initialization data
      */
-    function initiate(address _vault, bytes memory _initData) external override whenNotInitialized {
-        require(_vault != address(0), "VaultToken: invalid vault");
-        
-        (string memory _name, string memory _symbol, uint8 _decimals) = 
-            abi.decode(_initData, (string, string, uint8));
-        
+    function initiate(address _vault, bytes memory _initData) external override {
+        (string memory _name, string memory _symbol, uint8 _decimals) = abi.decode(_initData, (string, string, uint8));
         _initToken(_vault, _name, _symbol, _decimals);
     }
     
@@ -188,17 +176,6 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
     // ============ Internal Functions ============
 
     /**
-     * @dev Check whitelist status for a user
-     * @param user User address to check
-     */
-    function _checkWhitelist(address user) internal view {
-        IVault vaultContract = IVault(vault);
-        if (vaultContract.whitelistEnabled()) {
-            require(vaultContract.isWhitelisted(user), "VaultToken: not whitelisted");
-        }
-    }
-        
-    /**
      * @dev Initialize token (for Clones pattern)
      * @param _vault Vault contract address
      * @param _name Token name
@@ -210,7 +187,8 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
         string memory _name,
         string memory _symbol,
         uint8 _decimals
-    ) internal whenNotInitialized {
+    ) internal {
+        require(!_initialized, "VaultToken: already initialized");
         require(_vault != address(0), "VaultToken: invalid vault address");
         require(bytes(_name).length > 0, "VaultToken: empty name");
         require(bytes(_symbol).length > 0, "VaultToken: empty symbol");
@@ -252,15 +230,5 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
             }
         }
     }
-    
-    // ============ Query Interface ============
-    
-    /**
-     * @dev Query if initialized
-     */
-    function isInitialized() external view returns (bool) {
-        return _initialized;
-    }
-    
 
-} 
+}
