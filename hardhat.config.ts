@@ -48,7 +48,27 @@ const config: HardhatUserConfig = {
         count: 210,  // 设置测试账户数量
         accountsBalance: ethers.parseEther("1000000").toString()  // 每个账户的初始余额
       }
-    }
+    },
+    baseMainnet: {
+      url: "https://mainnet.base.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 8453
+    },
+    baseSepolia: {
+      url: "https://sepolia.base.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 84532
+    },
+    bscTestnet:{
+      url: "https://bsc-testnet.bnbchain.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 97
+    },
+    bscMainnet:{
+      url: "https://bsc-dataseed.bnbchain.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 56 
+    },
   },
 };
 

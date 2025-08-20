@@ -40,6 +40,8 @@ struct VaultInitializeData {
     address[] whitelists;
 }
 
+error InvalidZeroAddress();
+
 /**
  * @author  Accelerate Finance
  * @title   Vault
@@ -127,15 +129,15 @@ contract Vault is
     function initialize(VaultInitializeData memory data) public initializer {
         __ERC20_init(data.name, data.symbol);
         __Ownable_init();
-
-        require(
-            data.assetToken != address(0),
-            "Vault: Invalid assetToken address"
-        );
+        if(data.assetToken==address(0)){
+            revert InvalidZeroAddress();
+        }
         assetToken = data.assetToken;
         require(data.decimals>=IERC20MetadataUpgradeable(data.assetToken).decimals(),"Decimals must be greater than 0");
         vaultDecimals = data.decimals;
-        require(data.rbf != address(0), "Vault: Invalid rbf address");
+        if(data.rbf ==address(0)){
+            revert InvalidZeroAddress();
+        }
         rbf = data.rbf;
         require(data.maxSupply > 0, "Vault: Invalid maxSupply");
         maxSupply = data.maxSupply;
@@ -161,17 +163,17 @@ contract Vault is
         minDepositAmount = data.minDepositAmount;
         require(data.manageFee <= BPS_DENOMINATOR, "Vault: Invalid managerFee");
         manageFee = data.manageFee;
-        require(data.manager != address(0), "Vault: Invalid manager");
+        if(data.manager==address(0)){
+            revert InvalidZeroAddress();
+        }
         manager = data.manager;
-        require(
-            data.feeReceiver != address(0),
-            "Vault: Invalid feeReceiver address"
-        );
+        if(data.feeReceiver == address(0)){
+            revert InvalidZeroAddress();
+        }
         feeReceiver = data.feeReceiver;
-        require(
-            data.dividendTreasury != address(0),
-            "Vault: Invalid dividendTreasury address"
-        );
+        if(data.dividendTreasury==address(0)){
+            revert InvalidZeroAddress();
+        }
         dividendTreasury = data.dividendTreasury;
         require(
             (data.whitelists.length > 0) && (data.whitelists.length <= 100),
