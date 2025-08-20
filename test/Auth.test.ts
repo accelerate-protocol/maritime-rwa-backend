@@ -51,10 +51,11 @@ describe("FactoryAuth:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
+        18, // 添加decimals字段
         usdt.address,
         depositTreasury,
         deployer,
@@ -255,6 +256,7 @@ describe("FactoryAuth:", function () {
         vaultId: vaultId,
         name: "RbfVault",
         symbol: "RbfVault",
+        decimals: 18, // 添加decimals字段
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
@@ -412,6 +414,7 @@ describe("FactoryAuth:", function () {
     const deployData = {
       name: "RBF",
       symbol: "RBF",
+      decimals: 18, // 添加decimals字段
       assetToken: usdt.address,
       maxSupply: "10000000",
       manageFee: "0",
@@ -450,10 +453,11 @@ describe("FactoryAuth:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-tc6", "RBF-tc6",
+        18, // 添加decimals字段
         usdt.address,
         depositTreasury,
         deployer,
@@ -495,6 +499,7 @@ describe("FactoryAuth:", function () {
         vaultId: vaultId,
         name: "RbfVault-6",
         symbol: "RbfVault-6",
+        decimals: 18, // 添加decimals字段
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
@@ -583,6 +588,7 @@ describe("FactoryAuth:", function () {
     const deployData = {
       name: "RBF",
       symbol: "RBF",
+      decimals: 18, // 添加decimals字段
       assetToken: usdt.address,
       maxSupply: "10000000",
       manageFee: "0",

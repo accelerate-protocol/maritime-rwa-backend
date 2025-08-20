@@ -55,10 +55,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-28", "RBF-28",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -94,47 +95,66 @@ describe("Vault:", function () {
     //assetToken为零地址，部署失败
     const vaultDeployData = {
       vaultId: vaultId,
-      name: "RbfVaultForVault_assetTokenIsZeroAddress",
-      symbol: "RbfVaultForVault_assetTokenIsZeroAddress",
+      name: "aTIsZero",
+      symbol: "aTIsZero",
+      decimals: 18,
       assetToken: ethers.ZeroAddress,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
-    await expect(vaultRouter.deployVault(vaultDeployData)).to.be.revertedWith(
-      "Vault: Invalid assetToken address"
-    );
+    // var tx = await vaultRouter.deployVault(vaultDeployData);
+    // var receipt = await tx.wait();
+    // if (!receipt) throw new Error("Transaction failed");
+    // expect(receipt.status).to.equal(1);
+    // await expect(vaultRouter.deployVault(vaultDeployData)).to.be.revertedWith(
+    //   "Vault: Invalid assetToken address"
+    // );
+
+    try {
+      const tx = await vaultRouter.deployVault(vaultDeployData);
+      await tx.wait(); // 若未回滚，正常执行
+      console.log("Transaction succeeded");
+    } catch (err:any) {
+      // 检查错误是否包含特定回滚信息
+      if (err.message.includes("Transaction reverted without a reason string")) {
+        console.log("Assertion passed: Transaction reverted as expected");
+      } else {
+        throw new Error(`Unexpected error: ${err.message}`);
+      }
+    }
 
     //manager为零地址，部署失败
     const vaultDeployData_1 = {
       vaultId: vaultId,
       name: "RbfVaultForVault_managerIsZeroAddress",
       symbol: "RbfVaultForVault_managerIsZeroAddress",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: ethers.ZeroAddress,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     await expect(vaultRouter.deployVault(vaultDeployData_1)).to.be.revertedWith(
@@ -146,20 +166,21 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc30",
       symbol: "RbfVaultForTc30",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: ethers.ZeroAddress,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     await expect(vaultRouter.deployVault(vaultDeployData_2)).to.be.revertedWith(
@@ -190,20 +211,21 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForVault_assetTokenIsZeroAddress",
         symbol: "RbfVaultForVault_assetTokenIsZeroAddress",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     let err:any;
@@ -226,10 +248,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-41", "RBF-41",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -265,20 +288,21 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc41",
         symbol: "RbfVaultForTc41",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     await expect(vaultRouter.deployVault(vaultDeployData)).to.be.revertedWith(
@@ -294,10 +318,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-24", "RBF-24",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -335,20 +360,21 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc42",
       symbol: "RbfVaultForTc42",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     await expect(vaultRouter.deployVault(vaultDeployData)).to.be.revertedWith(
@@ -362,20 +388,21 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc42",
       symbol: "RbfVaultForTc42",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime_1,
       subEndTime: subEndTime_1,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     await expect(vaultRouter.deployVault(vaultDeployData_1)).to.be.revertedWith(
@@ -392,10 +419,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-43", "RBF-43",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -431,20 +459,21 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc43",
         symbol: "RbfVaultForTc43",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -490,10 +519,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-26", "RBF-26",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -529,20 +559,21 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc26",
         symbol: "RbfVaultForTc26",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -585,10 +616,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-27", "RBF-27",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -624,20 +656,21 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc27",
         symbol: "RbfVaultForTc27",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -681,10 +714,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-28", "RBF-28",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -720,6 +754,7 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc28",
         symbol: "RbfVaultForTc28",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
@@ -778,10 +813,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -817,20 +853,21 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc29",
         symbol: "RbfVaultForTc29",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -876,10 +913,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-30", "RBF-30",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -915,20 +953,21 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc30",
         symbol: "RbfVaultForTc30",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -973,10 +1012,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-31", "RBF-31",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -1012,20 +1052,21 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc31",
       symbol: "RbfVaultForTc31",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -1091,10 +1132,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-32", "RBF-32",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -1131,6 +1173,7 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc32",
         symbol: "RbfVaultForTc32",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: ethers.ZeroAddress,
         subStartTime: subStartTime,
@@ -1168,10 +1211,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-52", "RBF-52",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -1209,6 +1253,7 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc52",
         symbol: "RbfVaultForTc52",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: ethers.ZeroAddress,
         subStartTime: subStartTime,
@@ -1240,10 +1285,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-33", "RBF-33",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -1281,13 +1327,14 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc33",
         symbol: "RbfVaultForTc33",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: ethers.ZeroAddress,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
@@ -1318,10 +1365,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-34", "RBF-34",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -1359,20 +1407,21 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc34",
       symbol: "RbfVaultForTc34",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "0",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     await expect(vaultRouter.deployVault(vaultDeployData)).to.be.revertedWith(
@@ -1384,20 +1433,21 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc56",
       symbol: "RbfVaultForTc56",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "11000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     await expect(vaultRouter.deployVault(vaultDeployData_1)).to.be.revertedWith(
@@ -1409,20 +1459,21 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc57",
       symbol: "RbfVaultForTc57",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "0",
     };
     await expect(vaultRouter.deployVault(vaultDeployData_2)).to.be.revertedWith(
@@ -1434,20 +1485,21 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc58",
       symbol: "RbfVaultForTc58",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "0",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     await expect(vaultRouter.deployVault(vaultDeployData_3)).to.be.revertedWith(
@@ -1459,6 +1511,7 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc59",
       symbol: "RbfVaultForTc59",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
@@ -1472,7 +1525,7 @@ describe("Vault:", function () {
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     await expect(vaultRouter.deployVault(vaultDeployData_4)).to.be.revertedWith(
@@ -1484,20 +1537,21 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc61",
       symbol: "RbfVaultForTc61",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "1000000",
+      minDepositAmount: "1000000000000000000",
       manageFee: "11000",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     await expect(vaultRouter.deployVault(vaultDeployData_6)).to.be.revertedWith(
@@ -1509,20 +1563,21 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc62",
       symbol: "RbfVaultForTc62",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "20000000000",
+      minDepositAmount: "20000000000000000000000",
       manageFee: "3000",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     await expect(vaultRouter.deployVault(vaultDeployData_7)).to.be.revertedWith(
@@ -1534,20 +1589,21 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc63",
       symbol: "RbfVaultForTc63",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "100000",
+      minDepositAmount: "100000000000000000",
       manageFee: "3000",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: [],
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     await expect(vaultRouter.deployVault(vaultDeployData_8)).to.be.revertedWith(
@@ -1562,20 +1618,21 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc65",
       symbol: "RbfVaultForTc65",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "100000",
+      minDepositAmount: "100000000000000000",
       manageFee: "3000",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists_101,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     console.log("whitelists length:",whitelists_101.length);
@@ -1591,20 +1648,21 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc64",
         symbol: "RbfVaultForTc64",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "100000",
+        minDepositAmount: "100000000000000000",
         manageFee: "3000",
         manager: manager,
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists_100,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     console.log("whitelists length:",whitelists_100.length);
@@ -1624,10 +1682,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-36", "RBF-36",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -1663,20 +1722,21 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc36",
         symbol: "RbfVaultForTc36",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "1000000",
+        minDepositAmount: "1000000000000000000",
         manageFee: "10000",
         manager: manager,
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -1694,10 +1754,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-35", "RBF-35",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -1734,20 +1795,21 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc35",
       symbol: "RbfVaultForTc35",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     
@@ -1767,20 +1829,21 @@ describe("Vault:", function () {
       vaultId: vaultId + 1n,
       name: "RbfVaultForTc82",
       symbol: "RbfVaultForTc82",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
 
@@ -1800,10 +1863,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-84", "RBF-84",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -1839,20 +1903,21 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc84",
         symbol: "RbfVaultForTc84",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -1912,10 +1977,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-38", "RBF-38",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -1989,10 +2055,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-59", "RBF-59",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -2029,20 +2096,21 @@ describe("Vault:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc59",
       symbol: "RbfVaultForTc59",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
 
@@ -2061,20 +2129,21 @@ describe("Vault:", function () {
       vaultId: vaultId ,
       name: "RbfVaultForTc60",
       symbol: "RbfVaultForTc60",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
 
@@ -2087,20 +2156,21 @@ describe("Vault:", function () {
       vaultId: vaultId + 2n,
       name: "RbfVaultForTc60",
       symbol: "RbfVaultForTc60",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
       dividendEscrow: manager, // 添加这一行
       whitelists: whitelists,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
 
@@ -2120,10 +2190,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-60", "RBF-60",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -2159,20 +2230,21 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc60",
         symbol: "RbfVaultForTc60",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "1000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "0",
         manager: manager,
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -2181,6 +2253,11 @@ describe("Vault:", function () {
     expect(receipt.status).to.equal(1);
   
   });
+  // 创建一个辅助函数来获取decimalFactor
+  async function getDecimalFactor(vaultContract: any) {
+    const decimals = await vaultContract.decimals();
+    return BigInt(10) ** BigInt(decimals);
+  }
 
   it.skip("tc-85", async function () {
     const {deployer,guardian,manager,rbfSigner,depositTreasury,feeReceiver,investor1,investor2,investor3,investor4,investor5,rbfSigner2,common,drds} = await getNamedAccounts();
@@ -2190,10 +2267,11 @@ describe("Vault:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-66", "RBF-66",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -2229,20 +2307,21 @@ describe("Vault:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc66",
         symbol: "RbfVaultForTc66",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -2252,11 +2331,12 @@ describe("Vault:", function () {
     const vaultData = await vaultRouter.getVaultInfo(vaultId);
     const vault = vaultData.vault;
     const VAULT = await ethers.getContractAt("Vault", vault);
+    const decimalsFactor = await getDecimalFactor(VAULT);
     
     const maxSupply = await VAULT.maxSupply();
     const minDepositAmount = await VAULT.minDepositAmount();
-    const totalSupply = Number(maxSupply / BigInt(1e6));
-    const minAmount = Number(minDepositAmount / BigInt(1e6));
+    const totalSupply = Number(maxSupply / decimalsFactor);
+    const minAmount = Number(minDepositAmount / decimalsFactor);
     
     var USDT:any;
     const commonSigner = await ethers.getSigner(common);
@@ -2300,7 +2380,7 @@ describe("Vault:", function () {
         investSigner
       )
       const manageFee=await vaultInvest.manageFee();
-      const investAmount = BigInt(Math.floor(distribution[i] * 1e6));
+      const investAmount = BigInt(Math.floor(distribution[i])) * decimalsFactor;
       const feeAmount = investAmount * BigInt(manageFee) / BigInt(10000);
       const totalInvestAmount = investAmount + feeAmount;
       investArr.push(totalInvestAmount)

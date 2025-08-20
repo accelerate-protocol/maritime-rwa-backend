@@ -39,6 +39,7 @@ contract RBFRouter is IRBFRouter, Ownable {
         uint64 rbfId; // Unique identifier for the RBF contract
         string name; //Name of the RBF token
         string symbol; //Symbol of the RBF token
+        uint8 decimals; //Decimals of the RBF token
         address assetToken; //Address of the asset backing the RBF
         address depositTreasury; //Address of the deposit treasury
         address deployer; //Address of the deployer
@@ -76,20 +77,20 @@ contract RBFRouter is IRBFRouter, Ownable {
         address _escrowFactory,
         address _priceFeedFactory
     ) Ownable() {
-        require(_whiteLists.length > 0, "whiteLists must not be empty");//tc-21:白名单为空
+        require(_whiteLists.length > 0, "whiteLists must not be empty");
         whiteLists = _whiteLists;
         for (uint256 i = 0; i < _whiteLists.length; i++) {
             whiteListed[_whiteLists[i]] = true;
         }
-        require(_threshold > 0, "threshold must >0");//tc-21:阈值为0
+        require(_threshold > 0, "threshold must >0");
         threshold = _threshold;
-        require(_rbfFactory != address(0), "rbfFactory must not be zero");//tc-21:RBFFactory地址为零地址
+        require(_rbfFactory != address(0), "rbfFactory must not be zero");
         rbfFactory = IRBFFactory(_rbfFactory);
-        require(_escrowFactory != address(0), "escrowFactory must not be zero");//tc-21:EscrowFactory地址为零地址
+        require(_escrowFactory != address(0), "escrowFactory must not be zero");
         escrowFactory = IEscrowFactory(_escrowFactory);
         require(
             _priceFeedFactory != address(0),
-            "priceFeedFactory must not be zero"//tc-21:PriceFeedFactory地址为零地址
+            "priceFeedFactory must not be zero"
         );
         priceFeedFactory = IPriceFeedFactory(_priceFeedFactory);
     }
@@ -102,13 +103,12 @@ contract RBFRouter is IRBFRouter, Ownable {
      * @param   _whiteLists  Array of new addresses to be whitelisted.
      * @param   _threshold  Minimum number of valid signatures required for verification.
      */
-     //tc-19:设置阈值和白名单成功且生效
     function setWhiteListsAndThreshold(
         address[] memory _whiteLists,
         uint256 _threshold
     ) public onlyOwner {
-        require(_whiteLists.length > 0, "whiteLists must not be empty");//tc-19:设置签名白名单为null，失败
-        require(_threshold > 0, "threshold must not be zero");//tc-19:设置阈值为0，失败
+        require(_whiteLists.length > 0, "whiteLists must not be empty");
+        require(_threshold > 0, "threshold must not be zero");
         // Remove existing whitelist addresses
         uint oldLen=whiteLists.length;
         for (uint i = 0; i < oldLen; i++) {
@@ -133,10 +133,6 @@ contract RBFRouter is IRBFRouter, Ownable {
      * @param   deployData  Encoded data containing deployment parameters.
      * @param   signatures  Array of signatures for verification.
      */
-     //tc-1:当前未给RBFRouter授权，应该不能部署RBF
-     //tc-1:给RBFRouter仅授权EscrowFactory调用权限后，部署RBF，应该部署失败
-     //tc-1:给RBFRouter仅授权EscrowFactory、PriceFeedFactory调用权限后，部署RBF，应该部署失败
-     //tc-1:给RBFRouter授权RBFFactory、EscrowFactory、PriceFeedFactory调用权限后，且各参数满足要求，部署RBF，应该部署成功
     function deployRBF(
         bytes memory deployData,
         bytes[] memory signatures
@@ -147,10 +143,10 @@ contract RBFRouter is IRBFRouter, Ownable {
             deployData,
             (RBFDeployData)
         );
-        require(rbfDeployData.rbfId == rbfNonce, "RBFRouter:Invalid rbfId"); //tc-13：rbfId等于Nounce-1，部署失败；//tc-13:rbfId等于Nounce+1，部署失败；//tc-13:
+        require(rbfDeployData.rbfId == rbfNonce, "RBFRouter:Invalid rbfId");
         require(
             rbfDeployData.deployer == msg.sender,
-            "RBFRouter:Invalid deployer" //tc-16:部署RBF时，消息发送者与deploydata中的deployer不一致，部署失败报错
+            "RBFRouter:Invalid deployer"
         );
         rbfNonce++;
         address dividendTreasury = escrowFactory.newEscrow(address(this));
@@ -160,6 +156,7 @@ contract RBFRouter is IRBFRouter, Ownable {
         RBFInitializeData memory data = RBFInitializeData({
             name: rbfDeployData.name,
             symbol: rbfDeployData.symbol,
+            decimals: rbfDeployData.decimals,
             assetToken: rbfDeployData.assetToken,
             depositTreasury: rbfDeployData.depositTreasury,
             dividendTreasury: dividendTreasury,
@@ -198,10 +195,10 @@ contract RBFRouter is IRBFRouter, Ownable {
         uint256 validSignatures = 0;
         for (uint256 i = 0; i < signatures.length; i++) {
             address signer = recoverSigner(ethSignedMessageHash, signatures[i]);
-            require(whiteListed[signer], "RBFRouter:Invalid Signer"); //tc-12：使用不在签名白名单中的账户签名，部署RBF失败报错
+            require(whiteListed[signer], "RBFRouter:Invalid Signer");
             validSignatures++;
         }
-        require(validSignatures >= threshold, "RBFRouter:Invalid Threshold"); //tc-19：签名个数小于阈值，部署失败；//tc-19:签名个数等于阈值，部署成功
+        require(validSignatures >= threshold, "RBFRouter:Invalid Threshold");
     }
 
     /**

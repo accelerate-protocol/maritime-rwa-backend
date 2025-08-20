@@ -14,9 +14,31 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "../interface/AggregatorV3Interface.sol";
 import "../interface/IVault.sol";
 import "../rbf/RBF.sol";
+
+// Struct for initializing the Vault contract with multiple parameters
+struct VaultInitializeDataV2 {
+    string name; // Vault token name
+    string symbol; // Vault token symbol
+    uint8 decimals;
+    address assetToken;
+    address rbf;
+    uint256 maxSupply;
+    uint256 subStartTime;
+    uint256 subEndTime;
+    uint256 duration;
+    uint256 fundThreshold;
+    uint256 financePrice;
+    uint256 minDepositAmount;
+    uint256 manageFee;
+    address manager;
+    address feeReceiver;
+    address dividendTreasury;
+    address[] whitelists;
+}
 
 /**
  * @author  Accelerate Finance
@@ -28,7 +50,9 @@ contract VaultV2 is
     IVault,
     ERC20Upgradeable,
     OwnableUpgradeable,
-    AccessControlUpgradeable
+    AccessControlUpgradeable,
+    ReentrancyGuardUpgradeable
+    
 {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     uint256 public constant BPS_DENOMINATOR = 10_000;
@@ -75,6 +99,8 @@ contract VaultV2 is
     mapping(address => bool) public offChainWLMap;
     // List of offChainWL addresses allowed to interact with the Vault offChain
     address[] public offChainWL;
+    // Vault decimals
+    uint8 public vaultDecimals;
 
 
     modifier onlyOnChainWL(address _address) {
@@ -96,44 +122,47 @@ contract VaultV2 is
         __ERC20_init(data.name, data.symbol);
         __Ownable_init();
 
+        require(data.decimals>=IERC20MetadataUpgradeable(data.assetToken).decimals(),"Decimals must be greater than 0");
+        vaultDecimals = data.decimals;
+
         require(
             data.assetToken != address(0),
-            "Vault: Invalid assetToken address" 
-        ); 
+            "Vault: Invalid assetToken address"
+        );
         assetToken = data.assetToken;
-        require(data.rbf != address(0), "Vault: Invalid rbf address"); 
+        require(data.rbf != address(0), "Vault: Invalid rbf address");
         rbf = data.rbf;
         require(data.maxSupply > 0, "Vault: Invalid maxSupply");
         maxSupply = data.maxSupply;
-        require(data.subStartTime < data.subEndTime, "Vault: Invalid subTime"); 
+        require(data.subStartTime < data.subEndTime, "Vault: Invalid subTime");
         subStartTime = data.subStartTime;
         subEndTime = data.subEndTime;
         require(data.duration > 0, "Vault: Invalid duration");
         duration = data.duration;
         require(
             data.fundThreshold > 0 && data.fundThreshold <= BPS_DENOMINATOR,
-            "Vault: Invalid fundThreshold" 
+            "Vault: Invalid fundThreshold"
         );
         fundThreshold = data.fundThreshold;
-        require(data.financePrice > 0, "Vault: Invalid financePrice"); 
+        require(data.financePrice > 0, "Vault: Invalid financePrice");
         financePrice = data.financePrice;
         require(data.minDepositAmount > 0 && data.minDepositAmount<= (data.financePrice*data.maxSupply/FINANCE_PRICE_DENOMINATOR), "Vault: Invalid minDepositAmount");
         minDepositAmount = data.minDepositAmount;
         require(
-            data.manageFee <= BPS_DENOMINATOR, 
+            data.manageFee <= BPS_DENOMINATOR,
             "Vault: Invalid managerFee"
         );
         manageFee = data.manageFee;
-        require(data.manager != address(0), "Vault: Invalid manager"); 
+        require(data.manager != address(0), "Vault: Invalid manager");
         manager = data.manager;
         require(
             data.feeReceiver != address(0),
-            "Vault: Invalid feeReceiver address" 
+            "Vault: Invalid feeReceiver address"
         );
         feeReceiver = data.feeReceiver;
         require(
             data.dividendTreasury != address(0),
-            "Vault: Invalid dividendTreasury address" 
+            "Vault: Invalid dividendTreasury address"
         );
         dividendTreasury = data.dividendTreasury;
         require(
@@ -161,7 +190,7 @@ contract VaultV2 is
      */
     function deposit(
         uint256 assets
-    ) public virtual onlyOnChainWL(msg.sender) returns (uint256) {
+    ) public virtual onlyOnChainWL(msg.sender) nonReentrant returns (uint256) {
         require(assets >= minDepositAmount, "Vault: deposit less than min");
         require(
             block.timestamp >= subStartTime && block.timestamp <= subEndTime,
@@ -170,7 +199,7 @@ contract VaultV2 is
         uint256 manageFeeAmount = (assets * manageFee) / BPS_DENOMINATOR;
         manageFeeBalance = manageFeeBalance + manageFeeAmount;
         assetBalance = assetBalance + assets;
-        SafeERC20.safeTransferFrom(
+        SafeERC20.safeTransferFrom( 
             IERC20(assetToken),
             msg.sender,
             address(this),
@@ -179,7 +208,7 @@ contract VaultV2 is
         uint256 shares = _getMintAmountForPrice(assets);
         require(
             totalSupply() + shares <= maxSupply,
-            "Vault: maxSupply exceeded" 
+            "Vault: maxSupply exceeded"
         );
         _mint(msg.sender, shares);
         emit DepositEvent(msg.sender,assets,manageFeeAmount,shares);
@@ -194,11 +223,10 @@ contract VaultV2 is
      *      to the user including the manager's fee.
      * @return The total amount of assets transferred to the user.
      */
-     
     function redeem()
         public
         virtual
-        onlyOnChainWL(msg.sender)
+        onlyOnChainWL(msg.sender) nonReentrant
         returns (uint256)
     {
         require(block.timestamp >= subEndTime, "Vault: Invalid time");
@@ -217,9 +245,31 @@ contract VaultV2 is
             IERC20(assetToken),
             msg.sender,
             assetAmount + feeAmount
-        ); 
+        );
         emit FundFailRedeem(msg.sender,shares, assetAmount, feeAmount);
-        return assetAmount + feeAmount; 
+        return assetAmount + feeAmount;
+    }
+
+
+    /**
+     * @notice  OffChain Deposits Mint into the vault during the subscription period 
+     * @dev     Ensures that deposits meet the minimum requirement and fall within the allowed period.
+     * @param   receiver  The address of the recipient of the minted shares.
+     * @param   amount    The amount of vault tokens to be minted.
+     */
+    function offChainDepositMint(address receiver,uint256 amount) public onlyRole(MANAGER_ROLE) {
+        require(_getAssetAmountForVault(amount) >= minDepositAmount, "Vault: OffChain deposit less than min");
+        require(
+            block.timestamp >= subStartTime && block.timestamp <= subEndTime,
+            "Vault: Invalid time"
+        );
+        require(
+            totalSupply() + amount <= maxSupply,
+            "Vault: maxSupply exceeded"
+        );
+        require(offChainWLMap[receiver], "Vault:OffChain receiver are not in offChainWL");
+        _mint(receiver, amount);
+        emit OffChainDepositEvent(msg.sender,receiver,amount);
     }
 
 
@@ -241,28 +291,6 @@ contract VaultV2 is
         emit OffChainRedeemEvent(msg.sender,shares);
     }
 
-
-    /**
-     * @notice  OffChain Deposits Mint into the vault during the subscription period 
-     * @dev     Ensures that deposits meet the minimum requirement and fall within the allowed period.
-     * @param   receiver  The address of the recipient of the minted shares.
-     * @param   amount    The amount of asset tokens to be deposited.
-     */
-    function offChainDepositMint(address receiver,uint256 amount) public onlyRole(MANAGER_ROLE) {
-        require(_getAssetAmountForVault(amount) >= minDepositAmount, "Vault: OffChain deposit less than min");
-        require(
-            block.timestamp >= subStartTime && block.timestamp <= subEndTime,
-            "Vault: Invalid time"
-        );
-        require(
-            totalSupply() + amount <= maxSupply,
-            "Vault: maxSupply exceeded"
-        );
-        require(offChainWLMap[receiver], "Vault:OffChain receiver are not in offChainWL");
-        _mint(receiver, amount);
-        emit OffChainDepositEvent(msg.sender,receiver,amount);
-    }
-
     /**
      * @notice Allows the manager to withdraw accumulated management fees.
      * @dev The function ensures that withdrawals are only possible after the
@@ -270,7 +298,7 @@ contract VaultV2 is
      *      The entire balance of management fees is transferred to the designated
      *      fee receiver.
      */
-    function withdrawManageFee() public onlyRole(MANAGER_ROLE) {
+    function withdrawManageFee() public onlyRole(MANAGER_ROLE) nonReentrant{
         require(endTime != 0, "Vault: Invalid endTime");
         require(block.timestamp >= subEndTime, "Vault: Invalid time");
         require(
@@ -279,7 +307,7 @@ contract VaultV2 is
         );
         uint256 feeAmount = manageFeeBalance;
         manageFeeBalance = 0;
-        SafeERC20.safeTransfer(IERC20(assetToken), feeReceiver, feeAmount); 
+        SafeERC20.safeTransfer(IERC20(assetToken), feeReceiver, feeAmount);
     }
 
     /**
@@ -289,8 +317,8 @@ contract VaultV2 is
      *      threshold before proceeding. The function approves the asset transfer and
      *      deposits the assets into the RBF contract.
      */
-    function execStrategy() public onlyRole(MANAGER_ROLE) { 
-        //require(assetBalance>0,"Vault: assetBalance is zero"); 
+    function execStrategy() public onlyRole(MANAGER_ROLE) nonReentrant {
+        require(assetBalance>0,"Vault: assetBalance is zero");
         require(
             maxSupply == totalSupply() ||
                 (block.timestamp >= subEndTime &&
@@ -305,7 +333,7 @@ contract VaultV2 is
         assetBalance=0;
         bool authRes = IERC20(assetToken).approve(rbf, depositAmount);
         require(authRes, "Vault: assetToken approve error");
-        RBF(rbf).requestDeposit(depositAmount); 
+        RBF(rbf).requestDeposit(depositAmount);
         emit ExecStrategyEvent(depositAmount);
     }
 
@@ -320,13 +348,13 @@ contract VaultV2 is
     ) public onlyRole(MANAGER_ROLE) {
         require(
             block.timestamp <= subEndTime,
-            "Vault: Invalid time" 
+            "Vault: Invalid time"
         );
         require(
             !onChainWLMap[whitelistAddr],
             "Vault: Address is already onChainWL"
         );
-        require(!offChainWLMap[whitelistAddr], "Vault: Address is already offChainWL"); 
+        require(!offChainWLMap[whitelistAddr], "Vault: Address is already offChainWL");
         require(onChainWL.length < 100, "Vault: Whitelist is full");
         onChainWLMap[whitelistAddr] = true;
         onChainWL.push(whitelistAddr);
@@ -342,7 +370,7 @@ contract VaultV2 is
         address whitelistAddr
     ) public onlyRole(MANAGER_ROLE) {
         require(
-            block.timestamp <= subEndTime,  
+            block.timestamp <= subEndTime,
             "Vault: Invalid time"
         );
         require(
@@ -405,23 +433,28 @@ contract VaultV2 is
         offChainWLMap[whitelistAddr] = false;
         for (uint256 i = 0; i < offChainWL.length; i++) {
             if (offChainWL[i] == whitelistAddr) {
-                offChainWL[i] = offChainWL[onChainWL.length - 1];
+                offChainWL[i] = offChainWL[offChainWL.length - 1];
                 offChainWL.pop();
                 break;
             }
-        } 
+        }
     }
 
+
+    //  todo
+    //  The current project is designed primarily for small-scale whitelist-based fundraising.
+    //  Dividend distribution is handled via on-chain whitelist snapshots. 
+    //  In the future, the platform will be opened to the public, and the distribution mechanism will be updated to a MasterChef-like model.
     /**
      * @notice Distributes dividends to whitelisted users based on their shareholding.
      * @dev The function calculates the dividend amount for each whitelisted user and transfers
      *      the corresponding amount. Only users with a nonzero balance receive dividends.
      */
-    function dividend() public onlyRole(MANAGER_ROLE) {
+    function dividend() public onlyRole(MANAGER_ROLE) nonReentrant {
         uint256 totalDividend = IERC20(assetToken).balanceOf(dividendTreasury);
-        require(totalDividend > 0, "Vault: No dividend to pay"); 
+        require(totalDividend > 0, "Vault: No dividend to pay");
         uint256 totalSupply = totalSupply();
-        require(totalSupply > 0, "Vault: No rbu to pay");
+        require(totalSupply > 0, "Vault: No rbf to pay");
         for (uint8 i = 0; i < onChainWL.length; i++) {
             if (onChainWLMap[onChainWL[i]]) {
                 if (balanceOf(onChainWL[i]) != 0) {
@@ -462,11 +495,11 @@ contract VaultV2 is
 
     /**
      * @notice Returns the decimal precision of the vault token.
-     * @dev Overrides the default ERC20 decimals function and sets it to 6.
+     * @dev Overrides the default ERC20 decimals function and sets it to vaultDecimals.
      * @return The number of decimals used for the vault token.
      */
     function decimals() public view virtual override returns (uint8) {
-        return 6;
+        return vaultDecimals;
     }
 
 
@@ -533,7 +566,7 @@ contract VaultV2 is
         uint256 totalDividend,
         address receipter
     ) internal {
-        require(receipter != address(0), "Vault: receipter can not be zero");//覆盖不到，尝试把零地址加入Vault白名单并且在派息前将认购的份额转个零地址，但是转不成功，没办法模拟向零地址派息
+        require(receipter != address(0), "Vault: receipter can not be zero");
         uint256 dividendAmount = (vaultTokenAmount * totalDividend) /
             totalSupply;
         require(dividendAmount > 0, "Vault: dividendAmount must bigger than zero");
@@ -561,7 +594,7 @@ contract VaultV2 is
     function _getMintAmountForPrice(
         uint256 depositAmount
     ) internal view returns (uint256) {
-        require(financePrice > 0, "Vault: financePrice must bigger than zero"); //financePrice为0在部署和设置时会被拦截
+        require(financePrice > 0, "Vault: financePrice must bigger than zero");
         uint256 rwaAmount = (_scaleUp(depositAmount) *
             FINANCE_PRICE_DENOMINATOR) / financePrice;
         return rwaAmount;
@@ -588,9 +621,5 @@ contract VaultV2 is
     function newFunction() public pure returns (string memory) {
         return "This is VaultV2!";
     }
-   
+
 }
-
-
-
- 

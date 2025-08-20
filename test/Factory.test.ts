@@ -42,15 +42,16 @@ describe("RBFFactory:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-7", "RBF-7",
+        18,
         usdt.address,
         depositTreasury,
-        deployer,
-        manager,
-        guardian,]
+        manager, // dividendTreasury
+        manager, // priceFeed
+        manager] // manager
       ]
     );
    
@@ -86,20 +87,21 @@ describe("RBFFactory:", function () {
         vaultId: vaultId,
         name: "RbfVault-7",
         symbol: "RbfVault-7",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
         guardian: guardian,
-        maxSupply: "10000000000", // Add this
+        maxSupply: "10000000000000000000000", // Add this
         financePrice: "100000000", // Add this
         dividendTreasury: manager,
     };
@@ -123,15 +125,16 @@ describe("RBFFactory:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-31", "RBF-31",
+        18,
         usdt.address,
         depositTreasury,
-        deployer,
-        manager,
-        guardian,]
+        deployer, // deployer - 必须是msg.sender
+        manager, // manager
+        guardian] // guardian
       ]
     );
     
@@ -169,20 +172,21 @@ describe("RBFFactory:", function () {
         vaultId: vaultId,
         name: "RbfVault-31",
         symbol: "RbfVault-31",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
         dividendEscrow: manager, // 添加这一行
         whitelists: whitelists,
         guardian: guardian,
-        maxSupply: "10000000000", // Add this
+        maxSupply: "10000000000000000000000", // Add this
         financePrice: "100000000", // Add this
         dividendTreasury: ethers.ZeroAddress,
     };
@@ -211,6 +215,7 @@ describe("RBFFactory:", function () {
     const deployData = {
       name: "RBF-16",
       symbol: "RBF-16",
+      decimals: 18,
       assetToken: usdt.address,
       maxSupply: "10000000",
       manageFee: "0",
@@ -243,6 +248,7 @@ describe("RBFFactory:", function () {
     const deployData = {
       name: "RBF-17",
       symbol: "RBF-17",
+      decimals: 18,
       assetToken: usdt.address,
       maxSupply: "10000000",
       manageFee: "0",

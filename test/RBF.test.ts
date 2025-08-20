@@ -54,10 +54,11 @@ describe("RBF:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -83,10 +84,11 @@ describe("RBF:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
+        18,
         usdt.address,
         depositTreasury,
         investor1,
@@ -113,10 +115,11 @@ describe("RBF:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -143,10 +146,11 @@ describe("RBF:", function () {
 
     //rbfId等于Nounce+1，部署失败
     const deployData_1 = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId + 2n,
         "RBF", "RBF",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -172,10 +176,11 @@ describe("RBF:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
+        18,
         ethers.ZeroAddress,
         depositTreasury,
         deployer,
@@ -200,10 +205,11 @@ describe("RBF:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
+        18,
         usdt.address,
         ethers.ZeroAddress,
         deployer,
@@ -229,10 +235,11 @@ describe("RBF:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -257,10 +264,11 @@ describe("RBF:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -286,10 +294,11 @@ describe("RBF:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -333,10 +342,11 @@ describe("RBF:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-19", "RBF-19",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -363,10 +373,11 @@ describe("RBF:", function () {
     const rbfId_1 = await rbfRouter.rbfNonce();
     // const abiCoder = new ethers.AbiCoder();
     const deployData1 = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId_1,
         "RBF-19-2", "RBF-19-2",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -399,10 +410,11 @@ describe("RBF:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
