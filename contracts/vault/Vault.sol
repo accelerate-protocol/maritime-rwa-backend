@@ -133,6 +133,7 @@ contract Vault is
             revert InvalidZeroAddress();
         }
         assetToken = data.assetToken;
+        require(data.decimals>0&&data.decimals>=IERC20MetadataUpgradeable(data.assetToken).decimals(),"Invalid Vault Decimals");
         vaultDecimals = data.decimals;
         if(data.rbf ==address(0)){
             revert InvalidZeroAddress();
