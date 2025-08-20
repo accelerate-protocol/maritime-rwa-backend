@@ -22,6 +22,7 @@ import "../interface/IRBF.sol";
 struct RBFInitializeData {
     string name; // The name of the RBF contract
     string symbol; // The symbol of the RBF contract (usually a ticker like "RBF")
+    uint8 decimals;
     address assetToken; // The address of the ERC20 token used in the RBF contract (e.g., USDC, ETH)
     address depositTreasury; // The address that receives the deposits from the vault
     address dividendTreasury; // The address where dividends (profits) will be stored and distributed
@@ -68,6 +69,9 @@ contract RBF is
     uint256 public decimalsMultiplier;
     // The URI of the rbf token. 
     string public tokenURI;
+    // The decimals of the rbf token.
+    uint8 public rbfDecimals;
+
 
     modifier onlyVault() {
         require(msg.sender == vault, "RBF: you are not vault");
@@ -114,6 +118,8 @@ contract RBF is
             "RBF: manager address can not be zero address"
         );
         manager = data.manager;
+        require(data.decimals > 0, "RBF: decimals can not be zero");
+        rbfDecimals = data.decimals;
 
         decimalsMultiplier =
             10 **
@@ -268,13 +274,13 @@ contract RBF is
     }
 
     /**
-     * @notice  Overrides the decimals function to return 6 decimals for the RBF token.
+     * @notice  Overrides the decimals function to return rbfDecimals decimals for the RBF token.
      *          Same as Stablecoins decimals
-     * @dev     Sets the precision of the RBF token to 6 decimals.
+     * @dev     Sets the precision of the RBF token to rbfDecimals decimals.
      * @return  uint8  The number of decimals for the RBF token.
      */
     function decimals() public view virtual override returns (uint8) {
-        return 6;
+        return rbfDecimals;
     }
 
     function _dividend(

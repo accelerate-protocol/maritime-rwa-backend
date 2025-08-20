@@ -13,6 +13,7 @@ struct VaultDeployData {
     uint64 vaultId;
     string name;
     string symbol;
+    uint8 decimals;
     address assetToken;
     address rbf;
     uint256 maxSupply;

@@ -22,6 +22,7 @@ import "../rbf/RBF.sol";
 struct VaultInitializeData {
     string name; // Vault token name
     string symbol; // Vault token symbol
+    uint8 decimals;
     address assetToken;
     address rbf;
     uint256 maxSupply;
@@ -103,6 +104,9 @@ contract Vault is
     //  mapping to store the subscription balance of each address
     mapping(address => uint256) private subBalance;
 
+    // Vault decimals
+    uint8 public vaultDecimals;
+
     modifier onlyOnChainWL(address _address) {
         if (!isOpen) {
             require(onChainWLMap[_address], "Vault: you are not in onChainWL");
@@ -129,6 +133,8 @@ contract Vault is
             "Vault: Invalid assetToken address"
         );
         assetToken = data.assetToken;
+        require(data.decimals>=IERC20MetadataUpgradeable(data.assetToken).decimals(),"Decimals must be greater than 0");
+        vaultDecimals = data.decimals;
         require(data.rbf != address(0), "Vault: Invalid rbf address");
         rbf = data.rbf;
         require(data.maxSupply > 0, "Vault: Invalid maxSupply");
@@ -545,11 +551,11 @@ contract Vault is
 
     /**
      * @notice Returns the decimal precision of the vault token.
-     * @dev Overrides the default ERC20 decimals function and sets it to 6.
+     * @dev Overrides the default ERC20 decimals function and sets it to vaultDecimals.
      * @return The number of decimals used for the vault token.
      */
     function decimals() public view virtual override returns (uint8) {
-        return 6;
+        return vaultDecimals;
     }
 
     /**

@@ -80,6 +80,7 @@ contract VaultRouter is Ownable,IVaultRouter {
         VaultInitializeData memory data=VaultInitializeData({
             name: vaultDeployData.name,
             symbol: vaultDeployData.symbol,
+            decimals: vaultDeployData.decimals,
             assetToken: vaultDeployData.assetToken,
             rbf: vaultDeployData.rbf,
             maxSupply: vaultDeployData.maxSupply,
