@@ -102,7 +102,6 @@ describe("RWA:", function () {
     );
     expect(await deployedRbf.priceFeed()).to.be.equal(rbfData.priceFeed);
     expect(await deployedRbf.manager()).to.be.equal(manager);
-    expect(await deployedRbf.decimalsMultiplier()).to.be.equal(1);
 
     const vaultId = await vaultRouter.vaultNonce();
     const subStartTime = Math.floor(Date.now() / 1000);

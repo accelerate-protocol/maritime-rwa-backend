@@ -65,8 +65,6 @@ contract RBF is
     uint256 public depositPrice;
     // The amount of RBF tokens minted for assetToken deposited.
     uint256 public depositMintAmount;
-    // Multiplier to adjust decimals between assetToken and RBF token
-    uint256 public decimalsMultiplier;
     // The URI of the rbf token. 
     string public tokenURI;
     // The decimals of the rbf token.
@@ -120,11 +118,6 @@ contract RBF is
         manager = data.manager;
         require(data.decimals > 0, "RBF: decimals can not be zero");
         rbfDecimals = data.decimals;
-
-        decimalsMultiplier =
-            10 **
-                (decimals() -
-                    IERC20MetadataUpgradeable(data.assetToken).decimals());
 
         _grantRole(DEFAULT_ADMIN_ROLE, data.manager);
         _grantRole(MANAGER_ROLE, data.manager);
@@ -302,7 +295,4 @@ contract RBF is
         );
     }
 
-    function _scaleUp(uint256 amount) internal view returns (uint256) {
-        return amount * decimalsMultiplier;
-    }
 }
