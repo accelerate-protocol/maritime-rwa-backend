@@ -19,6 +19,16 @@ import "../vault/Vault.sol";
 import "../interface/AggregatorV3Interface.sol";
 import "../interface/IRBF.sol";
 
+struct RBFInitializeDataV2 {
+    string name; // The name of the RBF contract
+    string symbol; // The symbol of the RBF contract (usually a ticker like "RBF")
+    uint8 decimals;
+    address assetToken; // The address of the ERC20 token used in the RBF contract (e.g., USDC, ETH)
+    address depositTreasury; // The address that receives the deposits from the vault
+    address dividendTreasury; // The address where dividends (profits) will be stored and distributed
+    address priceFeed; // The address of the price feed (e.g., Chainlink) to get the asset price for RBF calculations
+    address manager; // The address of the contract manager who can dividend in the RBF contract
+}
 
 /**
  * @author  Accelerate Finance
@@ -59,9 +69,12 @@ contract RBFV2 is
     uint256 public decimalsMultiplier;
     // The URI of the rbf token. 
     string public tokenURI;
+    // The decimals of the rbf token.
+    uint8 public rbfDecimals;
+
 
     modifier onlyVault() {
-        require(msg.sender == vault, "RBF: you are not vault"); 
+        require(msg.sender == vault, "RBF: you are not vault");
         _;
     }
 
@@ -82,29 +95,31 @@ contract RBFV2 is
 
         require(
             data.assetToken != address(0),
-            "RBF: assetToken address cannot be zero address" 
+            "RBF: assetToken address cannot be zero address"
         );
         assetToken = data.assetToken;
         require(
             data.depositTreasury != address(0),
-            "RBF: depositTreasury address cannot be zero address" 
+            "RBF: depositTreasury address cannot be zero address"
         );
         depositTreasury = data.depositTreasury;
         require(
             data.dividendTreasury != address(0),
-            "RBF: dividendTreasury address cannot be zero address" 
+            "RBF: dividendTreasury address cannot be zero address"
         );
         dividendTreasury = data.dividendTreasury;
         require(
             data.priceFeed != address(0),
-            "RBF: priceFeedAddr can not be zero address" 
+            "RBF: priceFeedAddr can not be zero address"
         );
         priceFeed = AggregatorV3Interface(data.priceFeed);
         require(
             data.manager != address(0),
             "RBF: manager address can not be zero address"
-        ); 
+        );
         manager = data.manager;
+        require(data.decimals > 0, "RBF: decimals can not be zero");
+        rbfDecimals = data.decimals;
 
         decimalsMultiplier =
             10 **
@@ -124,7 +139,7 @@ contract RBFV2 is
      * @dev     This function is only callable by the Vault.
      * @param   amount The amount of assetToken to deposit.
      */
-    function requestDeposit(uint256 amount) public onlyVault { 
+    function requestDeposit(uint256 amount) public onlyVault {
         require(
             IERC20(assetToken).balanceOf(msg.sender) >= amount,
             "RBF: Insufficient balance"
@@ -147,7 +162,7 @@ contract RBFV2 is
         require(depositAmount > 0, "RBF: depositAmount must be greater than 0");
         require(
             depositMintAmount > 0,
-            "RBF: depositMintAmount must be greater than 0" 
+            "RBF: depositMintAmount must be greater than 0"
         );
         _mint(vault, depositMintAmount);
         emit ClaimDepositEvent(vault,depositAmount,depositMintAmount);
@@ -161,18 +176,18 @@ contract RBFV2 is
      */
     function dividend() public onlyRole(MANAGER_ROLE) {
         uint256 totalDividend = IERC20(assetToken).balanceOf(dividendTreasury);
-        require(totalDividend > 0, "RBF: totalDividend must be greater than 0"); 
+        require(totalDividend > 0, "RBF: totalDividend must be greater than 0");
         uint256 totalSupply = totalSupply();
         require(totalSupply > 0, "RBF: totalSupply must be greater than 0");
-        require(vault != address(0), "RBF: vault can not be zero address"); 
+        require(vault != address(0), "RBF: vault can not be zero address");
         require(
             balanceOf(vault) > 0,
             "RBF: vault balance must be greater than 0"
         );
-        address vaultDividendTreasury = Vault(vault).dividendTreasury(); 
+        address vaultDividendTreasury = Vault(vault).dividendTreasury();
         require(
             vaultDividendTreasury != address(0),
-            "RBF: vault dividendTreasury cant not be zero" 
+            "RBF: vault dividendTreasury cant not be zero"
         );
         _dividend(
             balanceOf(vault),
@@ -200,10 +215,10 @@ contract RBFV2 is
      * @dev     This function assigns the vault address, which interacts with the RBF contract.
      * @param   _vault  The address of the vault to be set.
      */
-    function setVault(address _vault) public onlyRole(MANAGER_ROLE) { 
+    function setVault(address _vault) public onlyRole(MANAGER_ROLE) {
         require(
             _vault != address(0),
-            "RBF: vaultAddr cannot be zero address" 
+            "RBF: vaultAddr cannot be zero address"
         );
         require(vault==address(0),"RBF: vaultAddr already set");
         vault = _vault;
@@ -253,19 +268,19 @@ contract RBFV2 is
                 startedAt > 0 &&
                 updatedAt > 0 &&
                 answeredInRound > 0),
-            "Invalid price data" 
+            "Invalid price data"
         );
         return price;
     }
 
     /**
-     * @notice  Overrides the decimals function to return 6 decimals for the RBF token.
+     * @notice  Overrides the decimals function to return rbfDecimals decimals for the RBF token.
      *          Same as Stablecoins decimals
-     * @dev     Sets the precision of the RBF token to 6 decimals.
+     * @dev     Sets the precision of the RBF token to rbfDecimals decimals.
      * @return  uint8  The number of decimals for the RBF token.
      */
     function decimals() public view virtual override returns (uint8) {
-        return 6;
+        return rbfDecimals;
     }
 
     function _dividend(

@@ -51,10 +51,11 @@ describe("FactoryAuth:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF", "RBF",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -255,20 +256,21 @@ describe("FactoryAuth:", function () {
         vaultId: vaultId,
         name: "RbfVault",
         symbol: "RbfVault",
+        decimals: 18, 
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
         whitelists: whitelists,
         isOpen: false,
         guardian: guardian,
-        maxSupply: "10000000000", // Add this
+        maxSupply: "10000000000000000000000", // Add this
         financePrice: "100000000" // Add this
     };
 
@@ -413,6 +415,7 @@ describe("FactoryAuth:", function () {
     const deployData = {
       name: "RBF",
       symbol: "RBF",
+      decimals:18,
       assetToken: usdt.address,
       maxSupply: "10000000",
       manageFee: "0",
@@ -451,10 +454,11 @@ describe("FactoryAuth:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-tc6", "RBF-tc6",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -496,13 +500,14 @@ describe("FactoryAuth:", function () {
         vaultId: vaultId,
         name: "RbfVault-6",
         symbol: "RbfVault-6",
+        decimals:18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
@@ -510,7 +515,7 @@ describe("FactoryAuth:", function () {
         whitelists: whitelists,
         isOpen: false,
         guardian: guardian,
-        maxSupply: "10000000000", // Add this
+        maxSupply: "10000000000000000000000", // Add this
         financePrice: "100000000", // Add this
         dividendTreasury: manager,
     };
@@ -585,8 +590,9 @@ describe("FactoryAuth:", function () {
     const deployData = {
       name: "RBF",
       symbol: "RBF",
+      decimals:18,
       assetToken: usdt.address,
-      maxSupply: "10000000",
+      maxSupply: "10000000000000000000",
       manageFee: "0",
       depositTreasury: depositTreasury,
       dividendTreasury: manager,

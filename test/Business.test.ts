@@ -74,10 +74,11 @@ describe("RWA:", function () {
   const rbfId = await rbfRouter.rbfNonce();
   const abiCoder = new ethers.AbiCoder();
   const deployData = abiCoder.encode(
-    ["(uint64,string,string,address,address,address,address,address)"],
+    ["(uint64,string,string,uint8,address,address,address,address,address)"],
     [
       [rbfId,
       "RBF-45", "RBF-45",
+      18,
       usdt.address,
       depositTreasury,
       deployer,
@@ -114,13 +115,14 @@ describe("RWA:", function () {
     vaultId: vaultId,
     name: "RbfVaultForTc45",
     symbol: "RbfVaultForTc45",
+    decimals:18,
     assetToken: usdt.address,
     rbf: rbfData.rbf,
     subStartTime: subStartTime,
     subEndTime: subEndTime,
     duration: "2592000",
     fundThreshold: "3000",
-    minDepositAmount: "10000000",
+    minDepositAmount: "10000000000000000000",
     manageFee: "50",
     manager: manager,
     feeReceiver: feeReceiver,
@@ -128,7 +130,7 @@ describe("RWA:", function () {
     whitelists: whitelists,
     isOpen: false,
     guardian: guardian,
-    maxSupply: "10000000000",
+    maxSupply: "10000000000000000000000",
     financePrice: "100000000",
   };
   var res = await vaultRouter.deployVault(vaultDeployData);
@@ -177,6 +179,12 @@ describe("RWA:", function () {
   await expect(rbfDrds.setMintAmount(0)).to.be.revertedWith("RBF: depositAmount must be greater than 0");
   });
 
+   // 创建一个辅助函数来获取decimalFactor
+   async function getDecimalFactor(vaultContract: any) {
+    const decimals = await vaultContract.decimals();
+    return BigInt(10) ** BigInt(decimals);
+  }
+
   it("tc-46", async function () {
     const {deployer,guardian,manager,rbfSigner,depositTreasury,feeReceiver,investor1,investor2,investor3,investor4,investor5,rbfSigner2,common,drds} = await getNamedAccounts();
 
@@ -187,10 +195,11 @@ describe("RWA:", function () {
     const abiCoder = new ethers.AbiCoder();
     
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-46", "RBF-46",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -227,13 +236,14 @@ describe("RWA:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc46",
       symbol: "RbfVaultForTc46",
+      decimals:18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
@@ -241,7 +251,7 @@ describe("RWA:", function () {
       whitelists: whitelists,
       isOpen: false,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -251,12 +261,13 @@ describe("RWA:", function () {
     const vaultData = await vaultRouter.getVaultInfo(vaultId);
     const vault = vaultData.vault;
     const VAULT = await ethers.getContractAt("Vault", vault);
+    const decimalFactor = await getDecimalFactor(VAULT); 
     
     const maxSupply = await VAULT.maxSupply();
     const financePrice=await VAULT.financePrice();
     const minDepositAmount = await VAULT.minDepositAmount();
-    const totalSupply = Number(maxSupply / BigInt(1e6));
-    const minAmount = Number(minDepositAmount / BigInt(1e6));
+    const totalSupply = Number(maxSupply / decimalFactor);
+    const minAmount = Number(minDepositAmount / decimalFactor);
     
     var USDT:any;
     const commonSigner = await ethers.getSigner(common);
@@ -313,7 +324,7 @@ describe("RWA:", function () {
         investSigner
       )
       const manageFee=await vaultInvest.manageFee();
-      const investAmount = BigInt(Math.floor(distribution[i] * 1e6));
+      const investAmount = BigInt(Math.floor(distribution[i])) * decimalFactor;
       const feeAmount = investAmount * BigInt(manageFee) / BigInt(10000);
       const totalInvestAmount = investAmount + feeAmount;
       investArr.push(totalInvestAmount)
@@ -435,7 +446,7 @@ describe("RWA:", function () {
     const randomMultiplier = 1.1 + Math.random() * 0.4;
     console.log("派息系数:",randomMultiplier)
     const principalInterest = Math.floor(totalSupply * randomMultiplier);
-    const waitMint = BigInt(Math.floor(principalInterest - totalSupply) * 1e6);
+    const waitMint = BigInt(Math.floor(principalInterest - totalSupply))* decimalFactor;
     await expect(USDT.mint(depositTreasury, waitMint)).not.to.be.reverted;
     const dividendCountArr = distributeMoneyWithMinimum(
       principalInterest,
@@ -454,7 +465,7 @@ describe("RWA:", function () {
     const rbfDividendTreasury = await rbfManager.dividendTreasury();
     const vaultDividendTreasury = await vaultManager.dividendTreasury();
     for (let i = 0; i < dividendCountArr.length; i++) {
-      const dividendAmount = BigInt(Math.floor(dividendCountArr[i] * 1e6));
+      const dividendAmount = BigInt(Math.floor(dividendCountArr[i])) * decimalFactor;
       console.log("第" + (i + 1) + "次派息:", dividendAmount);
       await expect(USDTdepositTreasury.transfer(rbfDividendTreasury, dividendAmount)).not.to.be.reverted;
       await expect(rbfManager.dividend()).not.to.be.reverted;
@@ -494,10 +505,11 @@ describe("RWA:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-47", "RBF-47",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -541,13 +553,14 @@ describe("RWA:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc47",
       symbol: "RbfVaultForTc47",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "3000",
       manager: manager,
       feeReceiver: feeReceiver,
@@ -555,7 +568,7 @@ describe("RWA:", function () {
       whitelists: whitelists,
       isOpen: false,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     console.log("whitelists length:",whitelists.length);
@@ -569,12 +582,13 @@ describe("RWA:", function () {
     const vaultData = await vaultRouter.getVaultInfo(vaultId);
     const vault = vaultData.vault;
     const VAULT = await ethers.getContractAt("Vault", vault);
+    const decimalFactor = await getDecimalFactor(VAULT);
       
     const maxSupply = await VAULT.maxSupply();
     const financePrice=await VAULT.financePrice();
     const minDepositAmount = await VAULT.minDepositAmount();
-    const totalSupply = Number(maxSupply / BigInt(1e6));
-    const minAmount = Number(minDepositAmount / BigInt(1e6));
+    const totalSupply = Number(maxSupply / decimalFactor);
+    const minAmount = Number(minDepositAmount / decimalFactor);
 
     var USDT:any;
     USDT = await ethers.getContractAt(
@@ -637,7 +651,7 @@ describe("RWA:", function () {
         investSigner
       )
       const manageFee=await vaultInvest.manageFee();
-      const investAmount = BigInt(Math.floor(distribution[i] * 1e6));
+      const investAmount = BigInt(Math.floor(distribution[i])) * decimalFactor;
       const feeAmount = investAmount * BigInt(manageFee) / BigInt(10000);
       const totalInvestAmount = investAmount + feeAmount;
       investArr.push(totalInvestAmount)
@@ -697,7 +711,7 @@ describe("RWA:", function () {
     const randomMultiplier = 1.1 + Math.random() * 0.4;
     console.log("派息系数:",randomMultiplier)
     const principalInterest = Math.floor(totalSupply * randomMultiplier);
-    const waitMint = BigInt(Math.floor(principalInterest - totalSupply) * 1e6);
+    const waitMint = BigInt(Math.floor(principalInterest - totalSupply)) * decimalFactor;
     await expect(USDT.mint(depositTreasury, waitMint)).not.to.be.reverted;
     const dividendCount = 4;
     const dividendCountArr = distributeMoneyWithMinimum(
@@ -718,7 +732,7 @@ describe("RWA:", function () {
     const vaultDividendTreasury = await vaultManager.dividendTreasury();
     // var vaultDividendBalance:any;
     for (let i = 0; i < dividendCountArr.length; i++) {
-      const dividendAmount = BigInt(Math.floor(dividendCountArr[i] * 1e6));
+      const dividendAmount = BigInt(Math.floor(dividendCountArr[i])) * decimalFactor;
       console.log("第" + (i + 1) + "次派息:", dividendAmount);
       await expect(USDTdepositTreasury.transfer(rbfDividendTreasury, dividendAmount)).not.to.be.reverted;
       await expect(rbfManager.dividend()).not.to.be.reverted;
@@ -755,10 +769,11 @@ describe("RWA:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-48", "RBF-48",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -795,13 +810,14 @@ describe("RWA:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc48",
       symbol: "RbfVaultForTc48",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
@@ -809,7 +825,7 @@ describe("RWA:", function () {
       whitelists: whitelists,
       isOpen: false,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -852,10 +868,11 @@ describe("RWA:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-49", "RBF-49",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -891,13 +908,14 @@ describe("RWA:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc49",
         symbol: "RbfVaultForTc49",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
@@ -905,7 +923,7 @@ describe("RWA:", function () {
         whitelists: whitelists,
         isOpen: false,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -916,6 +934,7 @@ describe("RWA:", function () {
     const vaultData = await vaultRouter.getVaultInfo(vaultId);
     const vault = vaultData.vault;
     const VAULT = await ethers.getContractAt("Vault", vault);
+    const decimalsFactor = await getDecimalFactor(VAULT);
     
     const maxSupply = await VAULT.maxSupply();
     const totalSupply = 0;
@@ -944,7 +963,7 @@ describe("RWA:", function () {
       investSigner_0
     )
     const manageFee=await vaultInvest_0.manageFee();
-    const investAmount = BigInt(Math.floor(totalSupply * 1e6));
+    const investAmount = BigInt(Math.floor(totalSupply)) * decimalsFactor;
     const feeAmount = investAmount * BigInt(manageFee) / BigInt(10000);
     const totalInvestAmount = investAmount + feeAmount;
     investArr.push(totalInvestAmount)
@@ -973,7 +992,7 @@ describe("RWA:", function () {
     const randomMultiplier = 1.1 + Math.random() * 0.4;
     console.log("派息系数:",randomMultiplier)
     const principalInterest = Math.floor(Number(maxSupply) * randomMultiplier);
-    const waitMint = BigInt(Math.floor(principalInterest - totalSupply) * 1e6);
+    const waitMint = BigInt(Math.floor(principalInterest - totalSupply)) * decimalsFactor;
     await expect(USDT.mint(depositTreasury, waitMint)).not.to.be.reverted;
    
     // const totalNav= await USDT.balanceOf(depositTreasury) ;
@@ -987,7 +1006,7 @@ describe("RWA:", function () {
     );
 
     const rbfDividendTreasury = await rbfManager.dividendTreasury();
-    const dividendAmount = BigInt(Math.floor(1000 * 1e6));
+    const dividendAmount = BigInt(Math.floor(1000)) * decimalsFactor;
     await expect(USDTdepositTreasury.transfer(rbfDividendTreasury, dividendAmount)).not.to.be.reverted;
 
     //融资金额为0，rbf执行派息
@@ -1006,10 +1025,11 @@ describe("RWA:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-50", "RBF-50",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -1045,13 +1065,14 @@ describe("RWA:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc50",
         symbol: "RbfVaultForTc50",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
@@ -1059,7 +1080,7 @@ describe("RWA:", function () {
         whitelists: whitelists,
         isOpen: false,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -1069,12 +1090,13 @@ describe("RWA:", function () {
     const vaultData = await vaultRouter.getVaultInfo(vaultId);
     const vault = vaultData.vault;
     const VAULT = await ethers.getContractAt("Vault", vault);
+    const decimalFactor = await getDecimalFactor(VAULT);
     
     const maxSupply = await VAULT.maxSupply();
     // const financePrice=await VAULT.financePrice();
     const minDepositAmount = await VAULT.minDepositAmount();
-    const totalSupply = Number(maxSupply / BigInt(1e6));
-    const minAmount = Number(minDepositAmount / BigInt(1e6));
+    const totalSupply = Number(maxSupply / decimalFactor);
+    const minAmount = Number(minDepositAmount / decimalFactor);
     
     var USDT:any;
     USDT = await ethers.getContractAt(
@@ -1125,7 +1147,7 @@ describe("RWA:", function () {
       investSigner
     )
     const manageFee=await vaultInvest.manageFee();
-    const investAmount = BigInt(Math.floor(distribution[i] * 1e6));
+    const investAmount = BigInt(Math.floor(distribution[i])) * decimalFactor;
     const feeAmount = investAmount * BigInt(manageFee) / BigInt(10000);
     const totalInvestAmount = investAmount + feeAmount;
     investArr.push(totalInvestAmount)
@@ -1226,13 +1248,13 @@ describe("RWA:", function () {
   console.log("price",price);
   const Supply = await VAULT.totalSupply();
   console.log("Supply",Supply);
-  expect(price).to.equal(nav * BigInt(10**6) / Supply); 
+  expect(price).to.equal(nav * decimalFactor / Supply); 
 
   //派息
    const randomMultiplier = 1.1 + Math.random() * 0.4;
    console.log("派息系数:",randomMultiplier)
    const principalInterest = Math.floor(totalSupply * randomMultiplier);
-   const waitMint = BigInt(Math.floor(principalInterest - totalSupply) * 1e6);
+   const waitMint = BigInt(Math.floor(principalInterest - totalSupply)) * decimalFactor;
    await expect(USDT.mint(depositTreasury, waitMint)).not.to.be.reverted;
    const dividendCountArr = distributeMoneyWithMinimum(
          principalInterest,
@@ -1251,7 +1273,7 @@ describe("RWA:", function () {
    const rbfDividendTreasury = await rbfManager.dividendTreasury();
    const vaultDividendTreasury = await vaultManager.dividendTreasury();
    for (let i = 0; i < dividendCountArr.length; i++) {
-     const dividendAmount = BigInt(Math.floor(dividendCountArr[i] * 1e6));
+     const dividendAmount = BigInt(Math.floor(dividendCountArr[i])) * decimalFactor;
      console.log("第" + (i + 1) + "次派息:", dividendAmount);
      await expect(USDTdepositTreasury.transfer(rbfDividendTreasury, dividendAmount)).not.to.be.reverted;
      await expect(rbfManager.dividend()).not.to.be.reverted;
@@ -1302,7 +1324,7 @@ describe("RWA:", function () {
    console.log("price",price_final);
    const Supply_final = await VAULT.totalSupply();
    console.log("Supply",Supply_final);
-   expect(price_final).to.equal(nav_final * BigInt(10**6) / Supply_final); 
+   expect(price_final).to.equal(nav_final * decimalFactor / Supply_final); 
   });
 
   //极限测试：线上白名单为100个发行
@@ -1314,10 +1336,11 @@ describe("RWA:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-51", "RBF-51",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -1361,13 +1384,14 @@ describe("RWA:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc51",
       symbol: "RbfVaultForTc51",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "3000",
       manager: manager,
       feeReceiver: feeReceiver,
@@ -1375,7 +1399,7 @@ describe("RWA:", function () {
       whitelists: whitelists,
       isOpen: false,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
     };
     console.log("whitelists length:",whitelists.length);
@@ -1386,6 +1410,7 @@ describe("RWA:", function () {
     const vaultData = await vaultRouter.getVaultInfo(vaultId);
     const vault = vaultData.vault;
     const VAULT = await ethers.getContractAt("Vault", vault);
+    const decimalFactor = await getDecimalFactor(VAULT);
     
     
     const maxSupply = await VAULT.maxSupply();
@@ -1393,8 +1418,8 @@ describe("RWA:", function () {
     // const target = maxSupply * fundThreshold / BigInt(10000);
     const financePrice=await VAULT.financePrice();
     const minDepositAmount = await VAULT.minDepositAmount();
-    const totalSupply = Number(maxSupply / BigInt(1e6));
-    const minAmount = Number(minDepositAmount / BigInt(1e6));
+    const totalSupply = Number(maxSupply / decimalFactor);
+    const minAmount = Number(minDepositAmount / decimalFactor);
 
     var USDT:any;
     USDT = await ethers.getContractAt(
@@ -1450,7 +1475,7 @@ describe("RWA:", function () {
         investSigner
       )
       const manageFee=await vaultInvest.manageFee();
-      const investAmount = BigInt(Math.floor(distribution[i] * 1e6));
+      const investAmount = BigInt(Math.floor(distribution[i])) * decimalFactor;
       const feeAmount = investAmount * BigInt(manageFee) / BigInt(10000);
       const totalInvestAmount = investAmount + feeAmount;
       investArr.push(totalInvestAmount)
@@ -1510,7 +1535,7 @@ describe("RWA:", function () {
     const randomMultiplier = 1.1 + Math.random() * 0.4;
     console.log("派息系数:",randomMultiplier)
     const principalInterest = Math.floor(totalSupply * randomMultiplier);
-    const waitMint = BigInt(Math.floor(principalInterest - totalSupply) * 1e6);
+    const waitMint = BigInt(Math.floor(principalInterest - totalSupply)) * decimalFactor;
     await expect(USDT.mint(depositTreasury, waitMint)).not.to.be.reverted;
     const dividendCount = 4;
     const dividendCountArr = distributeMoneyWithMinimum(
@@ -1531,7 +1556,7 @@ describe("RWA:", function () {
     const vaultDividendTreasury = await vaultManager.dividendTreasury();
     var vaultDividendBalance:any;
     for (let i = 0; i < dividendCountArr.length; i++) {
-      const dividendAmount = BigInt(Math.floor(dividendCountArr[i] * 1e6));
+      const dividendAmount = BigInt(Math.floor(dividendCountArr[i])) * decimalFactor;
       console.log("第" + (i + 1) + "次派息:", dividendAmount);
       await expect(USDTdepositTreasury.transfer(rbfDividendTreasury, dividendAmount)).not.to.be.reverted;
       await expect(rbfManager.dividend()).not.to.be.reverted;
@@ -1571,10 +1596,11 @@ describe("RWA:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-94", "RBF-94",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -1616,13 +1642,14 @@ describe("RWA:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc53",
         symbol: "RbfVaultForTc53",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
@@ -1630,7 +1657,7 @@ describe("RWA:", function () {
         whitelists: whitelists,
         isOpen: false,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -1641,11 +1668,12 @@ describe("RWA:", function () {
     const vault = vaultData.vault;
 
     const VAULT = await ethers.getContractAt("Vault", vault);
+    const decimalFactor = await getDecimalFactor(VAULT);
     const maxSupply = await VAULT.maxSupply();
     const financePrice = await VAULT.financePrice();
     const minDepositAmount = await VAULT.minDepositAmount();
-    const totalSupply = Number(maxSupply / BigInt(1e6));
-    const minAmount = Number(minDepositAmount / BigInt(1e6));
+    const totalSupply = Number(maxSupply / decimalFactor);
+    const minAmount = Number(minDepositAmount / decimalFactor);
   
     var vaultInvest: any;
     var USDT: any;
@@ -1722,7 +1750,7 @@ describe("RWA:", function () {
         vault,
         investSigner
       );
-      const investAmount = BigInt(Math.floor(distribution[i] * 1e6));
+      const investAmount = BigInt(Math.floor(distribution[i])) * decimalFactor;
       const manageFee = await vaultInvest.manageFee();
       const feeAmount = (investAmount * BigInt(manageFee)) / BigInt(10000);
       const totalInvestAmount = investAmount + feeAmount;
@@ -1748,17 +1776,12 @@ describe("RWA:", function () {
         vault,
         investSigner
       );
-      const investAmount = BigInt(Math.floor(distribution[i+100] * 1e6));
+      const investAmount = BigInt(Math.floor(distribution[i+100])) * decimalFactor;
       investArr.push(investAmount);
       await expect(vaultManager.offChainDepositMint(offchain_whitelists[i],investAmount)).not.to.be.reverted;
       const balance = await vaultInvest.balanceOf(offchain_whitelists[i]);
       expect(balance).to.equal(investAmount);
     }
-
-
-
-    
-
     expect(await VAULT.assetBalance()).to.equal(onChainInvest);
     console.log("total deposit balance", await VAULT.assetBalance());
     console.log("total manageFee Balance", await VAULT.manageFeeBalance());
@@ -1800,13 +1823,13 @@ describe("RWA:", function () {
     console.log("rbf总净值:", await rbfManager.getAssetsNav());
     console.log("vault价值:", await vaultManager.price());
     expect(await rbfManager.getAssetsNav()).to.be.equal(
-      (BigInt(maxSupply) * BigInt(financePrice)) / BigInt(1e6)
+      (BigInt(maxSupply) * BigInt(financePrice)) / decimalFactor
     );
     expect(await vaultManager.price()).to.be.equal(financePrice);
     const randomMultiplier = 1.1 + Math.random() * 0.4;
     console.log("派息系数:", randomMultiplier);
     const principalInterest = Math.floor(totalSupply * randomMultiplier);
-    const waitMint = BigInt(Math.floor(principalInterest - totalSupply) * 1e6);
+    const waitMint = BigInt(Math.floor(principalInterest - totalSupply)) * decimalFactor;
     await expect(USDT.mint(depositTreasury, maxSupply-onChainInvest+waitMint)).not.to.be.reverted;
     const dividendCount = 4;
     const dividendCountArr = distributeMoneyWithMinimum(
@@ -1826,7 +1849,7 @@ describe("RWA:", function () {
     const rbfDividendTreasury = await rbfManager.dividendTreasury();
     const vaultDividendTreasury = await vaultManager.dividendTreasury();
     for (let i = 0; i < dividendCountArr.length; i++) {
-      const dividendAmount = BigInt(Math.floor(dividendCountArr[i] * 1e6));
+      const dividendAmount = BigInt(Math.floor(dividendCountArr[i])) * decimalFactor;
       console.log("第" + (i + 1) + "次派息:", dividendAmount);
       await expect(
         USDTdepositTreasury.transfer(rbfDividendTreasury, dividendAmount)
@@ -1869,10 +1892,11 @@ describe("RWA:", function () {
   const rbfId = await rbfRouter.rbfNonce();
   const abiCoder = new ethers.AbiCoder();
   const deployData = abiCoder.encode(
-    ["(uint64,string,string,address,address,address,address,address)"],
+    ["(uint64,string,string,uint8,address,address,address,address,address)"],
     [
       [rbfId,
       "RBF-69", "RBF-69",
+      18,
       usdt.address,
       depositTreasury,
       deployer,
@@ -1914,13 +1938,14 @@ describe("RWA:", function () {
       vaultId: vaultId,
       name: "RbfVaultForTc69",
       symbol: "RbfVaultForTc69",
+      decimals: 18,
       assetToken: usdt.address,
       rbf: rbfData.rbf,
       subStartTime: subStartTime,
       subEndTime: subEndTime,
       duration: "2592000",
       fundThreshold: "3000",
-      minDepositAmount: "10000000",
+      minDepositAmount: "10000000000000000000",
       manageFee: "50",
       manager: manager,
       feeReceiver: feeReceiver,
@@ -1928,7 +1953,7 @@ describe("RWA:", function () {
       whitelists: [investor1],
       isOpen: true,
       guardian: guardian,
-      maxSupply: "10000000000",
+      maxSupply: "10000000000000000000000",
       financePrice: "100000000",
   };
   var res = await vaultRouter.deployVault(vaultDeployData);
@@ -1939,11 +1964,12 @@ describe("RWA:", function () {
   const vault = vaultData.vault;
 
   const VAULT = await ethers.getContractAt("Vault", vault);
+  const decimalFactor = await getDecimalFactor(VAULT);
   const maxSupply = await VAULT.maxSupply();
   const financePrice = await VAULT.financePrice();
   const minDepositAmount = await VAULT.minDepositAmount();
-  const totalSupply = Number(maxSupply / BigInt(1e6));
-  const minAmount = Number(minDepositAmount / BigInt(1e6));
+  const totalSupply = Number(maxSupply / decimalFactor);
+  const minAmount = Number(minDepositAmount / decimalFactor);
 
   var vaultInvest: any;
   var USDT: any;
@@ -2021,7 +2047,7 @@ describe("RWA:", function () {
       vault,
       investSigner
     );
-    const investAmount = BigInt(Math.floor(distribution[i] * 1e6));
+    const investAmount = BigInt(Math.floor(distribution[i])) * decimalFactor;
     const manageFee = await vaultInvest.manageFee();
     const feeAmount = (investAmount * BigInt(manageFee)) / BigInt(10000);
     const totalInvestAmount = investAmount + feeAmount;
@@ -2054,7 +2080,7 @@ describe("RWA:", function () {
       vault,
       investSigner
     );
-    const investAmount = BigInt(Math.floor(distribution[i+100] * 1e6));
+    const investAmount = BigInt(Math.floor(distribution[i+100])) * decimalFactor;
     investArr.push(investAmount);
     await expect(vaultManager.offChainDepositMint(offchain_whitelists[i],investAmount)).not.to.be.reverted;
     const balance = await vaultInvest.balanceOf(offchain_whitelists[i]);
@@ -2104,13 +2130,13 @@ describe("RWA:", function () {
   console.log("rbf总净值:", await rbfManager.getAssetsNav());
   console.log("vault价值:", await vaultManager.price());
   expect(await rbfManager.getAssetsNav()).to.be.equal(
-    (BigInt(maxSupply) * BigInt(financePrice)) / BigInt(1e6)
+    (BigInt(maxSupply) * BigInt(financePrice)) / decimalFactor
   );
   expect(await vaultManager.price()).to.be.equal(financePrice);
   const randomMultiplier = 1.1 + Math.random() * 0.4;
   console.log("派息系数:", randomMultiplier);
   const principalInterest = Math.floor(totalSupply * randomMultiplier);
-  const waitMint = BigInt(Math.floor(principalInterest - totalSupply) * 1e6);
+  const waitMint = BigInt(Math.floor(principalInterest - totalSupply)) * decimalFactor;
   await expect(USDT.mint(depositTreasury, maxSupply-onChainInvest+waitMint)).not.to.be.reverted;
   const dividendCount = 4;
   const dividendCountArr = distributeMoneyWithMinimum(
@@ -2130,7 +2156,7 @@ describe("RWA:", function () {
   const rbfDividendTreasury = await rbfManager.dividendTreasury();
   const vaultDividendTreasury = await vaultManager.dividendTreasury();
   for (let i = 0; i < dividendCountArr.length; i++) {
-    const dividendAmount = BigInt(Math.floor(dividendCountArr[i] * 1e6));
+    const dividendAmount = BigInt(Math.floor(dividendCountArr[i])) * decimalFactor;
     console.log("第" + (i + 1) + "次派息:", dividendAmount);
     await expect(
       USDTdepositTreasury.transfer(rbfDividendTreasury, dividendAmount)
@@ -2174,10 +2200,11 @@ describe("RWA:", function () {
     const rbfId = await rbfRouter.rbfNonce();
     const abiCoder = new ethers.AbiCoder();
     const deployData = abiCoder.encode(
-      ["(uint64,string,string,address,address,address,address,address)"],
+      ["(uint64,string,string,uint8,address,address,address,address,address)"],
       [
         [rbfId,
         "RBF-70", "RBF-70",
+        18,
         usdt.address,
         depositTreasury,
         deployer,
@@ -2219,13 +2246,14 @@ describe("RWA:", function () {
         vaultId: vaultId,
         name: "RbfVaultForTc70",
         symbol: "RbfVaultForTc70",
+        decimals: 18,
         assetToken: usdt.address,
         rbf: rbfData.rbf,
         subStartTime: subStartTime,
         subEndTime: subEndTime,
         duration: "2592000",
         fundThreshold: "3000",
-        minDepositAmount: "10000000",
+        minDepositAmount: "10000000000000000000",
         manageFee: "50",
         manager: manager,
         feeReceiver: feeReceiver,
@@ -2233,7 +2261,7 @@ describe("RWA:", function () {
         whitelists: [investor1],
         isOpen: true,
         guardian: guardian,
-        maxSupply: "10000000000",
+        maxSupply: "10000000000000000000000",
         financePrice: "100000000",
     };
     var res = await vaultRouter.deployVault(vaultDeployData);
@@ -2244,11 +2272,12 @@ describe("RWA:", function () {
     const vault = vaultData.vault;
 
     const VAULT = await ethers.getContractAt("Vault", vault);
+    const decimalFactor = await getDecimalFactor(VAULT);
     const maxSupply = await VAULT.maxSupply();
     const financePrice = await VAULT.financePrice();
     const minDepositAmount = await VAULT.minDepositAmount();
-    const totalSupply = Number(maxSupply / BigInt(1e6));
-    const minAmount = Number(minDepositAmount / BigInt(1e6));
+    const totalSupply = Number(maxSupply / decimalFactor);
+    const minAmount = Number(minDepositAmount / decimalFactor);
   
     var vaultInvest: any;
     var USDT: any;
@@ -2326,7 +2355,7 @@ describe("RWA:", function () {
         vault,
         investSigner
       );
-      const investAmount = BigInt(Math.floor(distribution[i] * 1e6));
+      const investAmount = BigInt(Math.floor(distribution[i])) * decimalFactor;
       const manageFee = await vaultInvest.manageFee();
       const feeAmount = (investAmount * BigInt(manageFee)) / BigInt(10000);
       const totalInvestAmount = investAmount + feeAmount;
