@@ -63,6 +63,8 @@ describe("V2 架构完整业务流程测试", function () {
     // 时间变量
     let startTime: number;
     let endTime: number;
+    let modules: any;
+    let testAccumulatedYield: any
 
     beforeEach(async function () {
         [owner, manager, validator, user1, user2, user3, fundingReceiver, manageFeeReceiver, dividendTreasury] = await ethers.getSigners();
@@ -188,6 +190,7 @@ describe("V2 架构完整业务流程测试", function () {
         // 从 ProjectCreated 事件中解析地址
         let vaultAddress, tokenAddress, fundAddress, yieldAddress;
 
+
         for (const log of receipt.logs) {
             try {
                 const parsedLog = creation.interface.parseLog(log);
@@ -214,9 +217,12 @@ describe("V2 架构完整业务流程测试", function () {
         accumulatedYield = await ethers.getContractAt("AccumulatedYield", yieldAddress);
 
         // 手动配置模块间的依赖关系（以 manager 身份）
-        await vault.connect(manager).setVaultToken(await token.getAddress());
-        await vault.connect(manager).setFundingModule(await fund.getAddress());
-        await vault.connect(manager).setDividendModule(await accumulatedYield.getAddress());
+        // await vault.connect(manager).setVaultToken(await token.getAddress());
+        // await vault.connect(manager).setFundingModule(await fund.getAddress());
+        // await vault.connect(manager).setDividendModule(await accumulatedYield.getAddress());
+
+        await vault.connect(manager).configureModules(await token.getAddress(), await fund.getAddress(), await accumulatedYield.getAddress());
+        
 
         // 注意：代币在初始化时被暂停，只有在融资成功后才应该解锁
         // 这里不直接解锁，而是在测试中通过正确的业务流程来解锁
@@ -241,7 +247,7 @@ describe("V2 架构完整业务流程测试", function () {
         const nounce = await accumulatedYield.connect(dividendTreasury).getDividendNonce();
         const payload = ethers.keccak256(ethers.solidityPacked(
             ["address", "uint256", "uint256"],
-            [await vault.getAddress(), amount,nounce]
+            [await vault.getAddress(), amount, nounce]
         ));
         return await validator.signMessage(ethers.getBytes(payload));
     }
@@ -303,7 +309,7 @@ describe("V2 架构完整业务流程测试", function () {
         it("应该成功部署完整的V2架构", async function () {
             expect(await vault.vaultToken()).to.equal(await token.getAddress());
             expect(await vault.funding()).to.equal(await fund.getAddress());
-            expect(await vault.accumulatedYield()).to.equal(await accumulatedYield.getAddress());
+            expect(await vault.yield()).to.equal(await accumulatedYield.getAddress());
         });
 
         it("应该正确设置初始参数", async function () {
@@ -536,13 +542,13 @@ describe("V2 架构完整业务流程测试", function () {
             await accumulatedYield.connect(manager).updateGlobalPoolStatus(true);
 
             const dividendAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
-            
+
             const signature2 = await prepareDividendSignature(dividendAmount);
-            
+
 
             await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), dividendAmount);
             const tx = await accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2);
-           
+
 
             // 验证分红状态
             const globalPool = await accumulatedYield.getGlobalPoolInfo();
@@ -1114,7 +1120,7 @@ describe("V2 架构完整业务流程测试", function () {
             expect(user2PendingReward).to.be.equal(expectUser2PendingReward);
 
         });
-        
+
         it("应该成功分发分红并且transfer后分红正确", async function () {
             // 先进行deposit
             var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
@@ -1535,7 +1541,7 @@ describe("V2 架构完整业务流程测试", function () {
             // 验证用户状态更新
             var user1Info = await accumulatedYield.getUserInfo(user1.address);
             var user1AccumulatedShares = user1Info.accumulatedShares;
-            var user1LastClaimDividend =  user1Info.lastClaimDividend;
+            var user1LastClaimDividend = user1Info.lastClaimDividend;
             var user1TotalClaimed = user1Info.totalClaimed;
             expect(user1LastClaimDividend).to.be.equal(0);
             expect(user1AccumulatedShares).to.be.equal(0);
@@ -1557,7 +1563,7 @@ describe("V2 架构完整业务流程测试", function () {
             expect(user2PendingReward).to.be.equal(expectUser2PendingReward);
 
             // user1领取分红
-            var delDidUser1 = totalDividend  - user1Info.lastClaimDividend;
+            var delDidUser1 = totalDividend - user1Info.lastClaimDividend;
             var actualSharesUser1 = await token.balanceOf(user1.address);
             var expectUser1AccumulatedShares = delDidUser1 * actualSharesUser1;
             const initialBalanceUser1 = await usdt.balanceOf(user1.address);
@@ -1578,7 +1584,7 @@ describe("V2 架构完整业务流程测试", function () {
             // console.log("user1AccumulatedShares",user1AccumulatedShares);
             expect(user1Info.lastClaimDividend).to.be.equal(totalDividend);
             expect(user1AccumulatedShares).to.be.equal(expectUser1AccumulatedShares);
-            
+
             user2Info = await accumulatedYield.getUserInfo(user2.address);
             expect(user2Info.totalClaimed).to.be.equal(0);
             expect(user2Info.accumulatedShares).to.be.equal(0);
@@ -1626,7 +1632,7 @@ describe("V2 架构完整业务流程测试", function () {
             // 验证用户状态更新
             var user1Info = await accumulatedYield.getUserInfo(user1.address);
             var user1AccumulatedShares = user1Info.accumulatedShares;
-            var user1LastClaimDividend =  user1Info.lastClaimDividend;
+            var user1LastClaimDividend = user1Info.lastClaimDividend;
             var user1TotalClaimed = user1Info.totalClaimed;
             expect(user1LastClaimDividend).to.be.equal(0);
             expect(user1AccumulatedShares).to.be.equal(0);
@@ -1648,7 +1654,7 @@ describe("V2 架构完整业务流程测试", function () {
             expect(user2PendingReward).to.be.equal(expectUser2PendingReward);
 
             // user1领取分红
-            var delDidUser1 = totalDividend  - user1Info.lastClaimDividend;
+            var delDidUser1 = totalDividend - user1Info.lastClaimDividend;
             var actualSharesUser1 = await token.balanceOf(user1.address);
             var expectUser1AccumulatedShares = delDidUser1 * actualSharesUser1;
             const initialBalanceUser1 = await usdt.balanceOf(user1.address);
@@ -1669,7 +1675,7 @@ describe("V2 架构完整业务流程测试", function () {
             user1AccumulatedShares = user1Info.accumulatedShares;
             expect(user1Info.lastClaimDividend).to.be.equal(totalDividend);
             expect(user1AccumulatedShares).to.be.equal(expectUser1AccumulatedShares);
-            
+
             user2Info = await accumulatedYield.getUserInfo(user2.address);
             expect(user2Info.totalClaimed).to.be.equal(0);
             expect(user2Info.accumulatedShares).to.be.equal(0);
@@ -1678,7 +1684,7 @@ describe("V2 架构完整业务流程测试", function () {
 
             // 执行转账
             expectUser1AccumulatedShares = user1AccumulatedShares;
-            var delDidUser2 = totalDividend -  user2Info.accumulatedShares;
+            var delDidUser2 = totalDividend - user2Info.accumulatedShares;
             var expectUser2AccumulatedShares = delDidUser2 * actualSharesUser2;
             var transferAmount = ethers.parseUnits("100", TEST_CONFIG.VAULT_TOKEN_DECIMALS);
 
@@ -1739,7 +1745,7 @@ describe("V2 架构完整业务流程测试", function () {
             // 验证用户状态更新
             var user1Info = await accumulatedYield.getUserInfo(user1.address);
             var user1AccumulatedShares = user1Info.accumulatedShares;
-            var user1LastClaimDividend =  user1Info.lastClaimDividend;
+            var user1LastClaimDividend = user1Info.lastClaimDividend;
             var user1TotalClaimed = user1Info.totalClaimed;
             expect(user1LastClaimDividend).to.be.equal(0);
             expect(user1AccumulatedShares).to.be.equal(0);
@@ -1761,7 +1767,7 @@ describe("V2 架构完整业务流程测试", function () {
             expect(user2PendingReward).to.be.equal(expectUser2PendingReward);
 
             // user1领取分红
-            var delDidUser1 = totalDividend  - user1Info.lastClaimDividend;
+            var delDidUser1 = totalDividend - user1Info.lastClaimDividend;
             var actualSharesUser1 = await token.balanceOf(user1.address);
             var expectUser1AccumulatedShares = delDidUser1 * actualSharesUser1;
             const initialBalanceUser1 = await usdt.balanceOf(user1.address);
@@ -1779,12 +1785,12 @@ describe("V2 架构完整业务流程测试", function () {
             user1Info = await accumulatedYield.getUserInfo(user1.address);
             var expectUser1TotalClaimed = user1PendingReward;
             user1TotalClaimed = user1Info.totalClaimed;
-            
+
             expect(user1TotalClaimed).to.be.equal(expectUser1TotalClaimed);
             user1AccumulatedShares = user1Info.accumulatedShares;
             expect(user1Info.lastClaimDividend).to.be.equal(totalDividend);
             expect(user1AccumulatedShares).to.be.equal(expectUser1AccumulatedShares);
-            
+
             user2Info = await accumulatedYield.getUserInfo(user2.address);
             expect(user2Info.totalClaimed).to.be.equal(0);
             expect(user2Info.accumulatedShares).to.be.equal(0);
@@ -1793,7 +1799,7 @@ describe("V2 架构完整业务流程测试", function () {
 
             // 执行转账
             expectUser1AccumulatedShares = user1AccumulatedShares;
-            var delDidUser2 = totalDividend -  user2Info.accumulatedShares;
+            var delDidUser2 = totalDividend - user2Info.accumulatedShares;
             var expectUser2AccumulatedShares = delDidUser2 * actualSharesUser2;
             var transferAmount = ethers.parseUnits("100", TEST_CONFIG.VAULT_TOKEN_DECIMALS);
 
@@ -2074,7 +2080,7 @@ describe("V2 架构完整业务流程测试", function () {
             ).to.revertedWith("Crowdsale: funding was not successful");
         });
 
-       
+
     });
 
     describe("12. 转账相关操作", function () {
@@ -2158,7 +2164,7 @@ describe("V2 架构完整业务流程测试", function () {
             await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
             await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
 
-            await expect(fund.connect(manager).unpauseTokenOnFundingSuccess()).to.revertedWith("Crowdsale: funding was not successful");          
+            await expect(fund.connect(manager).unpauseTokenOnFundingSuccess()).to.revertedWith("Crowdsale: funding was not successful");
         });
 
     });
