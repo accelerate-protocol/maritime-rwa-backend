@@ -309,7 +309,7 @@ describe("V2 架构完整业务流程测试", function () {
         it("应该成功部署完整的V2架构", async function () {
             expect(await vault.vaultToken()).to.equal(await token.getAddress());
             expect(await vault.funding()).to.equal(await fund.getAddress());
-            expect(await vault.yield()).to.equal(await accumulatedYield.getAddress());
+            expect(await vault.accumulatedYield()).to.equal(await accumulatedYield.getAddress());
         });
 
         it("应该正确设置初始参数", async function () {
