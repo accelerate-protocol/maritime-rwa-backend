@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { parseUSDT, formatUSDT } from "./utils/usdt";
+import { parseUSDT, formatUSDT } from "../../test/utils/usdt";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;
@@ -37,7 +37,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   // 获取项目信息
-  const projectName = "Project_1755701371423";
+  const projectName = "Project_hardhat";
   const projectDetails = await creation.getProjectByName(projectName);
 
   if (!projectDetails.vault || projectDetails.vault === ethers.ZeroAddress) {

@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { ethers } from "hardhat";
-import { parseUSDT } from "./utils/usdt";
+import { parseUSDT } from "../../test/utils/usdt";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;
@@ -96,7 +96,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("🔨 开始部署项目...");
   
   const tx = await creation.deployAll(
-    `Project_${Date.now()}`, // projectName - 使用时间戳避免重复
+    `Project_hardhat`, // projectName - 使用时间戳避免重复
+    // `Project_${Date.now()}`, // projectName - 使用时间戳避免重复
     0, // Vault模板ID (MockBasicVault)
     vaultInitData,
     0, // Token模板ID (MockERC20)
