@@ -69,18 +69,6 @@ describe("V2 架构完整业务流程测试", function () {
     beforeEach(async function () {
         [owner, manager, validator, user1, user2, user3, fundingReceiver, manageFeeReceiver, dividendTreasury] = await ethers.getSigners();
 
-        // 验证账户对应关系
-        console.log("账户对应关系:");
-        console.log("owner:", owner.address);
-        console.log("manager:", manager.address);
-        console.log("validator:", validator.address);
-        console.log("user1:", user1.address);
-        console.log("user2:", user2.address);
-        console.log("user3:", user3.address);
-        console.log("fundingReceiver:", fundingReceiver.address);
-        console.log("manageFeeReceiver:", manageFeeReceiver.address);
-        console.log("dividendTreasury:", dividendTreasury.address);
-
         // 设置时间 - 使用 Hardhat 网络时间，让融资立即开始
         const currentBlock = await ethers.provider.getBlock("latest");
         if (!currentBlock) {
