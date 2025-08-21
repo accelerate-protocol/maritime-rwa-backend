@@ -72,16 +72,14 @@ const config: HardhatUserConfig = {
       gas: 8000000, // 8M gas
       timeout: 120000, // 2 分钟超时
     },
+
     bscMainnet:{
       url: "https://bsc-dataseed.bnbchain.org",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 56 
     },
-
-
-
-
   },
+  
 };
 
 export default config;

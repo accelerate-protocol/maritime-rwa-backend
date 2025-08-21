@@ -1,0 +1,120 @@
+[36mINFO[0m [32m[08/18 11:53:59.860] [0mtoken-engine version:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:53:59.861] [0mSystem version: darwin/arm64[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:53:59.861] [0mGolang version: go1.24.2[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:53:59.861] [0mApp build time:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:53:59.861] [0mGit commit id:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:53:59.861] [0mRepo path: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:53:59.861] [0mExecutable: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/tools/bin/token-engine[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:53:59.861] [0mPID: 84176[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:53:59.861] [0mUUID node index: 0[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:00.066] [0mcreating new base AxcTxPrepare[32m [base_txprepare][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:00.067] [0mcreating new base AxcTxExecutor[32m [base_txexecutor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:00.067] [0mcreate axc vault idl[32m [solana-idl][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:00.067] [0mcreate axc vault transaction builder[32m [axc_tx_builder][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:00.067] [0mcreating Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:00.184] [0minitialized all program event definitions[32m [solana_sm][0m[36m [programCount:1][0m
+[36mINFO[0m [32m[08/18 11:54:00.185] [0mRegistered transfer provider[32m [transfer-service][0m[36m [chainID:97] [tokens:[BNB USDT USDC]][0m
+[36mINFO[0m [32m[08/18 11:54:00.185] [0mRegistered transfer provider[32m [transfer-service][0m[36m [chainID:2494104990] [tokens:[TRX USDT]][0m
+[36mINFO[0m [32m[08/18 11:54:00.185] [0mcore api initialized[32m [coreApi][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:00.449] [0mComponent[sql-connector] started[32m [sidecar][0m[36m [time_cost:264.064459ms][0m
+[36mINFO[0m [32m[08/18 11:54:01.430] [0mFinished connect to send tx http rpcs[32m [solana-jsonrpc][0m[36m [cost:980.147833ms] [num:3][0m
+[36mINFO[0m [32m[08/18 11:54:01.986] [0mFinished connect to stable http rpcs[32m [solana-jsonrpc][0m[36m [cost:556.044916ms] [num:3][0m
+[36mINFO[0m [32m[08/18 11:54:05.795] [0mFinished connect to unstable http rpcs[32m [solana-jsonrpc][0m[36m [cost:3.809306375s] [num:45][0m
+[36mINFO[0m [32m[08/18 11:54:07.289] [0mFinished connect to ws rpcs[32m [solana-jsonrpc][0m[36m [cost:1.493130084s] [num:1][0m
+[36mINFO[0m [32m[08/18 11:54:07.854] [0mScheduled task started[32m [sidecar][0m[36m [interval:2s] [task:solana-tx-sender[poll-last-block]][0m
+[36mINFO[0m [32m[08/18 11:54:07.854] [0msolana submitter started[32m [solana-submitter][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:07.854] [0mswap submitter started[32m [submitter][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:07.854] [0mComponent[SwapSubmitter] started[32m [sidecar][0m[36m [time_cost:7.404226167s][0m
+[36mINFO[0m [32m[08/18 11:54:07.854] [0mComponent[ExchangeDataService] started[32m [sidecar][0m[36m [time_cost:4.667µs][0m
+[36mINFO[0m [32m[08/18 11:54:07.854] [0mComponent[ContractMaterials] started[32m [sidecar][0m[36m [time_cost:2.5µs][0m
+[36mINFO[0m [32m[08/18 11:54:07.854] [0mScheduled task started[32m [sidecar][0m[36m [interval:1h0m0s] [task:UpdateExchangeTokenHolders][0m
+[36mINFO[0m [32m[08/18 11:54:07.854] [0mScheduled task started[32m [sidecar][0m[36m [interval:1m0s] [task:StatisticExchangeData][0m
+[36mINFO[0m [32m[08/18 11:54:07.854] [0mstarting Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:07.854] [0mSolana chain adaptor started successfully[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:07.854] [0mComponent[common_chain_adaptor] started[32m [sidecar][0m[36m [time_cost:179.583µs][0m
+[36mINFO[0m [32m[08/18 11:54:07.977] [0mContract materials loaded successfully[32m [basechain][0m[36m [appid:root] [chainId:84532] [contractCount:9] [errors:0][0m
+[36mINFO[0m [32m[08/18 11:54:08.053] [0mSolana syncer started[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:08.054] [0mComponent[Syncer] started[32m [sidecar][0m[36m [time_cost:199.360875ms][0m
+[36mINFO[0m [32m[08/18 11:54:08.545] [0mNSQ consumer component started[32m [msgqueue][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:08.545] [0mComponent[msg_queue] started[32m [sidecar][0m[36m [time_cost:491.009708ms][0m
+[36mINFO[0m [32m[08/18 11:54:08.545] [0mComponent[solana_sm] started[32m [sidecar][0m[36m [time_cost:5.708µs][0m
+[36mINFO[0m [32m[08/18 11:54:08.545] [0mSolana events manager started[32m [solana_sm][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:08.545] [0mLoading deployment manifest from[32m [base_deploymanager][0m[36m [path:/Users/yanzhixing/Downloads/GitHub/token-engine/deploy/abis][0m
+[36mINFO[0m [32m[08/18 11:54:08.545] [0mevent processor started[32m [solana_sm][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:08.545] [0mComponent[deploymanager] started[32m [sidecar][0m[36m [time_cost:129.125µs][0m
+[36mINFO[0m [32m[08/18 11:54:08.545] [0mStarting TokenBalanceService[32m [TokenBalanceService][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:08.545] [0mComponent[TokenBalanceService] started[32m [sidecar][0m[36m [time_cost:79.542µs][0m
+[36mINFO[0m [32m[08/18 11:54:08.546] [0mIPC server listen on: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/ipc.sock[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:08.546] [0mHttp server listen on: 8082[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:08.546] [0mComponent[http-api-server] started[32m [sidecar][0m[36m [time_cost:794.958µs][0m
+[36mINFO[0m [32m[08/18 11:54:08.546] [0mComponent[app] started[32m [sidecar][0m[36m [time_cost:250.959µs][0m
+[36mINFO[0m [32m[08/18 11:54:08.546] [0mtoken-engine is ready[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:08.548] [0m=====================================================================================
+   __            __                                                  _
+  / /_  ____    / /__  ___    ____          ___    ____    ____ _   (_)   ____   ___
+ / __/ / __ \  / //_/ / _ \  / __ \ ______ / _ \  / __ \  / __ `/  / /   / __ \ / _ \
+/ /_  / /_/ / / ,<   /  __/ / / / //_____//  __/ / / / / / /_/ /  / /   / / / //  __/
+\__/  \____/ /_/|_|  \___/ /_/ /_/        \___/ /_/ /_/  \__, /  /_/   /_/ /_/ \___/
+                                                        /____/
+
+=====================================================================================[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:12.714] [0mpreparing create vault transaction[32m [base_txprepare][0m[36m [params:&{84532 {0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266} {TestToken MT 6 https://example.com/token-metadata.json} {VaultCreate 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 1000000 1754832494 1786800494 110 560 1 100000 300 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 1} false}][0m
+[36mINFO[0m [32m[08/18 11:54:13.976] [0mnonce retrieved successfully[32m [base_txprepare][0m[36m [deployer:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266] [nonce:14869][0m
+[36mINFO[0m [32m[08/18 11:54:15.841] [0mtx[32m [base_txprepare][0m[36m [tx:&{0x14000feee40 {13988399081368643928 15376532876 0x106368de0} {[] {} <nil>} {{} {} 0} {[] {} <nil>}}][0m
+[36mINFO[0m [32m[08/18 11:54:15.841] [0mrawTx[32m [base_txprepare][0m[36m [rawTx:[249 5 174 130 58 21 131 45 199 104 131 45 198 192 148 23 165 10 162 209 213 232 218 8 69 249 164 235 48 79 152 147 197 51 223 128 185 5 68 67 65 124 234 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 96 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4 192 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 11 86 97 117 108 116 67 114 101 97 116 101 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 160 0 0 0 0 0 0 0 0 0 0 0 0 243 159 214 229 26 173 136 246 244 206 106 184 130 114 121 207 255 185 34 102 0 0 0 0 0 0 0 0 0 0 0 0 243 159 214 229 26 173 136 246 244 206 106 184 130 114 121 207 255 185 34 102 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 128 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 224 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 96 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 160 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 9 84 101 115 116 84 111 107 101 110 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 77 84 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 128 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 104 152 158 110 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 106 128 105 110 0 0 0 0 0 0 0 0 0 0 0 0 3 108 189 83 132 44 84 38 99 78 121 41 84 30 194 49 143 61 207 126 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 232 212 165 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 23 72 118 232 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 15 66 64 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 110 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 44 0 0 0 0 0 0 0 0 0 0 0 0 243 159 214 229 26 173 136 246 244 206 106 184 130 114 121 207 255 185 34 102 0 0 0 0 0 0 0 0 0 0 0 0 243 159 214 229 26 173 136 246 244 206 106 184 130 114 121 207 255 185 34 102 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 243 159 214 229 26 173 136 246 244 206 106 184 130 114 121 207 255 185 34 102 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 96 0 0 0 0 0 0 0 0 0 0 0 0 3 108 189 83 132 44 84 38 99 78 121 41 84 30 194 49 143 61 207 126 0 0 0 0 0 0 0 0 0 0 0 0 243 159 214 229 26 173 136 246 244 206 106 184 130 114 121 207 255 185 34 102 0 0 0 0 0 0 0 0 0 0 0 0 243 159 214 229 26 173 136 246 244 206 106 184 130 114 121 207 255 185 34 102 131 2 148 139 160 107 192 47 241 246 181 88 142 27 225 167 48 7 83 28 0 25 77 99 104 179 87 90 252 19 82 26 55 209 117 232 203 160 84 2 246 219 245 176 114 135 186 115 213 159 140 76 9 51 88 191 122 102 194 224 60 204 49 151 210 88 208 75 8 92]][0m
+[36mINFO[0m [32m[08/18 11:54:15.842] [0msuccessfully prepared create vault transaction[32m [base_txprepare][0m[36m [gasLimit:3000000] [gasPrice:3000168] [nonce:14869] [txHash:0x0bad61b8331408d9b38fa8f3dc73f8c77a1155fd0b35e61ceb99de264195d835][0m
+[36mINFO[0m [32m[08/18 11:54:15.842] [0mqueryVaultCreated[32m [base_txprepare][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:54:15.842] [0mqueryVaultCreated[32m [base_txprepare][0m[36m [txHash:0x0bad61b8331408d9b38fa8f3dc73f8c77a1155fd0b35e61ceb99de264195d835][0m
+[36mINFO[0m [32m[08/18 11:54:15.842] [0mwaitForReceipt[32m [base_txprepare][0m[36m [txHash:0x0bad61b8331408d9b38fa8f3dc73f8c77a1155fd0b35e61ceb99de264195d835][0m
+[36mINFO[0m [32m[08/18 11:54:19.222] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:54:22.191] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:54:25.170] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:54:28.207] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:54:31.220] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:54:34.188] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:54:37.359] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:54:40.197] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:54:43.191] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:54:46.248] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:54:49.199] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:54:52.388] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:54:55.177] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:54:58.194] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:01.235] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:04.194] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:07.209] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:10.204] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:13.184] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:16.235] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:19.198] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:22.188] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:25.183] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:28.205] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:31.369] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:34.185] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:37.213] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:40.401] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:43.604] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:46.206] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:49.218] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:52.272] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:55.179] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:55:58.199] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:56:01.312] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:56:04.210] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:56:07.215] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:56:10.186] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:56:13.208] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:56:16.194] [0mwaitForReceipt[32m [base_txprepare][0m[36m [err:map[error:not found kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:56:16.194] [0mwaitForReceipt[32m [base_txprepare][0m[36m [!BADKEY:timeoutCh][0m
+[31mERRO[0m [32m[08/18 11:56:16.194] [0mfailed to wait for receipt[32m [base_txprepare][0m[31m [error:map[error:timeout waiting for tx receipt: 0x0bad61b8331408d9b38fa8f3dc73f8c77a1155fd0b35e61ceb99de264195d835 kind:*errors.errorString stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:56:16.194] [0mAPI request[32m [api][0m[36m [uri:/api/v2/primary/vault/prepare_create] [method:POST] [ip:127.0.0.1] [http_code:200] [time_cost:2m3.482025625s] [caller:root][0m
+[36mINFO[0m [32m[08/18 11:59:48.818] [0mReceive exit signal: interrupt[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:59:48.819] [0mComponent[app] stopped[32m [sidecar][0m[36m [time_cost:237.875µs][0m
+[36mINFO[0m [32m[08/18 11:59:48.820] [0mIPC server shutdown[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:59:48.820] [0mComponent[http-api-server] stopped[32m [sidecar][0m[36m [time_cost:396.875µs][0m
+[36mINFO[0m [32m[08/18 11:59:48.820] [0mHttp server shutdown[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:59:48.820] [0mComponent[TokenBalanceService] stopped[32m [sidecar][0m[36m [time_cost:4.166µs][0m
+[36mINFO[0m [32m[08/18 11:59:48.820] [0mDeployManager stopped[32m [base_deploymanager][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:59:48.820] [0mComponent[deploymanager] stopped[32m [sidecar][0m[36m [time_cost:46.458µs][0m
+[36mINFO[0m [32m[08/18 11:59:48.820] [0mevent processor stopping[32m [solana_sm][0m[36m[0m

@@ -1,0 +1,28 @@
+[36mINFO[0m [32m[08/18 11:05:58.647] [0mtoken-engine version:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:58.648] [0mSystem version: darwin/arm64[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:58.648] [0mGolang version: go1.24.2[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:58.648] [0mApp build time:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:58.648] [0mGit commit id:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:58.648] [0mRepo path: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:58.648] [0mExecutable: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/tools/bin/token-engine[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:58.648] [0mPID: 3316[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:58.648] [0mUUID node index: 0[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:58.852] [0mcreating new base AxcTxPrepare[32m [base_txprepare][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:58.852] [0mcreating new base AxcTxExecutor[32m [base_txexecutor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:58.852] [0mcreate axc vault idl[32m [solana-idl][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:58.852] [0mcreate axc vault transaction builder[32m [axc_tx_builder][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:58.853] [0mcreating Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:58.965] [0minitialized all program event definitions[32m [solana_sm][0m[36m [programCount:1][0m
+[36mINFO[0m [32m[08/18 11:05:58.966] [0mRegistered transfer provider[32m [transfer-service][0m[36m [chainID:97] [tokens:[BNB USDT USDC]][0m
+[36mINFO[0m [32m[08/18 11:05:58.966] [0mRegistered transfer provider[32m [transfer-service][0m[36m [chainID:2494104990] [tokens:[TRX USDT]][0m
+[36mINFO[0m [32m[08/18 11:05:58.966] [0mcore api initialized[32m [coreApi][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:05:59.165] [0mComponent[sql-connector] started[32m [sidecar][0m[36m [time_cost:198.907084ms][0m
+[36mINFO[0m [32m[08/18 11:06:00.215] [0mFinished connect to send tx http rpcs[32m [solana-jsonrpc][0m[36m [cost:1.049515167s] [num:3][0m
+[36mINFO[0m [32m[08/18 11:06:00.521] [0mFinished connect to stable http rpcs[32m [solana-jsonrpc][0m[36m [cost:305.761375ms] [num:3][0m
+[36mINFO[0m [32m[08/18 11:06:02.907] [0mFinished connect to unstable http rpcs[32m [solana-jsonrpc][0m[36m [cost:2.385820125s] [num:45][0m
+[33mWARN[0m [32m[08/18 11:06:07.908] [0mFailed to connect to ws rpc[32m [solana-jsonrpc][0m[33m [err:failed to connect to ws rpc: wss://api.devnet.solana.com: new ws client: dial: read tcp 127.0.0.1:63974->127.0.0.1:4780: i/o timeout] [rpc:wss://api.devnet.solana.com][0m
+[36mINFO[0m [32m[08/18 11:06:07.909] [0mFinished connect to ws rpcs[32m [solana-jsonrpc][0m[36m [cost:5.001627208s] [num:0][0m
+[36mINFO[0m [32m[08/18 11:06:07.909] [0mswap submitter started[32m [submitter][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:06:07.909] [0mComponent[sql-connector] stopped[32m [sidecar][0m[36m [time_cost:1.417µs][0m
+[31mERRO[0m [32m[08/18 11:06:07.909] [0mStart components failed[32m [sidecar][0m[31m [err:map[error:componen[SwapSubmitter] start failed: failed to new multi rpc manager: failed to new multi rpc manager: failed to connect to any ws rpc kind:*errors.withStack stack:<nil>]][0m
+[36mINFO[0m [32m[08/18 11:06:07.909] [0mtoken-engine is stopped[32m [app][0m[36m[0m

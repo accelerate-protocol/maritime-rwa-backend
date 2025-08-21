@@ -10,6 +10,9 @@ node_modules
 /typechain
 /typechain-types
 
+/deployments
+/tke
+
 # solidity-coverage files
 /coverage
 /coverage.json

@@ -1,0 +1,78 @@
+[36mINFO[0m [32m[08/14 19:02:53.573] [0mtoken-engine version:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:53.573] [0mSystem version: darwin/arm64[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:53.573] [0mGolang version: go1.24.2[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:53.573] [0mApp build time:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:53.573] [0mGit commit id:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:53.573] [0mRepo path: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:53.573] [0mExecutable: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/tools/bin/token-engine[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:53.573] [0mPID: 56669[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:53.573] [0mUUID node index: 0[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:53.880] [0mcreating new base AxcTxPrepare[32m [base_txprepare][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:53.880] [0mcreating new base AxcTxExecutor[32m [base_txexecutor][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:53.881] [0mcreate axc vault idl[32m [solana-idl][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:53.881] [0mcreate axc vault transaction builder[32m [axc_tx_builder][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:53.881] [0mcreating Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:54.057] [0minitialized all program event definitions[32m [solana_sm][0m[36m [programCount:1][0m
+[36mINFO[0m [32m[08/14 19:02:54.058] [0mRegistered transfer provider[32m [tron-transfer][0m[36m [chainID:97] [tokens:[BNB USDT USDC]][0m
+[36mINFO[0m [32m[08/14 19:02:54.058] [0mRegistered transfer provider[32m [tron-transfer][0m[36m [chainID:2494104990] [tokens:[TRX USDT]][0m
+[36mINFO[0m [32m[08/14 19:02:54.058] [0mcore api initialized[32m [coreApi][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:54.580] [0mComponent[sql-connector] started[32m [sidecar][0m[36m [time_cost:522.043875ms][0m
+[36mINFO[0m [32m[08/14 19:02:55.311] [0mFinished connect to send tx http rpcs[32m [solana-jsonrpc][0m[36m [cost:730.527375ms] [num:1][0m
+[36mINFO[0m [32m[08/14 19:02:55.568] [0mFinished connect to stable http rpcs[32m [solana-jsonrpc][0m[36m [cost:256.79975ms] [num:1][0m
+[36mINFO[0m [32m[08/14 19:02:55.840] [0mFinished connect to unstable http rpcs[32m [solana-jsonrpc][0m[36m [cost:271.94625ms] [num:1][0m
+[36mINFO[0m [32m[08/14 19:02:56.606] [0mFinished connect to ws rpcs[32m [solana-jsonrpc][0m[36m [cost:765.236792ms] [num:1][0m
+[36mINFO[0m [32m[08/14 19:02:57.128] [0mScheduled task started[32m [sidecar][0m[36m [interval:2s] [task:solana-tx-sender[poll-last-block]][0m
+[36mINFO[0m [32m[08/14 19:02:57.128] [0msolana submitter started[32m [solana-submitter][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:57.128] [0mswap submitter started[32m [submitter][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:57.128] [0mComponent[SwapSubmitter] started[32m [sidecar][0m[36m [time_cost:2.547297792s][0m
+[36mINFO[0m [32m[08/14 19:02:57.128] [0mstart to subscribe exchange data by grpc...[32m [ExchangeDataService][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:57.128] [0mScheduled task started[32m [sidecar][0m[36m [interval:1h0m0s] [task:UpdateExchangeTokenHolders][0m
+[36mINFO[0m [32m[08/14 19:02:57.128] [0mScheduled task started[32m [sidecar][0m[36m [interval:1m0s] [task:StatisticExchangeData][0m
+[36mINFO[0m [32m[08/14 19:02:57.649] [0mComponent[ExchangeDataService] started[32m [sidecar][0m[36m [time_cost:521.209958ms][0m
+[36mINFO[0m [32m[08/14 19:02:57.649] [0mComponent[ContractMaterials] started[32m [sidecar][0m[36m [time_cost:2.083µs][0m
+[36mINFO[0m [32m[08/14 19:02:57.649] [0mstarting Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:57.650] [0mSolana chain adaptor started successfully[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:57.650] [0mComponent[common_chain_adaptor] started[32m [sidecar][0m[36m [time_cost:152.292µs][0m
+[33mWARN[0m [32m[08/14 19:02:57.816] [0mbegin compensate swap event[32m [ExchangeDataService][0m[33m [outer_id From:293280][0m
+[36mINFO[0m [32m[08/14 19:02:57.912] [0mContract materials loaded successfully[32m [basechain][0m[36m [appid:root] [chainId:84532] [contractCount:9] [errors:0][0m
+[36mINFO[0m [32m[08/14 19:02:58.161] [0mNSQ consumer component started[32m [msgqueue][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:58.161] [0mComponent[msg_queue] started[32m [sidecar][0m[36m [time_cost:511.843292ms][0m
+[36mINFO[0m [32m[08/14 19:02:58.161] [0mComponent[solana_sm] started[32m [sidecar][0m[36m [time_cost:4µs][0m
+[36mINFO[0m [32m[08/14 19:02:58.162] [0mLoading deployment manifest from[32m [base_deploymanager][0m[36m [path:/Users/yanzhixing/Downloads/GitHub/token-engine/deploy/abis][0m
+[36mINFO[0m [32m[08/14 19:02:58.162] [0mComponent[deploymanager] started[32m [sidecar][0m[36m [time_cost:36.333µs][0m
+[36mINFO[0m [32m[08/14 19:02:58.162] [0mIPC server listen on: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/ipc.sock[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:58.162] [0mHttp server listen on: 8082[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:58.162] [0mComponent[http-api-server] started[32m [sidecar][0m[36m [time_cost:493.042µs][0m
+[36mINFO[0m [32m[08/14 19:02:58.162] [0mComponent[app] started[32m [sidecar][0m[36m [time_cost:150.917µs][0m
+[36mINFO[0m [32m[08/14 19:02:58.162] [0mtoken-engine is ready[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:58.163] [0m=====================================================================================
+   __            __                                                  _
+  / /_  ____    / /__  ___    ____          ___    ____    ____ _   (_)   ____   ___
+ / __/ / __ \  / //_/ / _ \  / __ \ ______ / _ \  / __ \  / __ `/  / /   / __ \ / _ \
+/ /_  / /_/ / / ,<   /  __/ / / / //_____//  __/ / / / / / /_/ /  / /   / / / //  __/
+\__/  \____/ /_/|_|  \___/ /_/ /_/        \___/ /_/ /_/  \__, /  /_/   /_/ /_/ \___/
+                                                        /____/
+
+=====================================================================================[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:58.257] [0mevent processor started[32m [solana_sm][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:02:58.257] [0mSolana events manager started[32m [solana_sm][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:03:00.341] [0mPreparing transfer[32m [basechain][0m[36m [amount:0.000001] [from:0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A] [to:0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A] [tokenAddr:] [tokenType:ETH][0m
+[36mINFO[0m [32m[08/14 19:03:01.635] [0mETH transfer prepared[32m [basechain][0m[36m [amount:1000000000000] [balance:8252265730947554] [chainID:84532] [gasLimit:21000] [gasPrice:1000065] [nonce:55] [unsignedTxHex:0xb202f083014a3437830f4281831e8502825208944d6ca5a0517cc18d66fea10a51486fa0351bf61a85e8d4a5100080c0808080][0m
+[36mINFO[0m [32m[08/14 19:03:01.635] [0mTestSubmitSignedUSDTTransfer[32m [basechain][0m[36m [chainID:84532] [unsignedTxHex:0xb202f083014a3437830f4281831e8502825208944d6ca5a0517cc18d66fea10a51486fa0351bf61a85e8d4a5100080c0808080][0m
+[31mERRO[0m [32m[08/14 19:03:01.635] [0mFailed to decode unsigned tx: %v[32m [basechain][0m[31m [!BADKEY:rlp: expected input list for types.LegacyTx][0m
+[36mINFO[0m [32m[08/14 19:03:01.635] [0mAPI request[32m [api][0m[36m [uri:/api/v2/transfer/prepare] [method:POST] [ip:127.0.0.1] [http_code:200] [time_cost:1.294914792s] [caller:root][0m
+[31mERRO[0m [32m[08/14 19:03:11.005] [0msave swap event data failed[32m [ExchangeDataService][0m[31m [error:map[error:model: unable to insert into exchange_token_tx: ERROR: duplicate key value violates unique constraint "exchange_token_tx_outer_id_key" (SQLSTATE 23505) kind:*errors.withStack stack:<nil>]] [txData:&{0 1001 293284 3MhiVfThJjkVXfjyuEXYmPtC2VmXW8CpR2Gd7QFu7Hwg 8c5yxueAtqTgoqoVFwUugz8YADWt8PZMKBFXJMtR9Y2P 4xkEmPMWfPJvBp4wiTWe5J81g9CrQibg5aof2S9dUKpu 1 17707735 17800000 17707735 300448070439 299622073313 997250782390 10000 Ft5dUC14KJ4r7bwwwX5oRsjgVwbwFoG7ntfowwNd4bFq 2sMSzt8HjYeqoLYHdhwejfsH6quENpVpPBfxJYizam1hfEJ2R5Wci8aTme3ogDz2prF4gFeRTiA6svsJka6ujjwt 401077886 1755169379 2025-08-14 19:03:10.918899 +0800 CST m=+17.379085168 2025-08-14 19:03:10.918899 +0800 CST m=+17.379085210 <nil> {}}][0m
+[31mERRO[0m [32m[08/14 19:03:13.349] [0msave swap event data failed[32m [ExchangeDataService][0m[31m [error:map[error:model: unable to insert into exchange_token_tx: ERROR: duplicate key value violates unique constraint "exchange_token_tx_outer_id_key" (SQLSTATE 23505) kind:*errors.withStack stack:<nil>]] [txData:&{0 1001 293285 5EMN5ZfdZWEF2VjUJhvYfoNoVJEnQUz5X9yTm2NG3Lik 2zKZyDdcs1kWsc5T72bQiufNnv54TxMG1evxb1WfgbKT 4xkEmPMWfPJvBp4wiTWe5J81g9CrQibg5aof2S9dUKpu 0 8480000 8460598 8480000 500081775434 499983921770 999804324674 10000 Ft5dUC14KJ4r7bwwwX5oRsjgVwbwFoG7ntfowwNd4bFq t5aA2vzzarfYBDkPRsHqgaYw8yo42RXdfCa3WviGSxtGxngGamP83rtDqxWVoqP6sjHf4aaRcoDtHWnJeVp8Lqr 401077898 1755169383 2025-08-14 19:03:13.270585 +0800 CST m=+19.730749043 2025-08-14 19:03:13.270585 +0800 CST m=+19.730749085 <nil> {}}][0m
+[31mERRO[0m [32m[08/14 19:03:15.795] [0msave swap event data failed[32m [ExchangeDataService][0m[31m [error:map[error:model: unable to insert into exchange_token_tx: ERROR: duplicate key value violates unique constraint "exchange_token_tx_outer_id_key" (SQLSTATE 23505) kind:*errors.withStack stack:<nil>]] [txData:&{0 1001 293286 cbgot6rf3LaEBqhzZp8jRMoU63Qc9JEszZ3BVWXNtgF GKpUBoqvkC9kMJm8kuNDTDkBFAsTvUhr4pniu6eXaS5V 4xkEmPMWfPJvBp4wiTWe5J81g9CrQibg5aof2S9dUKpu 0 11440000 11442330 11440000 44086855852 43979123171 997556353726 10000 Ft5dUC14KJ4r7bwwwX5oRsjgVwbwFoG7ntfowwNd4bFq 5pmPQRmYVTnTnLaBwy2jFe8uqD8UAgAEHB6GZ2T9wTHaeKK1Bbrowvr47NxUBmescSAhmv7Qy3tZgMtDLpRdKLvJ 401077910 1755169388 2025-08-14 19:03:15.626999 +0800 CST m=+22.087139918 2025-08-14 19:03:15.626999 +0800 CST m=+22.087139960 <nil> {}}][0m
+[31mERRO[0m [32m[08/14 19:03:18.546] [0msave swap event data failed[32m [ExchangeDataService][0m[31m [error:map[error:model: unable to insert into exchange_token_tx: ERROR: duplicate key value violates unique constraint "exchange_token_tx_outer_id_key" (SQLSTATE 23505) kind:*errors.withStack stack:<nil>]] [txData:&{0 1001 293287 8uHK7JmwvRQYoSP5sCxjcdUn6PfhCGSRvtT7v63Rqm9T E64i27za4jcMT6ceMKncdw3aJxg1TwvXzBmULsXytJ63 4xkEmPMWfPJvBp4wiTWe5J81g9CrQibg5aof2S9dUKpu 1 17669019 17340000 17669019 2375159856 2408580033 1014070706405 10000 Ft5dUC14KJ4r7bwwwX5oRsjgVwbwFoG7ntfowwNd4bFq 3RnJt9n2ZNWsMFdHQ167mqFdiFMVNafXoL4CHzxeaNbJta8qLxb8Bs2AVkpWxx3iUqNkuYWsXXMMwdVCEzqnLhT2 401077921 1755169392 2025-08-14 19:03:18.080287 +0800 CST m=+24.540404668 2025-08-14 19:03:18.080287 +0800 CST m=+24.540404751 <nil> {}}][0m
+[33mWARN[0m [32m[08/14 19:03:20.816] [0mstop compensate swap event[32m [ExchangeDataService][0m[33m [outer_id end:293287][0m
+[36mINFO[0m [32m[08/14 19:05:55.702] [0mReceive exit signal: interrupt[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:05:55.703] [0mComponent[app] stopped[32m [sidecar][0m[36m [time_cost:309.208µs][0m
+[36mINFO[0m [32m[08/14 19:05:55.703] [0mIPC server shutdown[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:05:55.704] [0mHttp server shutdown[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:05:55.704] [0mComponent[http-api-server] stopped[32m [sidecar][0m[36m [time_cost:249.958µs][0m
+[36mINFO[0m [32m[08/14 19:05:55.704] [0mDeployManager stopped[32m [base_deploymanager][0m[36m[0m
+[36mINFO[0m [32m[08/14 19:05:55.704] [0mComponent[deploymanager] stopped[32m [sidecar][0m[36m [time_cost:27.375µs][0m
+[36mINFO[0m [32m[08/14 19:05:55.704] [0mScheduled task stopped[32m [sidecar][0m[36m [interval:2s] [task:solana-tx-sender[poll-last-block]][0m
+[36mINFO[0m [32m[08/14 19:05:55.704] [0mevent processor stopping[32m [solana_sm][0m[36m[0m
+[31mERRO[0m [32m[08/14 19:05:55.704] [0mStop components failed[32m [sidecar][0m[31m [err:map[error:goroutine exited without returning kind:*errors.errorString stack:<nil>]][0m

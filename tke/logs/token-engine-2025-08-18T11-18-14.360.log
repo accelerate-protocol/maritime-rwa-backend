@@ -1,0 +1,21 @@
+[36mINFO[0m [32m[08/18 11:17:53.537] [0mtoken-engine version:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:53.537] [0mSystem version: darwin/arm64[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:53.537] [0mGolang version: go1.24.2[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:53.537] [0mApp build time:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:53.537] [0mGit commit id:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:53.537] [0mRepo path: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:53.537] [0mExecutable: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/tools/bin/token-engine[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:53.537] [0mPID: 24301[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:53.538] [0mUUID node index: 0[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:53.844] [0mcreating new base AxcTxPrepare[32m [base_txprepare][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:53.844] [0mcreating new base AxcTxExecutor[32m [base_txexecutor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:53.844] [0mcreate axc vault idl[32m [solana-idl][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:53.845] [0mcreate axc vault transaction builder[32m [axc_tx_builder][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:53.846] [0mcreating Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:53.973] [0minitialized all program event definitions[32m [solana_sm][0m[36m [programCount:1][0m
+[36mINFO[0m [32m[08/18 11:17:53.973] [0mRegistered transfer provider[32m [transfer-service][0m[36m [chainID:97] [tokens:[BNB USDT USDC]][0m
+[36mINFO[0m [32m[08/18 11:17:53.974] [0mRegistered transfer provider[32m [transfer-service][0m[36m [chainID:2494104990] [tokens:[TRX USDT]][0m
+[36mINFO[0m [32m[08/18 11:17:53.974] [0mcore api initialized[32m [coreApi][0m[36m[0m
+[36mINFO[0m [32m[08/18 11:17:54.209] [0mComponent[sql-connector] started[32m [sidecar][0m[36m [time_cost:234.941459ms][0m
+[36mINFO[0m [32m[08/18 11:17:55.272] [0mFinished connect to send tx http rpcs[32m [solana-jsonrpc][0m[36m [cost:1.062679417s] [num:3][0m
+[36mINFO[0m [32m[08/18 11:17:55.549] [0mFinished connect to stable http rpcs[32m [solana-jsonrpc][0m[36m [cost:277.069792ms] [num:3][0m

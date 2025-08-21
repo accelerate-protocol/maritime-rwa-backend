@@ -28,14 +28,19 @@ contract VaultFactory is IVaultFactory, Ownable {
         require(template != address(0), "VaultFactory: template not found");
         
         vault = template.clone();
-        
-        bytes memory fullInitData = abi.encodeWithSignature(
-            "initiate(bytes)",
-            initData
+        (bool success, bytes memory returndata) = vault.call(
+            abi.encodeWithSignature("initiate(bytes)", initData)
         );
-        
-        (bool success, ) = vault.call(fullInitData);
-        require(success, "VaultFactory: initialization failed");
+        if (!success) {
+            if (returndata.length > 0) {
+                string memory reason;
+                assembly { returndata := add(returndata, 0x04) }
+                reason = abi.decode(returndata, (string));
+                revert(string(abi.encodePacked("VaultFactory: initialization failed: ", reason)));
+            } else {
+                revert("VaultFactory: initialization failed");
+            }
+        }
         
         emit VaultCreated(templateId, vault, msg.sender);
         

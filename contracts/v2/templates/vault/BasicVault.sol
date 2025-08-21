@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../../interfaces/IVault.sol";
 import "../../interfaces/IToken.sol";
+import "../../interfaces/IAccumulatedYield.sol";
+import "../../interfaces/ICrowdsale.sol";
 
 /**
  * @title BasicVault
@@ -60,11 +62,6 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         _;
     }
     
-    modifier whenNotInitialized() {
-        require(!_initialized, "BasicVault: already initialized");
-        _;
-    }
-    
     // ============ Constructor ============
     
     constructor() {
@@ -77,7 +74,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @dev Unified initialization interface
      * @param _initData Encoded initialization data
      */
-    function initiate(bytes memory _initData) external override whenNotInitialized {
+    function initiate(bytes memory _initData) external override {
         // decode init data
         (address _manager, address _validator, bool _whitelistEnabled, address[] memory _initialWhitelist) = 
             abi.decode(_initData, (address, address, bool, address[]));
@@ -182,7 +179,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Mint tokens through vault
+     * @dev Mint tokens through vault, Only callable by the funding module
      * @param to Recipient address
      * @param amount Amount to mint
      */
@@ -192,7 +189,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Burn tokens through vault
+     * @dev Burn tokens through vault, Only callable by the funding module
      * @param from Address to burn from
      * @param amount Amount to burn
      */
@@ -202,7 +199,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Hook called on token transfer
+     * @dev Hook called on token transfer, Only callable by the token module
      * @param from From address
      * @param to To address
      * @param amount Transfer amount
@@ -210,41 +207,30 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     function onTokenTransfer(address from, address to, uint256 amount) external override whenInitialized whenWhitelisted(from) whenWhitelisted(to) {
         require(msg.sender == vaultToken, "BasicVault: only token can call");
         if (accumulatedYield != address(0) && from != address(0) && to != address(0)) {
-            (bool success, ) = accumulatedYield.call(
-                abi.encodeWithSignature(
-                    "updateUserPoolsOnTransfer(address,address,uint256)",
-                    from,
-                    to,
-                    amount
-                )
-            );
-            if (!success) {
-                revert("BasicVault: onTokenTransfer failed");
-            }
+            IAccumulatedYield(accumulatedYield).updateUserPoolsOnTransfer(from, to, amount);
         }
     }
     
     // ============ Vault Token Management ============
+
+    function configureModules(address _vaultToken, address _funding, address _yield) external override onlyOwner whenInitialized {
+        _setVaultToken(_vaultToken);
+        _setFundingModule(_funding);
+        _setDividendModule(_yield);
+    }
     
-    /**
-     * @dev Set vault token address (can only be set once)
-     * @param _vaultToken Vault token address
-     */
-    function setVaultToken(address _vaultToken) external override onlyOwner whenInitialized {
+    // 内部方法
+    function _setVaultToken(address _vaultToken) internal {
         require(vaultToken == address(0), "BasicVault: token already set");
         require(_vaultToken != address(0), "BasicVault: invalid token address");
         vaultToken = _vaultToken;
-        
-        // Note: Token will be paused when it's initialized with this vault
-        // The pause will be handled during token initialization
-        emit TokenPaused();
     }
     
     /**
      * @dev Set funding module address (can only be set once)
      * @param _funding Funding module address
      */
-    function setFundingModule(address _funding) external override onlyOwner whenInitialized {
+    function _setFundingModule(address _funding) internal {
         require(funding == address(0), "BasicVault: funding already set");
         require(_funding != address(0), "BasicVault: invalid funding address");
         funding = _funding;
@@ -254,7 +240,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @dev Set dividend module address (can only be set once)
      * @param _dividendModule Dividend module address
      */
-    function setDividendModule(address _dividendModule) external override onlyOwner whenInitialized {
+    function _setDividendModule(address _dividendModule) internal {
         require(accumulatedYield == address(0), "BasicVault: dividend module already set");
         require(_dividendModule != address(0), "BasicVault: invalid dividend module address");
         accumulatedYield = _dividendModule;
@@ -268,17 +254,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      */
     function isFundingSuccessful() external view override returns (bool) {
         require(funding != address(0), "BasicVault: funding module not set");
-        
-        // Call the funding module to check if funding is successful
-        (bool success, bytes memory data) = funding.staticcall(
-            abi.encodeWithSignature("isFundingSuccessful()")
-        );
-        
-        if (!success) {
-            revert("BasicVault: failed to query funding status");
-        }
-        
-        return abi.decode(data, (bool));
+        return ICrowdsale(funding).isFundingSuccessful();
     }
     
     /**
@@ -324,9 +300,15 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         address _validator,
         bool _whitelistEnabled,
         address[] memory _initialWhitelist
-    ) internal whenNotInitialized {
+    ) internal {
+        require(!_initialized, "BasicVault: already initialized");
         require(_manager != address(0), "BasicVault: invalid manager");
         require(_validator != address(0), "BasicVault: invalid validator");
+        if (_whitelistEnabled) {
+            for (uint256 i = 0; i < _initialWhitelist.length; i++) {
+                require(_initialWhitelist[i] != address(0), "BasicVault: whitelist address cannot be zero");
+            }
+        }
         
         manager = _manager;
         validator = _validator;
@@ -341,12 +323,4 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         _transferOwnership(_manager);
     }
     
-    // ============ Query Interface ============
-    
-    /**
-     * @dev Query if initialized
-     */
-    function isInitialized() external view returns (bool) {
-        return _initialized;
-    }
 } 

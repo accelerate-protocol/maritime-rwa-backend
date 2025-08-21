@@ -32,8 +32,6 @@ interface IAccumulatedYield {
     
 
     
-
-    
     // ============ Event Definitions ============
     
     /**
@@ -60,8 +58,7 @@ interface IAccumulatedYield {
      */
     event RewardClaimed(
         address indexed user,
-        uint256 claimedAmount,
-        uint256 transferredAmount,
+        uint256 claimedRewardAmount,
         uint256 timestamp
     );
     
@@ -211,6 +208,12 @@ interface IAccumulatedYield {
      * @return Dividend treasury address
      */
     function getDividendTreasury() external view returns (address);
+    
+    /**
+     * @dev get demanded dividend nonce
+     * @return dividend nonce
+     */
+    function getDividendNonce() external view returns (uint256);
     
     /**
      * @dev Calculate user's accumulated shares at specified balance

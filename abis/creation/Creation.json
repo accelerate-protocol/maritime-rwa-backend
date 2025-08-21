@@ -62,19 +62,6 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "fund",
-        "type": "address"
-      }
-    ],
-    "name": "FundCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
         "name": "previousOwner",
         "type": "address"
       },
@@ -94,7 +81,7 @@
       {
         "indexed": false,
         "internalType": "string",
-        "name": "name",
+        "name": "projectName",
         "type": "string"
       },
       {
@@ -118,7 +105,7 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "yield",
+        "name": "accumulatedYield",
         "type": "address"
       },
       {
@@ -132,43 +119,17 @@
     "type": "event"
   },
   {
-    "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
         "internalType": "address",
-        "name": "token",
+        "name": "user",
         "type": "address"
       }
     ],
-    "name": "TokenCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      }
-    ],
-    "name": "VaultCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "yield",
-        "type": "address"
-      }
-    ],
-    "name": "YieldCreated",
-    "type": "event"
+    "name": "addToWhitelist",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
     "inputs": [
@@ -209,161 +170,17 @@
       },
       {
         "internalType": "uint256",
-        "name": "dividendTemplateId",
+        "name": "yieldTemplateId",
         "type": "uint256"
       },
       {
         "internalType": "bytes",
-        "name": "dividendInitData",
+        "name": "yieldInitData",
         "type": "bytes"
       }
     ],
     "name": "deployAll",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "vault",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "fund",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "accumulatedYield",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct ICreation.DeploymentResult",
-        "name": "result",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "templateId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "vaultToken",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes",
-        "name": "initData",
-        "type": "bytes"
-      }
-    ],
-    "name": "deployDividend",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "dividend",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "templateId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes",
-        "name": "initData",
-        "type": "bytes"
-      }
-    ],
-    "name": "deployFund",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "fund",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "templateId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes",
-        "name": "initData",
-        "type": "bytes"
-      }
-    ],
-    "name": "deployToken",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "templateId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes",
-        "name": "initData",
-        "type": "bytes"
-      }
-    ],
-    "name": "deployVault",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      }
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -521,47 +338,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      }
-    ],
-    "name": "getUserProjects",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "vault",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "fund",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "accumulatedYield",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct ICreation.DeploymentResult[]",
-        "name": "result",
-        "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "owner",
     "outputs": [
@@ -624,6 +400,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "removeFromWhitelist",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
@@ -649,7 +438,7 @@
       },
       {
         "internalType": "address",
-        "name": "_dividendFactory",
+        "name": "_yieldFactory",
         "type": "address"
       }
     ],
@@ -709,58 +498,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "dividendInitData",
-        "type": "bytes"
-      }
-    ],
-    "name": "validateDividendInitData",
-    "outputs": [],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "fundInitData",
-        "type": "bytes"
-      }
-    ],
-    "name": "validateFundInitData",
-    "outputs": [],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "tokenInitData",
-        "type": "bytes"
-      }
-    ],
-    "name": "validateTokenInitData",
-    "outputs": [],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "vaultInitData",
-        "type": "bytes"
-      }
-    ],
-    "name": "validateVaultInitData",
-    "outputs": [],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "vaultFactory",
     "outputs": [
@@ -768,6 +505,25 @@
         "internalType": "contract VaultFactory",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "whitelist",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",

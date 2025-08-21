@@ -27,17 +27,19 @@ contract YieldFactory is IYieldFactory, Ownable {
         require(template != address(0), "YieldFactory: template not found");
         
         accumulatedYield = template.clone();
-        
-        bytes memory fullInitData = abi.encodeWithSignature(
-            "initiate(address,address,bytes)",
-            vault, 
-            vaultToken,
-            initData
+        (bool success, bytes memory returndata) = accumulatedYield.call(
+            abi.encodeWithSignature("initiate(address,address,bytes)", vault, vaultToken, initData)
         );
-        
-        // 调用初始化函数
-        (bool success, ) = accumulatedYield.call(fullInitData);
-        require(success, "YieldFactory: initialization failed");
+        if (!success) {
+            if (returndata.length > 0) {
+                string memory reason;
+                assembly { returndata := add(returndata, 0x04) }
+                reason = abi.decode(returndata, (string));
+                revert(string(abi.encodePacked("YieldFactory: initialization failed: ", reason)));
+            } else {
+                revert("YieldFactory: initialization failed");
+            }
+        }
         
         emit YieldCreated(templateId, accumulatedYield, msg.sender);
         

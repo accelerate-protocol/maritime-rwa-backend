@@ -8,35 +8,34 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("==========================================");
   console.log("      开始部署 Accelerate V2 架构         ");
   console.log("==========================================");
-  console.log("部署账户:", deployer);
-  console.log("网络:", hre.network.name);
-  console.log("区块号:", await hre.ethers.provider.getBlockNumber());
+  console.log("部署账户 (deployer):", deployer);
+  console.log("网络 (network):", hre.network.name);
+  console.log("区块号 (block number):", await hre.ethers.provider.getBlockNumber());
   console.log("==========================================");
-
   console.log(`
-  V2架构部署顺序:
+  V2架构部署顺序：
   
   1. 📄 部署模板合约 (Templates)
-     ├── Vault 模板 (BasicVault, MultiSigVault, UpgradeableVault)
-     ├── Token 模板 (StandardToken, GovernanceToken, TaxToken)  
-     ├── Fund 模板 (Crowdsale, DutchAuction, BondingCurve)
-     └── Yield 模板 (Dividend, Staking, LiquidityMining)
+     ├── Vault 模板（如 BasicVault 等）
+     ├── Token 模板（如 VaultToken 等）
+     ├── Fund 模板（如 Crowdsale 等）
+     └── Yield 模板（如 AccumulatedYield 等）
   
   2. 🏭 部署工厂合约 (Factories)
      ├── VaultFactory
      ├── TokenFactory
      ├── FundFactory
-     └── DividendFactory
+     └── YieldFactory
   
   3. 🔗 添加模板到工厂
      └── 为每个模板分配ID
   
-  4. 🚀 部署Creation部署器
-     └── 设置工厂地址
+  4. 🚀 部署 Creation 部署器
+     └── 设置工厂地址，支持白名单权限
   
   5. ✅ 部署示例项目
-     ├── 标准众筹项目
-     └── 治理DAO项目
+     ├── 支持通过 .env 配置 manager、USDT 地址等参数
+     └── 支持白名单、模块自动初始化等高级功能
   
   开始执行...
   `);

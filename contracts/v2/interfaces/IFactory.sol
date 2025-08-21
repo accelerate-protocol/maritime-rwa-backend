@@ -3,7 +3,7 @@ pragma solidity ^0.8.26;
 
 /**
  * @title IVaultFactory
- * @dev Vault工厂接口
+ * @dev Vault factory interface
  */
 interface IVaultFactory {
     event TemplateAdded(uint256 indexed templateId, address indexed template);
@@ -17,7 +17,7 @@ interface IVaultFactory {
 
 /**
  * @title ITokenFactory
- * @dev Token工厂接口
+ * @dev Token factory interface
  */
 interface ITokenFactory {
     event TemplateAdded(uint256 indexed templateId, address indexed template);
@@ -31,7 +31,7 @@ interface ITokenFactory {
 
 /**
  * @title IFundFactory
- * @dev Fund工厂接口
+ * @dev Fund factory interface
  */
 interface IFundFactory {
     event TemplateAdded(uint256 indexed templateId, address indexed template);
@@ -45,7 +45,7 @@ interface IFundFactory {
 
 /**
  * @title IYieldFactory
- * @dev Yield工厂接口
+ * @dev Yield factory interface
  */
 interface IYieldFactory {
     event TemplateAdded(uint256 indexed templateId, address indexed template);

@@ -1,0 +1,108 @@
+[36mINFO[0m [32m[08/15 20:45:29.805] [0mtoken-engine version:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:29.805] [0mSystem version: darwin/arm64[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:29.805] [0mGolang version: go1.24.2[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:29.805] [0mApp build time:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:29.805] [0mGit commit id:[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:29.805] [0mRepo path: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:29.805] [0mExecutable: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/tools/bin/token-engine[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:29.805] [0mPID: 58600[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:29.805] [0mUUID node index: 0[32m [app][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:30.018] [0mcreating new base AxcTxPrepare[32m [base_txprepare][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:30.018] [0mcreating new base AxcTxExecutor[32m [base_txexecutor][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:30.018] [0mcreate axc vault idl[32m [solana-idl][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:30.018] [0mcreate axc vault transaction builder[32m [axc_tx_builder][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:30.018] [0mcreating Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:30.144] [0minitialized all program event definitions[32m [solana_sm][0m[36m [programCount:1][0m
+[36mINFO[0m [32m[08/15 20:45:30.144] [0mRegistered transfer provider[32m [tron-transfer][0m[36m [chainID:97] [tokens:[BNB USDT USDC]][0m
+[36mINFO[0m [32m[08/15 20:45:30.145] [0mRegistered transfer provider[32m [tron-transfer][0m[36m [chainID:2494104990] [tokens:[TRX USDT]][0m
+[36mINFO[0m [32m[08/15 20:45:30.145] [0mcore api initialized[32m [coreApi][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:30.381] [0mComponent[sql-connector] started[32m [sidecar][0m[36m [time_cost:235.731042ms][0m
+[36mINFO[0m [32m[08/15 20:45:31.439] [0mFinished connect to send tx http rpcs[32m [solana-jsonrpc][0m[36m [cost:1.058115833s] [num:1][0m
+[36mINFO[0m [32m[08/15 20:45:32.041] [0mFinished connect to stable http rpcs[32m [solana-jsonrpc][0m[36m [cost:601.776875ms] [num:1][0m
+[36mINFO[0m [32m[08/15 20:45:32.388] [0mFinished connect to unstable http rpcs[32m [solana-jsonrpc][0m[36m [cost:347.23225ms] [num:1][0m
+[36mINFO[0m [32m[08/15 20:45:33.417] [0mFinished connect to ws rpcs[32m [solana-jsonrpc][0m[36m [cost:1.028815833s] [num:1][0m
+[36mINFO[0m [32m[08/15 20:45:33.872] [0mScheduled task started[32m [sidecar][0m[36m [interval:2s] [task:solana-tx-sender[poll-last-block]][0m
+[36mINFO[0m [32m[08/15 20:45:33.872] [0msolana submitter started[32m [solana-submitter][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:33.872] [0mswap submitter started[32m [submitter][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:33.872] [0mComponent[SwapSubmitter] started[32m [sidecar][0m[36m [time_cost:3.491791416s][0m
+[36mINFO[0m [32m[08/15 20:45:33.873] [0mstart to subscribe exchange data by grpc...[32m [ExchangeDataService][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:33.873] [0mScheduled task started[32m [sidecar][0m[36m [interval:1m0s] [task:StatisticExchangeData][0m
+[36mINFO[0m [32m[08/15 20:45:33.873] [0mScheduled task started[32m [sidecar][0m[36m [interval:1h0m0s] [task:UpdateExchangeTokenHolders][0m
+[36mINFO[0m [32m[08/15 20:45:34.688] [0mComponent[ExchangeDataService] started[32m [sidecar][0m[36m [time_cost:815.8195ms][0m
+[36mINFO[0m [32m[08/15 20:45:34.689] [0mComponent[ContractMaterials] started[32m [sidecar][0m[36m [time_cost:4.25µs][0m
+[36mINFO[0m [32m[08/15 20:45:34.689] [0mstarting Solana chain adaptor[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:34.689] [0mSolana chain adaptor started successfully[32m [common_chain_adaptor][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:34.689] [0mComponent[common_chain_adaptor] started[32m [sidecar][0m[36m [time_cost:44.709µs][0m
+[33mWARN[0m [32m[08/15 20:45:34.799] [0mbegin compensate swap event[32m [ExchangeDataService][0m[33m [outer_id From:307735][0m
+[36mINFO[0m [32m[08/15 20:45:34.997] [0mContract materials loaded successfully[32m [basechain][0m[36m [appid:root] [chainId:84532] [contractCount:9] [errors:0][0m
+[36mINFO[0m [32m[08/15 20:45:35.208] [0mNSQ consumer component started[32m [msgqueue][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:35.208] [0mComponent[msg_queue] started[32m [sidecar][0m[36m [time_cost:519.411542ms][0m
+[36mINFO[0m [32m[08/15 20:45:35.208] [0mComponent[solana_sm] started[32m [sidecar][0m[36m [time_cost:12.25µs][0m
+[36mINFO[0m [32m[08/15 20:45:35.208] [0mLoading deployment manifest from[32m [base_deploymanager][0m[36m [path:/Users/yanzhixing/Downloads/GitHub/token-engine/deploy/abis][0m
+[36mINFO[0m [32m[08/15 20:45:35.209] [0mComponent[deploymanager] started[32m [sidecar][0m[36m [time_cost:211.917µs][0m
+[36mINFO[0m [32m[08/15 20:45:35.210] [0mIPC server listen on: /Users/yanzhixing/Downloads/GitHub/token-engine/deploy/ipc.sock[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:35.210] [0mHttp server listen on: 8082[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:35.210] [0mComponent[http-api-server] started[32m [sidecar][0m[36m [time_cost:1.447458ms][0m
+[36mINFO[0m [32m[08/15 20:45:35.211] [0mComponent[app] started[32m [sidecar][0m[36m [time_cost:371.208µs][0m
+[36mINFO[0m [32m[08/15 20:45:35.211] [0mtoken-engine is ready[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:35.225] [0m=====================================================================================
+   __            __                                                  _
+  / /_  ____    / /__  ___    ____          ___    ____    ____ _   (_)   ____   ___
+ / __/ / __ \  / //_/ / _ \  / __ \ ______ / _ \  / __ \  / __ `/  / /   / __ \ / _ \
+/ /_  / /_/ / / ,<   /  __/ / / / //_____//  __/ / / / / / /_/ /  / /   / / / //  __/
+\__/  \____/ /_/|_|  \___/ /_/ /_/        \___/ /_/ /_/  \__, /  /_/   /_/ /_/ \___/
+                                                        /____/
+
+=====================================================================================[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:35.296] [0mSolana events manager started[32m [solana_sm][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:45:35.296] [0mevent processor started[32m [solana_sm][0m[36m[0m
+[33mWARN[0m [32m[08/15 20:45:37.139] [0mstop compensate swap event[32m [ExchangeDataService][0m[33m [outer_id end:307734][0m
+[36mINFO[0m [32m[08/15 20:45:40.162] [0mpreparing create vault transaction[32m [base_txprepare][0m[36m [params:&{84532 {0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A 0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A 0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A 0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A 0x4d6Ca5A0517cc18d66FEA10a51486fA0351bF61A} {My Test Token MTT 6 https://example.com/token-metadata.json} {Test 0xA0b86a33E6441E6C7D3E4C2C4C6C6C6C6C6C6C6C 1000000 1703980800 1704067200 100 500 1 100000 200 0x1234567890123456789012345678901234567890 0x1234567890123456789012345678901234567890 1} false}][0m
+[31mERRO[0m [32m[08/15 20:45:42.767] [0mAPI request failed[32m [api][0m[31m [uri:/api/v2/primary/vault/prepare_create] [err_code:10001] [err_msg:interface conversion: interface {} is nil, not string:
+goroutine 90 [running]:
+runtime/debug.Stack()
+	/Users/yanzhixing/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.24.2.darwin-arm64/src/runtime/debug/stack.go:26 +0x64
+github.com/zunkk/go-sidecar/frame.panicTrace()
+	/Users/yanzhixing/go/pkg/mod/github.com/zunkk/go-sidecar@v0.0.0-20250327031033-1e304fe6ee9b/frame/sidecar.go:415 +0x20
+github.com/zunkk/go-sidecar/frame.(*Sidecar).RecoverExecute.func1()
+	/Users/yanzhixing/go/pkg/mod/github.com/zunkk/go-sidecar@v0.0.0-20250327031033-1e304fe6ee9b/frame/sidecar.go:172 +0x44
+panic({0x106b62cc0?, 0x140013b06c0?})
+	/Users/yanzhixing/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.24.2.darwin-arm64/src/runtime/panic.go:792 +0xf0
+github.com/accelerate-protocal/token-engine/internal/core/service/base-chain/tx-prepare.(*AxcTxPrepare).debugContractCall(0x14000428330, {0x106e0d0e0, 0x140010a4780}, 0x140003e3ab8, {0x4d, 0x6c, 0xa5, 0xa0, 0x51, 0x7c, ...}, ...)
+	/Users/yanzhixing/Downloads/GitHub/token-engine/internal/core/service/base-chain/tx-prepare/tx_prepare.go:228 +0xcbc
+github.com/accelerate-protocal/token-engine/internal/core/service/base-chain/tx-prepare.(*AxcTxPrepare).PrepareCreateVaultTx(0x14000428330, {0x106e0d0e0, 0x140010a4780}, 0x140010bcc60)
+	/Users/yanzhixing/Downloads/GitHub/token-engine/internal/core/service/base-chain/tx-prepare/tx_prepare.go:212 +0x260c
+github.com/accelerate-protocal/token-engine/api/rest.(*Server).PrepareCreateVault(0x14000e4a4b0, 0x140010a47d0, 0x140010d6100)
+	/Users/yanzhixing/Downloads/GitHub/token-engine/api/rest/token_v2.go:37 +0x168
+github.com/accelerate-protocal/token-engine/api/rest.(*Server).apiHandlerWrap.func1.1()
+	/Users/yanzhixing/Downloads/GitHub/token-engine/api/rest/server.go:393 +0x1ec
+github.com/zunkk/go-sidecar/frame.(*Sidecar).RecoverExecute(0x1400072db90, 0x14001119230)
+	/Users/yanzhixing/go/pkg/mod/github.com/zunkk/go-sidecar@v0.0.0-20250327031033-1e304fe6ee9b/frame/sidecar.go:177 +0xbc
+github.com/accelerate-protocal/token-engine/api/rest.(*Server).apiHandlerWrap.func1(0x140010d6100)
+	/Users/yanzhixing/Downloads/GitHub/token-engine/api/rest/server.go:375 +0x22c
+github.com/gin-gonic/gin.(*Context).Next(0x140010d6100)
+	/Users/yanzhixing/go/pkg/mod/github.com/gin-gonic/gin@v1.10.0/context.go:185 +0xa0
+github.com/accelerate-protocal/token-engine/api/rest.(*Server).crossOriginMiddleware(0x14000e4a4b0, 0x140010d6100)
+	/Users/yanzhixing/Downloads/GitHub/token-engine/api/rest/server.go:304 +0x244
+github.com/gin-gonic/gin.(*Context).Next(0x140010d6100)
+	/Users/yanzhixing/go/pkg/mod/github.com/gin-gonic/gin@v1.10.0/context.go:185 +0xa0
+github.com/gin-gonic/gin.(*Engine).handleHTTPRequest(0x1400036cb60, 0x140010d6100)
+	/Users/yanzhixing/go/pkg/mod/github.com/gin-gonic/gin@v1.10.0/gin.go:633 +0x36c
+github.com/gin-gonic/gin.(*Engine).ServeHTTP(0x1400036cb60, {0x106e09230, 0x140010e0000}, 0x140010dc000)
+	/Users/yanzhixing/go/pkg/mod/github.com/gin-gonic/gin@v1.10.0/gin.go:589 +0xc0
+net/http.serverHandler.ServeHTTP({0x14000e7a000}, {0x106e09230, 0x140010e0000}, 0x140010dc000)
+	/Users/yanzhixing/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.24.2.darwin-arm64/src/net/http/server.go:3301 +0x2b0
+net/http.(*conn).serve(0x140010aa480, {0x106e0d0e0, 0x140010a4730})
+	/Users/yanzhixing/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.24.2.darwin-arm64/src/net/http/server.go:2102 +0x16bc
+created by net/http.(*Server).Serve in goroutine 46
+	/Users/yanzhixing/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.24.2.darwin-arm64/src/net/http/server.go:3454 +0x88c
+] [method:POST] [ip:127.0.0.1] [http_code:200] [time_cost:2.604689333s] [caller:root][0m
+[36mINFO[0m [32m[08/15 20:49:44.077] [0mReceive exit signal: interrupt[32m [sidecar][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:49:44.100] [0mComponent[app] stopped[32m [sidecar][0m[36m [time_cost:15.574625ms][0m
+[36mINFO[0m [32m[08/15 20:49:44.102] [0mIPC server shutdown[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:49:44.103] [0mHttp server shutdown[32m [api][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:49:44.103] [0mComponent[http-api-server] stopped[32m [sidecar][0m[36m [time_cost:613.458µs][0m
+[36mINFO[0m [32m[08/15 20:49:44.103] [0mDeployManager stopped[32m [base_deploymanager][0m[36m[0m
+[36mINFO[0m [32m[08/15 20:49:44.103] [0mComponent[deploymanager] stopped[32m [sidecar][0m[36m [time_cost:65µs][0m
+[36mINFO[0m [32m[08/15 20:49:44.103] [0mScheduled task stopped[32m [sidecar][0m[36m [interval:2s] [task:solana-tx-sender[poll-last-block]][0m
+[36mINFO[0m [32m[08/15 20:49:44.106] [0mevent processor stopping[32m [solana_sm][0m[36m[0m

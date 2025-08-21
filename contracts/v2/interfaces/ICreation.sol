@@ -3,67 +3,10 @@ pragma solidity ^0.8.26;
 
 /**
  * @title ICreation
- * @dev 一键部署器接口 - 基于工厂模式的设计
+ * @dev One-click deployment interface
  */
 interface ICreation {
-    // ============ 结构体定义 ============
-    
-    /**
-     * @dev Vault初始化数据
-     */
-    struct VaultInitData {
-        address validator;        // 验证者地址
-        bool whitelistEnabled;    // 是否启用白名单
-        address[] initialWhitelist; // 初始白名单
-    }
-    
-    /**
-     * @dev Token初始化数据
-     */
-    struct TokenInitData {
-        string name;      // 代币名称
-        string symbol;    // 代币符号
-        uint8 decimals;   // 代币精度
-    }
-    
-    /**
-     * @dev Fund初始化数据
-     */
-    struct FundInitData {
-        uint256 startTime;           // 开始时间（UNIX时间戳）
-        uint256 endTime;             // 结束时间（UNIX时间戳）
-        address assetToken;          // 融资代币地址（如USDT）
-        uint256 maxSupply;           // 最大融资代币数量
-        uint256 softCap;             // 融资成功阈值
-        uint256 sharePrice;          // 代币价格（单位：融资代币）
-        uint256 minDepositAmount;    // 最小投资金额
-        uint256 manageFeeBps;        // 管理费基点（如200 = 2%）
-        address fundingReceiver;     // 融资接收地址
-        address manageFeeReceiver;   // 管理费接收地址
-        uint256 decimalsMultiplier;  // 精度乘数（10^融资代币精度）
-    }
-    
-    /**
-     * @dev Dividend初始化数据
-     */
-    struct DividendInitData {
-        address rewardToken;   // 收益代币地址（如USDT）
-        address rewardManager; // 收益资金管理员
-    }
-    
-    /**
-     * @dev 部署结果结构体
-     */
-    struct DeploymentResult {
-        address vault;
-        address token;
-        address fund;
-        address accumulatedYield;
-    }
-    
-    /**
-     * @dev 项目结构体
-     */
+    // ============ Struct Definitions ============
     struct Project {
         string name;
         address vault;
@@ -73,39 +16,46 @@ interface ICreation {
         uint256 createdAt;
         address deployer;
     }
-    
-    // ============ 事件定义 ============
-    
-    event VaultCreated(address indexed vault);
-    event TokenCreated(address indexed token);
-    event FundCreated(address indexed fund);
-    event YieldCreated(address indexed yield);
-    
-    
-    event ProjectCreated(
-        string name,
-        address vault,
-        address token,
-        address fund,
-        address yield,
-        address deployer
-    );
-    
-    event FactoriesUpdated(
-        address vaultFactory,
-        address tokenFactory,
-        address fundFactory,
-        address dividendFactory
-    );
-    
-    // ============ 工厂管理接口 ============
-    
+    struct DeploymentResult {
+        address vault;
+        address token;
+        address fund;
+        address accumulatedYield;
+    }
+    // ============ Events ============
+    event ProjectCreated(string projectName, address vault, address token, address fund, address accumulatedYield, address deployer);
+    event FactoriesUpdated(address vaultFactory, address tokenFactory, address fundFactory, address dividendFactory);
+
+    // ============ Management/Deployment Interfaces ============
     /**
-     * @dev 设置工厂合约地址
-     * @param _vaultFactory Vault工厂地址
-     * @param _tokenFactory Token工厂地址
-     * @param _fundFactory Fund工厂地址
-     * @param _dividendFactory Dividend工厂地址
+     * @notice Deploy a new project with all modules in one transaction.
+     * @param projectName The name of the project.
+     * @param vaultTemplateId The template ID for the Vault module.
+     * @param vaultInitData The initialization data for the Vault module.
+     * @param tokenTemplateId The template ID for the Token module.
+     * @param tokenInitData The initialization data for the Token module.
+     * @param fundTemplateId The template ID for the Fund module.
+     * @param fundInitData The initialization data for the Fund module.
+     * @param dividendTemplateId The template ID for the Dividend module.
+     * @param dividendInitData The initialization data for the Dividend module.
+     */
+    function deployAll(
+        string memory projectName,
+        uint256 vaultTemplateId,
+        bytes memory vaultInitData,
+        uint256 tokenTemplateId,
+        bytes memory tokenInitData,
+        uint256 fundTemplateId,
+        bytes memory fundInitData,
+        uint256 dividendTemplateId,
+        bytes memory dividendInitData
+    ) external;
+    /**
+     * @notice Set the addresses of all factory contracts.
+     * @param _vaultFactory The address of the VaultFactory contract.
+     * @param _tokenFactory The address of the TokenFactory contract.
+     * @param _fundFactory The address of the FundFactory contract.
+     * @param _dividendFactory The address of the DividendFactory contract.
      */
     function setFactories(
         address _vaultFactory,
@@ -113,13 +63,24 @@ interface ICreation {
         address _fundFactory,
         address _dividendFactory
     ) external;
-    
     /**
-     * @dev 获取工厂地址
-     * @return vaultFactory Vault工厂地址
-     * @return tokenFactory Token工厂地址
-     * @return fundFactory Fund工厂地址
-     * @return dividendFactory Dividend工厂地址
+     * @notice Add a user to the whitelist.
+     * @param user The address to add.
+     */
+    function addToWhitelist(address user) external;
+    /**
+     * @notice Remove a user from the whitelist.
+     * @param user The address to remove.
+     */
+    function removeFromWhitelist(address user) external;
+
+    // ============ Query Interfaces ============
+    /**
+     * @notice Get the addresses of all factory contracts.
+     * @return vaultFactory The address of the VaultFactory contract.
+     * @return tokenFactory The address of the TokenFactory contract.
+     * @return fundFactory The address of the FundFactory contract.
+     * @return dividendFactory The address of the DividendFactory contract.
      */
     function getFactories() external view returns (
         address vaultFactory,
@@ -127,119 +88,16 @@ interface ICreation {
         address fundFactory,
         address dividendFactory
     );
-    
-    // ============ 部署接口 ============
-    
     /**
-     * @dev 核心部署函数（使用bytes数据，推荐使用）
-     * @param projectName 项目名称
-     * @param vaultTemplateId Vault模板ID
-     * @param vaultInitData Vault初始化数据（bytes格式）
-     * @param tokenTemplateId Token模板ID
-     * @param tokenInitData Token初始化数据（bytes格式）
-     * @param fundTemplateId Fund模板ID
-     * @param fundInitData Fund初始化数据（bytes格式）
-     * @param dividendTemplateId Dividend模板ID
-     * @param dividendInitData Dividend初始化数据（bytes格式）
-     * @return result 部署结果
+     * @notice Get project details by project name.
+     * @param projectName The name of the project.
+     * @return project The project struct.
      */
-    function deployAll(
-        // 项目名称
-        string memory projectName,
-        
-        // Vault参数
-        uint256 vaultTemplateId,
-        bytes memory vaultInitData,
-        
-        // Token参数
-        uint256 tokenTemplateId,
-        bytes memory tokenInitData,
-        
-        // Fund参数
-        uint256 fundTemplateId,
-        bytes memory fundInitData,
-        
-        // Dividend参数
-        uint256 dividendTemplateId,
-        bytes memory dividendInitData
-    ) external returns (DeploymentResult memory result);
-    
-
-    
+    function getProjectByName(string memory projectName) external view returns (Project memory project);
     /**
-     * @dev 单独部署Vault
-     * @param templateId 模板ID
-     * @param initData 初始化数据（bytes格式）
-     * @return vault Vault地址
-     */
-    function deployVault(
-        uint256 templateId,
-        bytes memory initData
-    ) external returns (address vault);
-    
-    /**
-     * @dev 单独部署Token
-     * @param templateId 模板ID
-     * @param vault Vault地址
-     * @param initData 初始化数据（bytes格式）
-     * @return token Token地址
-     */
-    function deployToken(
-        uint256 templateId,
-        address vault,
-        bytes memory initData
-    ) external returns (address token);
-    
-    /**
-     * @dev 单独部署Fund
-     * @param templateId 模板ID
-     * @param vault Vault地址
-     * @param initData 初始化数据（bytes格式）
-     * @return fund Fund地址
-     */
-    function deployFund(
-        uint256 templateId,
-        address vault,
-        bytes memory initData
-    ) external returns (address fund);
-    
-    /**
-     * @dev 单独部署Dividend
-     * @param templateId 模板ID
-     * @param vault Vault地址
-     * @param token Token地址
-     * @param initData 初始化数据（bytes格式）
-     * @return dividend Dividend地址
-     */
-    function deployDividend(
-        uint256 templateId,
-        address vault,
-        address token,
-        bytes memory initData
-    ) external returns (address dividend);
-    
-    // ============ 查询接口 ============
-    
-
-    
-    /**
-     * @dev 查询用户部署的项目
-     * @param user 用户地址
-     * @return projects 用户的项目数组
-     */
-    function getUserProjects(address user) external view returns (DeploymentResult[] memory projects);
-    
-    /**
-     * @dev 根据项目名称获取项目详情
-     * @param projectName 项目名称
-     * @return project 项目详情
-     */
-    function getProjectByName(string memory projectName) external view returns (Project memory);
-    
-    /**
-     * @dev 获取用户的所有项目详情
-     * @param user 用户地址
-     * @return projects 项目详情数组
+     * @notice Get project details by user address.
+     * @param user The address of the user.
+     * @return projects The array of project structs.
      */
     function getUserProjectDetails(address user) external view returns (Project[] memory);
 } 

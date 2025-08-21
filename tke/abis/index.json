@@ -1,0 +1,80 @@
+{
+  "description": "V2架构合约ABI和Bytecode索引",
+  "version": "2.0.0",
+  "timestamp": "2025-08-15T13:12:12Z",
+  "deployment_flow": [
+    "1. 模板合约 (真实版本)",
+    "2. 工厂合约", 
+    "3. Creation合约"
+  ],
+  "contracts": {
+    "templates": {
+      "BasicVault": {
+        "abi": "templates/BasicVault.json",
+        "bytecode": "templates/BasicVault.bytecode"
+      },
+      "VaultToken": {
+        "abi": "templates/VaultToken.json",
+        "bytecode": "templates/VaultToken.bytecode"
+      },
+      "Crowdsale": {
+        "abi": "templates/Crowdsale.json",
+        "bytecode": "templates/Crowdsale.bytecode"
+      },
+      "AccumulatedYield": {
+        "abi": "templates/AccumulatedYield.json",
+        "bytecode": "templates/AccumulatedYield.bytecode"
+      }
+    },
+    "factories": {
+      "VaultFactory": {
+        "abi": "factories/VaultFactory.json",
+        "bytecode": "factories/VaultFactory.bytecode"
+      },
+      "TokenFactory": {
+        "abi": "factories/TokenFactory.json",
+        "bytecode": "factories/TokenFactory.bytecode"
+      },
+      "FundFactory": {
+        "abi": "factories/FundFactory.json",
+        "bytecode": "factories/FundFactory.bytecode"
+      },
+      "YieldFactory": {
+        "abi": "factories/YieldFactory.json",
+        "bytecode": "factories/YieldFactory.bytecode"
+      }
+    },
+    "creation": {
+      "Creation": {
+        "abi": "creation/Creation.json",
+        "bytecode": "creation/Creation.bytecode"
+      }
+    },
+    "mocks": {
+      "MockUSDT": {
+        "abi": "mocks/MockUSDT.json",
+        "bytecode": "mocks/MockUSDT.bytecode"
+      }
+    }
+  },
+  "deployment_addresses": {
+    "hardhat_local": {
+      "BasicVault": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "VaultToken": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      "Crowdsale": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      "AccumulatedYield": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      "MockUSDT": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+      "VaultFactory": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+      "TokenFactory": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+      "FundFactory": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+      "YieldFactory": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+      "Creation": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
+    },
+    "example_project": {
+      "Vault": "0x61c36a8d610163660E21a8b7359e1Cac0C9133e1",
+      "Token": "0x3B02fF1e626Ed7a8fd6eC5299e2C54e1421B626B",
+      "Fund": "0x9bd03768a7DCc129555dE410FF8E85528A4F88b5",
+      "AccumulatedYield": "0x94099942864EA81cCF197E9D71ac53310b1468D8"
+    }
+  }
+}
