@@ -1,6 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { ethers } from "hardhat";
+import { parseUSDT } from "./utils/usdt";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;
@@ -58,7 +59,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // 2. Token初始化数据
   const tokenInitData = ethers.AbiCoder.defaultAbiCoder().encode(
     ["string", "string", "uint8"],
-    ["Example Token", "EXT", 18]
+    ["Example Token", "EXT", 6]
   );
 
   // 3. Fund初始化数据
@@ -68,17 +69,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       "uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"
     ],
     [
-      currentTime + 86400,              // startTime: 1天后开始
+      currentTime,                      // startTime: 立即开始
       currentTime + 86400 * 30,         // endTime: 30天后结束
       usdtContract.target,                  // assetToken: 使用MockUSDT作为融资代币
-      ethers.parseEther("1000000"),     // maxSupply: 最大供应量100万
-      ethers.parseEther("100000"),      // softCap: 软顶10万
-      ethers.parseEther("0.1"),         // sharePrice: 份额价格0.1 USDT
-      ethers.parseEther("100"),         // minDepositAmount: 最小投资100 USDT
+      parseUSDT("10000"),  // maxSupply: 最大供应量1万 (6位小数)
+      parseUSDT("9000"),   // softCap: 软顶9000 (6位小数)
+      ethers.parseUnits("1", 8),     // sharePrice: 份额价格 1
+      parseUSDT("100"),    // minDepositAmount: 最小投资100 USDT (6位小数)
       200,                              // manageFeeBps: 管理费2%
       deployer,                         // fundingReceiver: 融资接收地址
       deployer,                         // manageFeeReceiver: 管理费接收地址
-      ethers.parseEther("1"),           // decimalsMultiplier: 精度倍数
+      ethers.parseUnits("1", 0),        // decimalsMultiplier: 精度倍数 (1)
       deployer                          // manager
     ]
   );
@@ -95,7 +96,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("🔨 开始部署项目...");
   
   const tx = await creation.deployAll(
-    "Project1631", // projectName
+    `Project_${Date.now()}`, // projectName - 使用时间戳避免重复
     0, // Vault模板ID (MockBasicVault)
     vaultInitData,
     0, // Token模板ID (MockERC20)
@@ -109,6 +110,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("⏳ 等待交易确认...");
   const receipt = await tx.wait();
   
+  let projectCreatedLog = null;
+  let deployedProjectName = `Project_${Date.now()}`;
+  
   if (receipt && receipt.hash) {
     console.log("✅ 交易成功:", receipt.hash);
     
@@ -116,7 +120,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const creationInterface = new ethers.Interface([
       "event ProjectCreated(string projectName, address vault, address token, address fund, address accumulatedYield, address deployer)"
     ]);
-    const projectCreatedLog = receipt.logs
+    projectCreatedLog = receipt.logs
       .map(log => {
         try {
           return creationInterface.parseLog(log);
@@ -128,6 +132,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     if (projectCreatedLog) {
       const args = projectCreatedLog.args;
+      deployedProjectName = args.projectName;
       console.log("🎉 项目部署成功!");
       console.log("📊 项目名称:", args.projectName);
       console.log("🏦 Vault地址:", args.vault);
@@ -135,9 +140,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       console.log("💰 Fund地址:", args.fund);
       console.log("📈 AccumulatedYield地址:", args.accumulatedYield);
 
-      // 初始化vault
+      // 初始化vault - 使用manager账户调用
+      // sleep 1s
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const vault = await ethers.getContractAt("BasicVault", args.vault);
-      await (await vault.configureModules(args.token, args.fund, args.accumulatedYield)).wait();
+      const vaultWithManager = vault.connect(await ethers.getSigner(deployer));
+      await (await vaultWithManager.configureModules(args.token, args.fund, args.accumulatedYield)).wait();
 
       // 获取项目详情
       const projectDetails = await creation.getProjectByName(args.projectName);
@@ -146,8 +155,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   console.log("🎯 示例项目部署完成!");
+  
+  // 记录项目部署信息
+  const projectInfo = {
+    name: deployedProjectName,
+    vault: projectCreatedLog ? projectCreatedLog.args.vault : "",
+    token: projectCreatedLog ? projectCreatedLog.args.token : "",
+    fund: projectCreatedLog ? projectCreatedLog.args.fund : "",
+    accumulatedYield: projectCreatedLog ? projectCreatedLog.args.accumulatedYield : "",
+    deployTime: new Date().toISOString(),
+    network: hre.network.name
+  };
+  
+  console.log("📝 项目信息已记录:", projectInfo);
 };
 
 export default func;
-func.tags = ["v2-example"];
-func.dependencies = ["v2-creation"]; // 依赖Creation部署 
+func.tags = ["v2-project"];

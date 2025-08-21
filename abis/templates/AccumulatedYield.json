@@ -129,13 +129,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "claimedAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "transferredAmount",
+        "name": "claimedRewardAmount",
         "type": "uint256"
       },
       {

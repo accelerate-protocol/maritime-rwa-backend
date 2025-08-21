@@ -231,4 +231,4 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
         }
     }
 
-}
+} 

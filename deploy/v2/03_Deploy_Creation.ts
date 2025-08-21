@@ -40,6 +40,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("✓ Creation合约部署完成");
 
   // ============ 验证配置 ============
+  // sleep 1s
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   console.log("\n=== 验证 Creation 配置 ===");
   
   const creationContract = await ethers.getContractAt("Creation", creation.address);
@@ -54,5 +56,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 
 export default func;
-func.tags = ["v2-creation"];
+func.tags = ["v2-infrastructure", "v2-creation"];
 func.dependencies = ["v2-factories"]; // 依赖工厂部署 

@@ -24,7 +24,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     bytes public override signature;
     
     // Cross-contract addresses
-    address public yield;
+    address public accumulatedYield;
     address public override vaultToken;
     address public funding;
     
@@ -68,6 +68,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     }
     
     // ============ Initialization Function ============
+    
 
     /**
      * @dev Unified initialization interface
@@ -151,6 +152,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @dev Pause token
      */
     function pauseToken() external override onlyManager whenInitialized {
+        require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).pause();
         emit TokenPaused();
     }
@@ -204,8 +206,8 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      */
     function onTokenTransfer(address from, address to, uint256 amount) external override whenInitialized whenWhitelisted(from) whenWhitelisted(to) {
         require(msg.sender == vaultToken, "BasicVault: only token can call");
-        if (yield != address(0) && from != address(0) && to != address(0)) {
-            IAccumulatedYield(yield).updateUserPoolsOnTransfer(from, to, amount);
+        if (accumulatedYield != address(0) && from != address(0) && to != address(0)) {
+            IAccumulatedYield(accumulatedYield).updateUserPoolsOnTransfer(from, to, amount);
         }
     }
     
@@ -214,13 +216,10 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     function configureModules(address _vaultToken, address _funding, address _yield) external override onlyOwner whenInitialized {
         _setVaultToken(_vaultToken);
         _setFundingModule(_funding);
-        _setYieldModule(_yield);
+        _setDividendModule(_yield);
     }
     
-    /**
-     * @dev Set vault token address (can only be set once)
-     * @param _vaultToken Vault token address
-     */
+    // 内部方法
     function _setVaultToken(address _vaultToken) internal {
         require(vaultToken == address(0), "BasicVault: token already set");
         require(_vaultToken != address(0), "BasicVault: invalid token address");
@@ -236,15 +235,15 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         require(_funding != address(0), "BasicVault: invalid funding address");
         funding = _funding;
     }
-
+    
     /**
-     * @dev Set yield module address (can only be set once)
-     * @param _yieldModule Yield module address
+     * @dev Set dividend module address (can only be set once)
+     * @param _dividendModule Dividend module address
      */
-    function _setYieldModule(address _yieldModule) internal {
-        require(yield == address(0), "BasicVault: yield module already set");
-        require(_yieldModule != address(0), "BasicVault: invalid yield module address");
-        yield = _yieldModule;
+    function _setDividendModule(address _dividendModule) internal {
+        require(accumulatedYield == address(0), "BasicVault: dividend module already set");
+        require(_dividendModule != address(0), "BasicVault: invalid dividend module address");
+        accumulatedYield = _dividendModule;
     }
     
     // ============ Query Functions ============
@@ -258,6 +257,21 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         return ICrowdsale(funding).isFundingSuccessful();
     }
     
+    /**
+     * @dev Get funding module address
+     * @return Funding module address
+     */
+    function getFundingModule() external view returns (address) {
+        return funding;
+    }
+    
+    /**
+     * @dev Get dividend module address
+     * @return Dividend module address
+     */
+    function getDividendModule() external view returns (address) {
+        return accumulatedYield;
+    }
     
     // ============ Internal Functions ============
     

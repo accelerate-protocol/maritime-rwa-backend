@@ -48,6 +48,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     // Initialization state
     bool private _initialized;
     
+
+    
     // ============ Modifiers ============
     
     modifier onlyManager() {
@@ -153,6 +155,9 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
             actualShares = remainingSupply;
             uint256 actualNetAmount = _getAssetsForShares(remainingSupply);
             actualAmount = (actualNetAmount * BPS_DENOMINATOR) / (BPS_DENOMINATOR - manageFeeBps); // Convert back to gross amount
+            
+
+            
             require(actualAmount >= minDepositAmount, "Crowdsale: remaining amount below minimum");
         } else {
             actualShares = requestedShares;

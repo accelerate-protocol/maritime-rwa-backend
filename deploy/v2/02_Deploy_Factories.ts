@@ -60,29 +60,33 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("添加 BasicVault 到 VaultFactory...");
   const vaultFactoryContract = await hre.ethers.getContractAt("contracts/v2/factories/VaultFactory.sol:VaultFactory", vaultFactory.address);
   await (await vaultFactoryContract.addTemplate(0, basicVault.address)).wait();
+  await new Promise(resolve => setTimeout(resolve, 1000));
   console.log("BasicVault 已添加到 VaultFactory (templateId: 0)");
 
   // 6. 添加模板到 TokenFactory
   console.log("添加 VaultToken 到 TokenFactory...");
   const tokenFactoryContract = await hre.ethers.getContractAt("contracts/v2/factories/TokenFactory.sol:TokenFactory", tokenFactory.address);
   await (await tokenFactoryContract.addTemplate(0, vaultToken.address)).wait();
+  await new Promise(resolve => setTimeout(resolve, 1000));
   console.log("VaultToken 已添加到 TokenFactory (templateId: 0)");
 
   // 7. 添加模板到 FundFactory
   console.log("添加 Crowdsale 到 FundFactory...");
   const fundFactoryContract = await hre.ethers.getContractAt("contracts/v2/factories/FundFactory.sol:FundFactory", fundFactory.address);
   await (await fundFactoryContract.addTemplate(0, crowdsale.address)).wait();
+  await new Promise(resolve => setTimeout(resolve, 1000));
   console.log("Crowdsale 已添加到 FundFactory (templateId: 0)");
 
   // 8. 添加模板到 YieldFactory
   console.log("添加 AccumulatedYield 到 YieldFactory...");
   const YieldFactoryContract = await hre.ethers.getContractAt("contracts/v2/factories/YieldFactory.sol:YieldFactory", YieldFactory.address);
   await (await YieldFactoryContract.addTemplate(0, accumulatedYield.address)).wait();
+  await new Promise(resolve => setTimeout(resolve, 1000));
   console.log("AccumulatedYield 已添加到 YieldFactory (templateId: 0)");
 
   console.log("=== V2 工厂合约部署完成 ===");
 };
 
 export default func;
-func.tags = ["v2-factories"];
+func.tags = ["v2-infrastructure", "v2-factories"];
 func.dependencies = ["v2-templates"]; // 依赖模板部署 
