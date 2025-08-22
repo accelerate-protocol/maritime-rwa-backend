@@ -15,8 +15,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     args: [],
     log: true,
+    waitConfirmations: 1,
   });
   console.log("BasicVault 模板地址:", basicVault.address);
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
   // 2. 部署 VaultToken 模板
   console.log("部署 VaultToken 模板...");
@@ -25,8 +27,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     args: [],
     log: true,
+    waitConfirmations: 1,
   });
   console.log("VaultToken 模板地址:", vaultToken.address);
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
   // 3. 部署 funding 模板
   console.log("部署 funding 模板...");
@@ -35,8 +39,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     args: [],
     log: true,
+    waitConfirmations: 1,
   });
   console.log("funding 模板地址:", crowdsale.address);
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
   // 4. 部署 Yield 模板
   console.log("部署 Yield 模板...");
@@ -45,8 +51,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     args: [],
     log: true,
+    waitConfirmations: 1,
   });
   console.log("Yield 模板地址:", accumulatedYield.address);
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
   // 5. 部署 MockUSDT（仅非主网环境）
   if (hre.network.name !== "mainnet" && hre.network.name !== "bsc" && hre.network.name !== "bscmainnet") {
@@ -56,8 +64,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       from: deployer,
       args: ["Mock USDT", "USDT"],
       log: true,
+      waitConfirmations: 1,
     });
     console.log("MockUSDT 地址:", mockUSDT.address);
+    await new Promise(resolve => setTimeout(resolve, 2000));
   } else {
     console.log("主网环境，跳过 MockUSDT 部署");
   }

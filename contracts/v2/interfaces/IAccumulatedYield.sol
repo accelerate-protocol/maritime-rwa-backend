@@ -223,6 +223,6 @@ interface IAccumulatedYield {
      */
     function calculateAccumulatedShares(address user, uint256 userBalance) external view returns (uint256);
     
-    // ============ 统一初始化接口 ============
-    function initiate(address _vault, address _shareToken, bytes memory _initData) external;
+    // ============ Unified Initialization Interface ============
+    function initiate(address _vault, address _vaultToken, bytes memory _initData) external;
 } 

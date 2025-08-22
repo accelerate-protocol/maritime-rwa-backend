@@ -282,8 +282,8 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     }
     
     /**
-     * @dev 获取当前dividendNonce
-     * @return 当前dividendNonce
+     * @dev Get current dividend nonce
+     * @return Current dividend nonce
      */
     function getDividendNonce() external view override onlyDividendTreasury returns (uint256) {
         return dividendNonce;

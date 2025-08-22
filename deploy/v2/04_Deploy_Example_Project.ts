@@ -96,7 +96,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("🔨 开始部署项目...");
   
   const tx = await creation.deployAll(
-    `Project_hardhat`, // projectName - 使用时间戳避免重复
+    `Project_deposit822`, // projectName - 使用时间戳避免重复
     // `Project_${Date.now()}`, // projectName - 使用时间戳避免重复
     0, // Vault模板ID (MockBasicVault)
     vaultInitData,
@@ -110,6 +110,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   console.log("⏳ 等待交易确认...");
   const receipt = await tx.wait();
+  await new Promise(resolve => setTimeout(resolve, 2000));
   
   let projectCreatedLog = null;
   let deployedProjectName = `Project_${Date.now()}`;
@@ -142,12 +143,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       console.log("📈 AccumulatedYield地址:", args.accumulatedYield);
 
       // 初始化vault - 使用manager账户调用
-      // sleep 1s
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // sleep 2s
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       const vault = await ethers.getContractAt("BasicVault", args.vault);
       const vaultWithManager = vault.connect(await ethers.getSigner(deployer));
       await (await vaultWithManager.configureModules(args.token, args.fund, args.accumulatedYield)).wait();
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // 获取项目详情
       const projectDetails = await creation.getProjectByName(args.projectName);

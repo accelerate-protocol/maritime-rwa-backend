@@ -53,22 +53,12 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 84532
     },
-    // bscTestnet: {
-    //   // BSC 测试网 RPC
-    //   url: "https://bsc-testnet.bnbchain.org",
-    //   accounts: [
-    //     process.env.PRIVATE_KEY_1!,
-    //     process.env.PRIVATE_KEY_2!,
-    //     process.env.PRIVATE_KEY_3!,
-    //     process.env.PRIVATE_KEY_4!,
-    //     process.env.PRIVATE_KEY_5!,
-    //     process.env.PRIVATE_KEY_6!,
-    //     process.env.PRIVATE_KEY_7!,
-    //     process.env.PRIVATE_KEY_8!,
-    //     process.env.PRIVATE_KEY_9!,
-    //   ],
-    //   chainId: 97
-    // },
+    bscTestnet: {
+      // BSC 测试网 RPC
+      url: "https://bsc-testnet.bnbchain.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 97
+    },
     bscMainnet:{
       url: "https://bsc-dataseed.bnbchain.org",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],

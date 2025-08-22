@@ -65,6 +65,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const mintAmount = parseUSDT("100000"); // 铸造100000 USDT
     await (await usdtContract.mint(account, mintAmount)).wait();
     console.log(`✅ 已为 ${account} 铸造 ${formatUSDT(mintAmount)} USDT`);
+    await new Promise(resolve => setTimeout(resolve, 2000));
   } catch (error: any) {
     console.log(`⚠️  为 ${account} 铸造USDT失败: ${error.message}`);
     // 如果是nonce错误，等待更长时间
@@ -76,14 +77,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         const mintAmount = parseUSDT("100000");
         await (await usdtContract.mint(account, mintAmount)).wait();
         console.log(`✅ 重试成功：已为 ${account} 铸造 ${formatUSDT(mintAmount)} USDT`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (retryError: any) {
         console.log(`❌ 重试失败：${retryError.message}`);
       }
     }
   }
   
-  // 等待1秒，避免nonce冲突
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  // 等待2秒，避免nonce冲突
+  await new Promise(resolve => setTimeout(resolve, 2000));
   
   // 检查众筹状态
   console.log("📈 众筹信息:");
@@ -127,8 +129,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("\n👤 第一次投资开始...");
   await performInvestment(investor, parseUSDT("5000"), 1);
   
-  // 等待2秒
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  // 等待3秒
+  await new Promise(resolve => setTimeout(resolve, 3000));
   
   // 第二次投资
   console.log("\n👤 第二次投资开始...");
@@ -175,8 +177,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       }
     }
     
-    // 等待1秒，避免nonce冲突
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // 等待2秒，避免nonce冲突
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // 执行投资 (使用deposit方法，需要manager签名)
     console.log(`💸 投资 ${formatUSDT(investmentAmount)} USDT...`);
@@ -203,14 +205,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       ["string", "uint256", "address", "uint256", "uint256", "address"],
       [sigData.operation, sigData.amount, sigData.receiver, sigData.nonce, sigData.chainId, sigData.contractAddress]
     ));
-    
-    // 构造以太坊签名消息哈希
-    const ethSignedMessageHash = ethers.keccak256(
-      ethers.solidityPacked(
-        ["string", "bytes32"],
-        ["\x19Ethereum Signed Message:\n32", messageHash]
-      )
-    );
     
     // 签名
     const signature = await managerSigner.signMessage(ethers.getBytes(messageHash));
@@ -284,8 +278,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       }
     }
 
-    // 等待1秒再继续下一个投资
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // 等待2秒再继续下一个投资
+    await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
   // 显示众筹统计信息
@@ -322,6 +316,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         if (!isPaused) {
           console.log("🎉 代币现在可以自由交易了!");
         }
+        
+        await new Promise(resolve => setTimeout(resolve, 2000));
       } else {
         console.log("❌ 代币解锁失败");
       }

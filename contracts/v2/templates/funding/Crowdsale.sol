@@ -372,7 +372,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
      * @dev Unpause token trading when funding is successful
      * This function should be called after funding period ends and funding is successful
      */
-    function unpauseTokenOnFundingSuccess() external onlyManager onlyAfterFundingSuccess whenInitialized {
+    function unpauseTokenOnFundingSuccess() external override onlyManager onlyAfterFundingSuccess whenInitialized {
         // Unpause token trading through vault
         IVault(vault).unpauseToken();
         
@@ -427,7 +427,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
      * @dev Query manager nonce for signature verification
      * @return Current manager nonce
      */
-    function getManagerNonce() external view returns (uint256) {
+    function getManagerNonce() external view override returns (uint256) {
         return managerNonce;
     }
     
@@ -442,7 +442,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         uint256 amount,
         address receiver,
         uint256 nonce
-    ) external view returns (bytes32) {
+    ) external view override returns (bytes32) {
         bytes32 messageHash = keccak256(abi.encodePacked(
             "deposit",
             amount,
@@ -465,7 +465,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         uint256 amount,
         address receiver,
         uint256 nonce
-    ) external view returns (bytes32) {
+    ) external view override returns (bytes32) {
         bytes32 messageHash = keccak256(abi.encodePacked(
             "redeem",
             amount,

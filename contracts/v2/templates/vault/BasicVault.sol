@@ -257,22 +257,6 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         return ICrowdsale(funding).isFundingSuccessful();
     }
     
-    /**
-     * @dev Get funding module address
-     * @return Funding module address
-     */
-    function getFundingModule() external view returns (address) {
-        return funding;
-    }
-    
-    /**
-     * @dev Get dividend module address
-     * @return Dividend module address
-     */
-    function getDividendModule() external view returns (address) {
-        return accumulatedYield;
-    }
-    
     // ============ Internal Functions ============
     
     /**
