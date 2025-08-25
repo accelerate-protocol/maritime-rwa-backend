@@ -46,10 +46,12 @@ describe("VaultToken", function () {
         );
         await accumulatedYield.initiate(await basicVault.getAddress(), await vaultToken.getAddress(), originalYieldInitData);
         
-        // Set modules in BasicVault
-        await basicVault.connect(manager).setVaultToken(await vaultToken.getAddress());
-        await basicVault.connect(manager).setDividendModule(await accumulatedYield.getAddress());
-        await basicVault.connect(manager).setFundingModule(manager.address); // Set manager as funding module for testing
+        // Configure modules in BasicVault (token, funding, yield)
+        await basicVault.connect(manager).configureModules(
+            await vaultToken.getAddress(),
+            manager.address, // use manager as funding module for testing
+            await accumulatedYield.getAddress()
+        );
         
         // Initialize VaultToken
         const tokenInitData = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -358,11 +360,21 @@ describe("VaultToken", function () {
             );
             await whitelistedToken.initiate(await whitelistedVault.getAddress(), tokenInitData);
             
-            // Set token in vault before unpausing
-            await whitelistedVault.connect(manager).setVaultToken(await whitelistedToken.getAddress());
+            // Deploy and initialize AccumulatedYield for configuring dividend module
+            const YieldFactory2 = await ethers.getContractFactory("AccumulatedYield");
+            const ayForWhitelist = await YieldFactory2.deploy();
+            const ayInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["address", "address", "address"],
+                [await whitelistedToken.getAddress(), manager.address, manager.address]
+            );
+            await ayForWhitelist.initiate(await whitelistedVault.getAddress(), await whitelistedToken.getAddress(), ayInitData);
             
-            // Set manager as funding module for testing
-            await whitelistedVault.connect(manager).setFundingModule(manager.address);
+            // Configure modules (token, funding, yield)
+            await whitelistedVault.connect(manager).configureModules(
+                await whitelistedToken.getAddress(),
+                manager.address, // use manager as funding module for testing
+                await ayForWhitelist.getAddress()
+            );
             
             // Unpause token for testing
             await whitelistedVault.connect(manager).unpauseToken();
