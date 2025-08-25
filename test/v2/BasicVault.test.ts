@@ -1,6 +1,9 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { BasicVault } from "../../typechain-types/contracts/v2/templates/vault/BasicVault";
+import { VaultToken } from "../../typechain-types/contracts/v2/templates/token/VaultToken";
+import { AccumulatedYield } from "../../typechain-types/contracts/v2/templates/yield/AccumulatedYield";
 
 describe("BasicVault", function () {
     let basicVault: any;
@@ -268,10 +271,10 @@ describe("BasicVault", function () {
 
     describe("Token Operations", function () {
         // 测试套件的共享变量
-        let testVault;
-        let testToken;
-        let testFunding;
-        let testYield;
+        let testVault: BasicVault;
+        let testToken: VaultToken;
+        let testFunding: HardhatEthersSigner;
+        let testYield: AccumulatedYield;
         
         beforeEach(async function () {
             // 创建一个新的测试环境，以避免测试之间的状态干扰
