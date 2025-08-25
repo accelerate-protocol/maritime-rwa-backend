@@ -79,10 +79,10 @@ interface ICrowdsale {
     function getRemainingSupply() external view returns (uint256);
     
     // ============ Signature Query Interface ============
-    function getManagerNonce() external view returns (uint256);
+    function getCallerNonce(address caller) external view returns (uint256);
     function getDepositSignatureMessage(uint256 amount, address receiver, uint256 nonce) external view returns (bytes32);
     function getRedeemSignatureMessage(uint256 amount, address receiver, uint256 nonce) external view returns (bytes32);
     
     // ============ Unified Initialization Interface ============
-    function initiate(address _vault, bytes memory _initData) external;
+    function initiate(address _vault,address _token,bytes memory _initData) external;
 } 

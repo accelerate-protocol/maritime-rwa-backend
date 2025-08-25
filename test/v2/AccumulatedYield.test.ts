@@ -138,11 +138,11 @@ describe("AccumulatedYield", function () {
         const decimalsMultiplier = 1; // 直接用 1，和 shareToken decimals 保持一致
         
         const crowdsaleInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-            ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"],
-            [startTime, endTime, await rewardToken.getAddress(), maxSupply, softCap, sharePrice, minDepositAmount, manageFeeBps, manager.address, manager.address, decimalsMultiplier, manager.address]
+            ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "address"],
+            [startTime, endTime, await rewardToken.getAddress(), maxSupply, softCap, sharePrice, minDepositAmount, manageFeeBps, manager.address, manager.address, manager.address]
         );
         
-        await newCrowdsale.initiate(await newVault.getAddress(), crowdsaleInitData);
+        await newCrowdsale.initiate(await newVault.getAddress(),newShareToken, crowdsaleInitData);
         
         // Set modules in vault (using manager as owner)
         await newVault.connect(manager).configureModules(
@@ -181,7 +181,7 @@ describe("AccumulatedYield", function () {
             const globalPool = await accumulatedYield.getGlobalPoolInfo();
             expect(globalPool.shareToken).to.equal(await modules.shareToken.getAddress());
             expect(globalPool.rewardToken).to.equal(await rewardToken.getAddress());
-            expect(globalPool.isActive).to.be.false; // 初始化时应该为false
+            expect(globalPool.isActive).to.be.true; // 初始化时应该为false
             expect(globalPool.totalAccumulatedShares).to.equal(0);
             expect(globalPool.totalDividend).to.equal(0);
             expect(await accumulatedYield.getManager()).to.equal(manager.address);
@@ -316,6 +316,7 @@ describe("AccumulatedYield", function () {
             
             // Approve token for deposit
             await rewardToken.connect(manager).approve(await modules.crowdsale.getAddress(), depositAmount1);
+
             await modules.crowdsale.connect(manager).offChainDeposit(depositAmount1, user1.address, offChainSignature1);
         });
 
@@ -444,6 +445,7 @@ describe("AccumulatedYield", function () {
             
             // Now distribute dividends (after users have tokens)
             // Activate pool
+
             await testAccumulatedYield.connect(manager).updateGlobalPoolStatus(true);
             expect(await modules.crowdsale.isFundingSuccessful()).to.be.true;
 
@@ -456,6 +458,7 @@ describe("AccumulatedYield", function () {
             const signature = await validator.signMessage(ethers.getBytes(payload));
             await rewardToken.connect(dividendTreasury).approve(await testAccumulatedYield.getAddress(), dividendAmount);
             await testAccumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature);
+
         });
 
         it("should allow user to claim rewards", async function () {

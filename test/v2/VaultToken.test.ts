@@ -31,7 +31,7 @@ describe("VaultToken", function () {
         // Initialize BasicVault
         const vaultInitData = ethers.AbiCoder.defaultAbiCoder().encode(
             ["address", "address", "bool", "address[]"],
-            [manager.address, validator.address, false, []]
+            [manager.address, validator.address, true, [user1.address, user2.address]]
         );
         await basicVault.initiate(vaultInitData);
         
@@ -47,9 +47,16 @@ describe("VaultToken", function () {
         await accumulatedYield.initiate(await basicVault.getAddress(), await vaultToken.getAddress(), originalYieldInitData);
         
         // Set modules in BasicVault
-        await basicVault.connect(manager).setVaultToken(await vaultToken.getAddress());
-        await basicVault.connect(manager).setDividendModule(await accumulatedYield.getAddress());
-        await basicVault.connect(manager).setFundingModule(manager.address); // Set manager as funding module for testing
+        //await basicVault.connect(manager).setVaultToken(await vaultToken.getAddress());
+        //await basicVault.connect(manager).setDividendModule(await accumulatedYield.getAddress());
+        //await basicVault.connect(manager).setFundingModule(manager.address); // Set manager as funding module for testing
+
+        await basicVault.connect(manager).configureModules(
+            await vaultToken.getAddress(),
+            manager.address,
+            await accumulatedYield.getAddress()
+        );
+        
         
         // Initialize VaultToken
         const tokenInitData = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -338,35 +345,39 @@ describe("VaultToken", function () {
 
         beforeEach(async function () {
             // Deploy BasicVault with whitelist enabled
-            const BasicVaultFactory = await ethers.getContractFactory("BasicVault");
-            whitelistedVault = await BasicVaultFactory.deploy();
+            // const BasicVaultFactory = await ethers.getContractFactory("BasicVault");
+            // whitelistedVault = await BasicVaultFactory.deploy();
             
-            // Initialize BasicVault with whitelist enabled
-            const vaultInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-                ["address", "address", "bool", "address[]"],
-                [manager.address, validator.address, true, [user1.address, user2.address]] // Enable whitelist and add users
-            );
-            await whitelistedVault.initiate(vaultInitData);
+            // // Initialize BasicVault with whitelist enabled
+            // const vaultInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+            //     ["address", "address", "bool", "address[]"],
+            //     [manager.address, validator.address, true, [user1.address, user2.address]] // Enable whitelist and add users
+            // );
+            // await whitelistedVault.initiate(vaultInitData);
             
-            // Deploy and initialize VaultToken
-            const VaultTokenFactory = await ethers.getContractFactory("VaultToken");
-            whitelistedToken = await VaultTokenFactory.deploy();
+            // // Deploy and initialize VaultToken
+            // const VaultTokenFactory = await ethers.getContractFactory("VaultToken");
+            // whitelistedToken = await VaultTokenFactory.deploy();
             
-            const tokenInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-                ["string", "string", "uint8"],
-                ["Test Vault Token", "TVT", 18]
-            );
-            await whitelistedToken.initiate(await whitelistedVault.getAddress(), tokenInitData);
+            // const tokenInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+            //     ["string", "string", "uint8"],
+            //     ["Test Vault Token", "TVT", 18]
+            // );
+            // await whitelistedToken.initiate(await whitelistedVault.getAddress(), tokenInitData);
             
             // Set token in vault before unpausing
-            await whitelistedVault.connect(manager).setVaultToken(await whitelistedToken.getAddress());
+            // await whitelistedVault.connect(manager).setVaultToken(await whitelistedToken.getAddress());
             
             // Set manager as funding module for testing
-            await whitelistedVault.connect(manager).setFundingModule(manager.address);
-            
+            // await whitelistedVault.connect(manager).setFundingModule(manager.address);
+
+            const modules = await createModules();
+            whitelistedVault = modules.basicVault;
+            whitelistedToken = modules.vaultToken;
+
             // Unpause token for testing
             await whitelistedVault.connect(manager).unpauseToken();
-            
+
             // Mint tokens to whitelisted users
             await whitelistedVault.connect(manager).mintToken(user1.address, ethers.parseEther("1000"));
             await whitelistedVault.connect(manager).mintToken(user2.address, ethers.parseEther("1000"));

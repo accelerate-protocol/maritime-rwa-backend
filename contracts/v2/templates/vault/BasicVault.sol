@@ -24,11 +24,9 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     bytes public override signature;
     
     // Cross-contract addresses
-    address public accumulatedYield;
+    address public yield;
     address public override vaultToken;
     address public funding;
-    
-
     
     // Initialization state
     bool private _initialized;
@@ -206,13 +204,12 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      */
     function onTokenTransfer(address from, address to, uint256 amount) external override whenInitialized whenWhitelisted(from) whenWhitelisted(to) {
         require(msg.sender == vaultToken, "BasicVault: only token can call");
-        if (accumulatedYield != address(0) && from != address(0) && to != address(0)) {
-            IAccumulatedYield(accumulatedYield).updateUserPoolsOnTransfer(from, to, amount);
+        if (yield != address(0) && from != address(0) && to != address(0)) {
+            IAccumulatedYield(yield).updateUserPoolsOnTransfer(from, to, amount);
         }
     }
     
     // ============ Vault Token Management ============
-
     function configureModules(address _vaultToken, address _funding, address _yield) external override onlyOwner whenInitialized {
         _setVaultToken(_vaultToken);
         _setFundingModule(_funding);
@@ -241,9 +238,9 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @param _dividendModule Dividend module address
      */
     function _setDividendModule(address _dividendModule) internal {
-        require(accumulatedYield == address(0), "BasicVault: dividend module already set");
+        require(yield == address(0), "BasicVault: dividend module already set");
         require(_dividendModule != address(0), "BasicVault: invalid dividend module address");
-        accumulatedYield = _dividendModule;
+        yield = _dividendModule;
     }
     
     // ============ Query Functions ============

@@ -22,14 +22,14 @@ contract FundFactory is IFundFactory, Ownable {
         emit TemplateAdded(templateId, template);
     }
     
-    function createFund(uint256 templateId, address vault, bytes memory initData) external override returns (address fund) {
+    function createFund(uint256 templateId, address vault,address token,bytes memory initData) external override returns (address fund) {
         address template = templates[templateId];
         require(template != address(0), "FundFactory: template not found");
         
         fund = template.clone();
         
         (bool success, bytes memory returndata) = fund.call(
-            abi.encodeWithSignature("initiate(address,bytes)", vault, initData)
+            abi.encodeWithSignature("initiate(address,address,bytes)", vault,token, initData)
         );
         if (!success) {
             if (returndata.length > 0) {

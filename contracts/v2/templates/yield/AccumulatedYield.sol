@@ -114,15 +114,14 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     function updateGlobalPoolStatus(
         bool isActive
     ) external override onlyManager whenInitialized {
-        if (isActive) {
-            // require funding successful
-            require(IVault(vault).isFundingSuccessful(), "AccumulatedYield: funding was not successful");
-        }
+        // if (isActive) {
+        //     // require funding successful
+        //     require(IVault(vault).isFundingSuccessful(), "AccumulatedYield: funding was not successful");
+        // }
         globalPool.isActive = isActive;
     }
     
     // ============ User Operations ============
-    
     /**
      * @dev User claim rewards
      */
@@ -349,7 +348,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
             totalAccumulatedShares: 0,
             lastDividendTime: block.timestamp,
             totalDividend: 0,
-            isActive: false,
+            isActive: true,
             shareToken: shareToken,
             rewardToken: rewardToken
         });

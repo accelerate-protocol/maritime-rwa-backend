@@ -113,7 +113,7 @@ contract Creation is ICreation, Ownable {
         address token = tokenFactory.createToken(tokenTemplateId, vault, tokenInitData);
         require(token != address(0), "Creation: token creation failed");
         // 3. Deploy Fund
-        address fund = fundFactory.createFund(fundTemplateId, vault, fundInitData);
+        address fund = fundFactory.createFund(fundTemplateId, vault,token,fundInitData);
         require(fund != address(0), "Creation: fund creation failed");
         // 4. Deploy Yield
         address accumulatedYield = yieldFactory.createYield(

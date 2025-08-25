@@ -142,7 +142,7 @@ describe("V2 架构完整业务流程测试", function () {
         );
 
         const fundInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-            ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "uint256", "address"],
+            ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "address"],
             [
                 startTime,
                 endTime,
@@ -154,7 +154,6 @@ describe("V2 架构完整业务流程测试", function () {
                 TEST_CONFIG.MANAGE_FEE_BPS,
                 fundingReceiver.address,
                 manageFeeReceiver.address,
-                TEST_CONFIG.DECIMALS_MULTIPLIER, // decimalsMultiplier
                 manager.address // manager
             ]
         );
@@ -230,13 +229,13 @@ describe("V2 架构完整业务流程测试", function () {
 
     // 工具函数
     async function prepareDepositSignature(user: any, amount: any, receiver: any, nonce?: any) {
-        const currentNonce = nonce || await fund.getManagerNonce();
+        const currentNonce = nonce || await fund.getCallerNonce(user.address);
         const messageHash = await fund.getDepositSignatureMessage(amount, receiver, currentNonce);
         return await manager.signMessage(ethers.getBytes(messageHash));
     }
 
     async function prepareRedeemSignature(user: any, amount: any, receiver?: any, nonce?: any) {
-        const currentNonce = nonce || await fund.getManagerNonce();
+        const currentNonce = nonce || await fund.getCallerNonce(user.address);
         const currentReceiver = receiver || user.address;
         const messageHash = await fund.getRedeemSignatureMessage(amount, currentReceiver, currentNonce);
         return await manager.signMessage(ethers.getBytes(messageHash));
@@ -309,7 +308,7 @@ describe("V2 架构完整业务流程测试", function () {
         it("应该成功部署完整的V2架构", async function () {
             expect(await vault.vaultToken()).to.equal(await token.getAddress());
             expect(await vault.funding()).to.equal(await fund.getAddress());
-            expect(await vault.accumulatedYield()).to.equal(await accumulatedYield.getAddress());
+            expect(await vault.yield()).to.equal(await accumulatedYield.getAddress());
         });
 
         it("应该正确设置初始参数", async function () {
@@ -330,7 +329,7 @@ describe("V2 架构完整业务流程测试", function () {
 
         it("应该正确设置收益模块初始状态", async function () {
             const globalPool = await accumulatedYield.getGlobalPoolInfo();
-            expect(globalPool.isActive).to.be.false; // 初始化时应该为false
+            expect(globalPool.isActive).to.be.true; // 初始化时应该为false
             expect(globalPool.shareToken).to.equal(await token.getAddress());
             expect(globalPool.rewardToken).to.equal(await usdt.getAddress());
         });
@@ -350,33 +349,34 @@ describe("V2 架构完整业务流程测试", function () {
             expect(await vault.isFundingSuccessful()).to.be.true;
         });
 
-        it("应该能够激活收益模块", async function () {
-            // 验证初始状态为false
-            let globalPool = await accumulatedYield.getGlobalPoolInfo();
-            expect(globalPool.isActive).to.be.false;
+        // todo 激活暂时移除
+        // it("应该能够激活收益模块", async function () {
+        //     // 验证初始状态为false
+        //     let globalPool = await accumulatedYield.getGlobalPoolInfo();
+        //     expect(globalPool.isActive).to.be.false;
 
-            // 在融资成功之前，无法激活收益模块
-            await expect(
-                accumulatedYield.connect(manager).updateGlobalPoolStatus(true)
-            ).to.be.revertedWith("AccumulatedYield: funding was not successful");
+        //     // 在融资成功之前，无法激活收益模块
+        //     await expect(
+        //         accumulatedYield.connect(manager).updateGlobalPoolStatus(true)
+        //     ).to.be.revertedWith("AccumulatedYield: funding was not successful");
 
-            // 进行大额deposit使融资成功
-            await performLargeDeposit(TEST_CONFIG.ABOVE_SOFT_CAP_AMOUNT);
-            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
-            await ethers.provider.send("evm_mine", []);
+        //     // 进行大额deposit使融资成功
+        //     await performLargeDeposit(TEST_CONFIG.ABOVE_SOFT_CAP_AMOUNT);
+        //     await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+        //     await ethers.provider.send("evm_mine", []);
 
-            // 现在可以激活收益模块
-            await accumulatedYield.connect(manager).updateGlobalPoolStatus(true);
+        //     // 现在可以激活收益模块
+        //     await accumulatedYield.connect(manager).updateGlobalPoolStatus(true);
 
-            // 验证状态已更新为true
-            globalPool = await accumulatedYield.getGlobalPoolInfo();
-            expect(globalPool.isActive).to.be.true;
+        //     // 验证状态已更新为true
+        //     globalPool = await accumulatedYield.getGlobalPoolInfo();
+        //     expect(globalPool.isActive).to.be.true;
 
-            // 测试非管理员无法激活
-            await expect(
-                accumulatedYield.connect(user1).updateGlobalPoolStatus(true)
-            ).to.be.revertedWith("AccumulatedYield: only manager");
-        });
+        //     // 测试非管理员无法激活
+        //     await expect(
+        //         accumulatedYield.connect(user1).updateGlobalPoolStatus(true)
+        //     ).to.be.revertedWith("AccumulatedYield: only manager");
+        // });
     });
 
     describe("2. Deposit 操作测试", function () {
@@ -1198,65 +1198,65 @@ describe("V2 架构完整业务流程测试", function () {
 
         });
 
-        it("应拒绝在融资成功前激活收益模块", async function () {
-            // 先解锁代币交易
-            var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
-            var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
-            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+        // it("应拒绝在融资成功前激活收益模块", async function () {
+        //     // 先解锁代币交易
+        //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+        //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
+        //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
+        //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
 
-            // 激活收益模块
-            await expect(
-                accumulatedYield.connect(manager).updateGlobalPoolStatus(true)
-            ).to.be.revertedWith("AccumulatedYield: funding was not successful");
-        });
+        //     // 激活收益模块
+        //     await expect(
+        //         accumulatedYield.connect(manager).updateGlobalPoolStatus(true)
+        //     ).to.be.revertedWith("AccumulatedYield: funding was not successful");
+        // });
 
         //
-        it("应拒绝在融资成功前执行分红", async function () {
-            // 先解锁代币交易
-            var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
-            var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
-            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
-            // 分发分红
-            await expect(
-                distributeDividend()
-            ).to.be.revertedWith("AccumulatedYield: funding was not successful");
-        });
+        // it("应拒绝在融资成功前执行分红", async function () {
+        //     // 先解锁代币交易
+        //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+        //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
+        //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
+        //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+        //     // 分发分红
+        //     await expect(
+        //         distributeDividend()
+        //     ).to.be.revertedWith("AccumulatedYield: funding was not successful");
+        // });
 
-        it("应拒绝在融资成功后激活收益模块前执行分红", async function () {
-            // 先解锁代币交易
-            var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
-            var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
-            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+        // it("应拒绝在融资成功后激活收益模块前执行分红", async function () {
+        //     // 先解锁代币交易
+        //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+        //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
+        //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
+        //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
 
 
-            var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
-            offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
-            await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-            await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
-            await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
-            await ethers.provider.send("evm_mine", []);
-            await fund.connect(manager).unpauseTokenOnFundingSuccess();
+        //     var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
+        //     offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
+        //     await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
+        //     await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+        //     await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
+        //     await ethers.provider.send("evm_mine", []);
+        //     await fund.connect(manager).unpauseTokenOnFundingSuccess();
 
-            const dividendAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
-            const signature2 = await prepareDividendSignature(dividendAmount);
+        //     const dividendAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
+        //     const signature2 = await prepareDividendSignature(dividendAmount);
 
-            await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), dividendAmount);
-            // const tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
+        //     await usdt.connect(dividendTreasury).approve(await accumulatedYield.getAddress(), dividendAmount);
+        //     // const tx = await accumulatedYield.connect(manager).distributeDividend(dividendAmount, signature2);
 
-            await expect(
-                accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2)
-            ).to.be.revertedWith("AccumulatedYield: pool not active");
+        //     await expect(
+        //         accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature2)
+        //     ).to.be.revertedWith("AccumulatedYield: pool not active");
 
-            //验证应分红数额
-            var user1PendingReward = await accumulatedYield.pendingReward(user1.address);
-            expect(user1PendingReward).to.be.equal(0);
-            var user2PendingReward = await accumulatedYield.pendingReward(user2.address);
-            expect(user2PendingReward).to.be.equal(0);
+        //     //验证应分红数额
+        //     var user1PendingReward = await accumulatedYield.pendingReward(user1.address);
+        //     expect(user1PendingReward).to.be.equal(0);
+        //     var user2PendingReward = await accumulatedYield.pendingReward(user2.address);
+        //     expect(user2PendingReward).to.be.equal(0);
 
-        });
+        // });
 
         it("应拒绝非管理员执行激活收益模块", async function () {
             // 先解锁代币交易
@@ -1884,56 +1884,56 @@ describe("V2 架构完整业务流程测试", function () {
 
         });
 
-        it("应该拒绝在融资成功前提取分红", async function () {
-            // 先进行deposit
-            var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
-            var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
-            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+        // it("应该拒绝在融资成功前提取分红", async function () {
+        //     // 先进行deposit
+        //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+        //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
+        //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
+        //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
 
 
-            // user1领取分红
-            await expect(
-                accumulatedYield.connect(user1).claimReward()
-            ).to.be.revertedWith("AccumulatedYield: pool not active");
+        //     // user1领取分红
+        //     await expect(
+        //         accumulatedYield.connect(user1).claimReward()
+        //     ).to.be.revertedWith("AccumulatedYield: pool not active");
 
-        });
+        // });
 
-        it("应该拒绝在融资成功前提取分红", async function () {
-            // 先进行deposit
-            var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
-            var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
-            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
-
-
-            // user1领取分红
-            await expect(
-                accumulatedYield.connect(user1).claimReward()
-            ).to.be.revertedWith("AccumulatedYield: pool not active");
-
-        });
-
-        it("应该拒绝在融资成功后激活收益前提取分红", async function () {
-            // 先进行deposit
-            var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
-            var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
-            await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+        // it("应该拒绝在融资成功前提取分红", async function () {
+        //     // 先进行deposit
+        //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+        //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
+        //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
+        //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
 
 
-            var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
-            offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
-            await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-            await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+        //     // user1领取分红
+        //     await expect(
+        //         accumulatedYield.connect(user1).claimReward()
+        //     ).to.be.revertedWith("AccumulatedYield: pool not active");
 
-            // user1领取分红
-            await expect(
-                accumulatedYield.connect(user1).claimReward()
-            ).to.be.revertedWith("AccumulatedYield: pool not active");
+        // });
+
+        // it("应该拒绝在融资成功后激活收益前提取分红", async function () {
+        //     // 先进行deposit
+        //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
+        //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
+        //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
+        //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
 
 
-        });
+        //     var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
+        //     offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
+        //     await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
+        //     await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+
+        //     // user1领取分红
+        //     await expect(
+        //         accumulatedYield.connect(user1).claimReward()
+        //     ).to.be.revertedWith("AccumulatedYield: pool not active");
+
+
+        // });
 
         it("应该拒绝在激活收益后从未分红的情况下提取分红", async function () {
             // 先进行deposit

@@ -11,6 +11,8 @@ import "../../interfaces/ICrowdsale.sol";
 import "../../interfaces/IVault.sol";
 import "../../interfaces/IToken.sol";
 
+
+
 /**
  * @title Crowdsale
  * @dev Crowdsale template implementation, providing fair fundraising functionality
@@ -37,18 +39,17 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     address public override manager;
     uint256 public override fundingAssets;
     uint256 public override manageFee;
-    
+
     // Constants
     uint256 public constant BPS_DENOMINATOR = 10_000;
     uint256 public constant SHARE_PRICE_DENOMINATOR = 10**8;
     
-    // Signature verification
-    uint256 public managerNonce;
-    
+    // Nonce tracking for users (to prevent replay attacks)
+    mapping(address => uint256) public callerNonce;
+
     // Initialization state
     bool private _initialized;
     
-
     
     // ============ Modifiers ============
     
@@ -92,13 +93,12 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
      * @param _vault Vault address
      * @param _initData Encoded initialization data
      */
-    function initiate(address _vault, bytes memory _initData) external override {
-        (uint256 _startTime, uint256 _endTime, address _assetToken, uint256 _maxSupply, uint256 _softCap, uint256 _sharePrice, uint256 _minDepositAmount, uint256 _manageFeeBps, address _fundingReceiver, address _manageFeeReceiver, uint256 _decimalsMultiplier, address _manager) = abi.decode(_initData, (uint256, uint256, address, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address));
-        _initCrowdsale(_vault, _startTime, _endTime, _assetToken, _maxSupply, _softCap, _sharePrice, _minDepositAmount, _manageFeeBps, _fundingReceiver, _manageFeeReceiver, _decimalsMultiplier, _manager);
+    function initiate(address _vault,address _token,bytes memory _initData) external override {
+        (uint256 _startTime, uint256 _endTime, address _assetToken, uint256 _maxSupply, uint256 _softCap, uint256 _sharePrice, uint256 _minDepositAmount, uint256 _manageFeeBps, address _fundingReceiver, address _manageFeeReceiver, address _manager) = abi.decode(_initData, (uint256, uint256, address, uint256, uint256, uint256, uint256, uint256, address, address, address));
+        _initCrowdsale(_vault,_token, _startTime, _endTime, _assetToken, _maxSupply, _softCap, _sharePrice, _minDepositAmount, _manageFeeBps, _fundingReceiver, _manageFeeReceiver, _manager);
     }
     
     // ============ Funding Operations ============
-    
     /**
      * @dev Deposit to purchase shares (user initiated, requires manager signature)
      * @param amount Deposit amount
@@ -116,7 +116,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         require(receiver != address(0), "Crowdsale: invalid receiver");
         
         // Verify signature using OnChainSignatureData structure
-        uint256 nonce = managerNonce++;
+        uint256 nonce = callerNonce[msg.sender]++;
         
         ICrowdsale.OnChainSignatureData memory sigData = ICrowdsale.OnChainSignatureData({
             operation: "deposit",
@@ -155,8 +155,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
             actualShares = remainingSupply;
             uint256 actualNetAmount = _getAssetsForShares(remainingSupply);
             actualAmount = (actualNetAmount * BPS_DENOMINATOR) / (BPS_DENOMINATOR - manageFeeBps); // Convert back to gross amount
-            
-
             
             require(actualAmount >= minDepositAmount, "Crowdsale: remaining amount below minimum");
         } else {
@@ -205,7 +203,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         require(userShares > 0, "Crowdsale: no shares to redeem");
         
         // Verify signature using OnChainSignatureData structure
-        uint256 nonce = managerNonce++;
+        uint256 nonce = callerNonce[msg.sender]++;
         
         ICrowdsale.OnChainSignatureData memory sigData = ICrowdsale.OnChainSignatureData({
             operation: "redeem",
@@ -422,13 +420,14 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     function isInitialized() external view returns (bool) {
         return _initialized;
     }
-    
+
     /**
-     * @dev Query manager nonce for signature verification
-     * @return Current manager nonce
+     * @dev Query caller nonce for signature verification
+     * @param caller Caller address
+     * @return Current caller nonce
      */
-    function getManagerNonce() external view override returns (uint256) {
-        return managerNonce;
+    function getCallerNonce(address caller) external view returns (uint256) {
+        return callerNonce[caller];
     }
     
     /**
@@ -493,11 +492,11 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
      * @param _manageFeeBps Management fee basis points
      * @param _fundingReceiver Funding receiver address
      * @param _manageFeeReceiver Management fee receiver address
-     * @param _decimalsMultiplier Decimals multiplier
      * @param _manager Manager address
      */
     function _initCrowdsale(
         address _vault,
+        address _token,
         uint256 _startTime,
         uint256 _endTime,
         address _assetToken,
@@ -508,7 +507,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         uint256 _manageFeeBps,
         address _fundingReceiver,
         address _manageFeeReceiver,
-        uint256 _decimalsMultiplier,
         address _manager
     ) internal {
         require(!_initialized, "Crowdsale: already initialized");
@@ -536,9 +534,11 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         manageFeeBps = _manageFeeBps;
         fundingReceiver = _fundingReceiver;
         manageFeeReceiver = _manageFeeReceiver;
-        decimalsMultiplier = _decimalsMultiplier;
+
+        decimalsMultiplier = 10 **
+                (IERC20Metadata(_token).decimals() -
+                    IERC20Metadata(_assetToken).decimals());
         manager = _manager;
-        
         _initialized = true;
         _transferOwnership(_manager);
     }
