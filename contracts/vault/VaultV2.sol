@@ -17,31 +17,6 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20Metadat
 import "../interface/AggregatorV3Interface.sol";
 import "../interface/IVault.sol";
 import "../rbf/RBF.sol";
-
-// Struct for initializing the Vault contract with multiple parameters
-struct VaultInitializeDataV2 {
-    string name; // Vault token name
-    string symbol; // Vault token symbol
-    uint8 decimals;
-    address assetToken;
-    address rbf;
-    uint256 maxSupply;
-    uint256 subStartTime;
-    uint256 subEndTime;
-    uint256 duration;
-    uint256 fundThreshold;
-    uint256 financePrice;
-    uint256 minDepositAmount;
-    uint256 manageFee;
-    address manager;
-    address feeReceiver;
-    address dividendTreasury;
-    bool isOpen;
-    address[] whitelists;
-}
-
-//error InvalidZeroAddress();
-
 /**
  * @author  Accelerate Finance
  * @title   Vault
@@ -133,7 +108,7 @@ contract VaultV2 is
             revert InvalidZeroAddress();
         }
         assetToken = data.assetToken;
-        require(data.decimals>=IERC20MetadataUpgradeable(data.assetToken).decimals(),"Decimals must be greater than 0");
+        require(data.decimals>0&&data.decimals>=IERC20MetadataUpgradeable(data.assetToken).decimals(),"Invalid Vault Decimals");
         vaultDecimals = data.decimals;
         if(data.rbf ==address(0)){
             revert InvalidZeroAddress();
@@ -327,7 +302,7 @@ contract VaultV2 is
      */
     function withdrawManageFee() public onlyRole(MANAGER_ROLE) {
         require(endTime != 0, "Vault: Invalid endTime");
-        require(block.timestamp >= subEndTime, "Vault: Invalid time");
+        //require(block.timestamp >= subEndTime, "Vault: Invalid time");
         require(
             (maxSupply * fundThreshold) / BPS_DENOMINATOR <= totalSupply(),
             "Vault: not allowed withdraw"
@@ -675,9 +650,12 @@ contract VaultV2 is
         return amount / decimalsMultiplier;
     }
 
-// 添加新功能或修复 bug
-    function newFunction() public pure returns (string memory) {
-        return "This is VaultV2!";
+
+    function withdrawExtraFund() public onlyRole(MANAGER_ROLE) {
+        require(endTime != 0, "Vault: Invalid endTime");
+        require(manageFeeBalance == 0, "Vault: manageFeeBalance must be zero");
+        uint256 extraAmount = IERC20(assetToken).balanceOf(address(this));
+        IERC20(assetToken).transfer(feeReceiver, extraAmount);
     }
 
 }

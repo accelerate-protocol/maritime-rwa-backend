@@ -25,6 +25,7 @@ describe("RWA:", function () {
   var RBFRouter: any;
   var VaultRouter: any;
   var usdt: any;
+  var vaultId: any;
 
   var rbfRouter: any;
   var vaultRouter: any;
@@ -103,7 +104,7 @@ describe("RWA:", function () {
     expect(await deployedRbf.priceFeed()).to.be.equal(rbfData.priceFeed);
     expect(await deployedRbf.manager()).to.be.equal(manager);
 
-    const vaultId = await vaultRouter.vaultNonce();
+    vaultId = await vaultRouter.vaultNonce();
     const subStartTime = Math.floor(Date.now() / 1000);
     const subEndTime = subStartTime + 3600;
     const duration = "2592000";
@@ -547,6 +548,61 @@ describe("RWA:", function () {
     console.log(investArr);
     console.log(incomeArr);
     expect(totalDividend).to.equal(totalNav);
+  });
+
+
+  it("vault proxy update and withExtraFund",async function () { 
+    const managerSigner = await ethers.getSigner(manager);
+
+    var USDT = await ethers.getContractAt(
+          "MockUSDT",
+          usdt.address,
+          managerSigner
+    );
+
+    const extraAmount=2000000000;
+    await expect(USDT.mint(manager, extraAmount)).not.to.be.reverted;
+
+    
+    const vaultData = await vaultRouter.getVaultInfo(vaultId);
+    const vault = vaultData.vault;
+    const vaultProxyAdmin = vaultData.vaultProxyAdmin;
+    const vaultImpl = vaultData.vaultImpl;
+    console.log("vault:", vault);
+    console.log("vaultProxyAdmin:", vaultProxyAdmin);
+    console.log("vaultImpl:", vaultImpl);
+
+    console.log("err transfer USDT to vault");
+    await USDT.transfer(vault, extraAmount);
+    console.log("vault balance:",await USDT.balanceOf(vault));
+
+    let newImplementation: any;
+    // 部署新的实现合约
+    const VaultV2 = await ethers.getContractFactory("VaultV2");
+    newImplementation = await VaultV2.deploy();
+    await newImplementation.waitForDeployment();
+
+    const guardianSigner = await ethers.getSigner(guardian);
+    const manageSigner = await ethers.getSigner(manager);
+    const oldImplementation = vaultImpl;
+    const proxyAdmin = await ethers.getContractAt("ProxyAdmin", vaultProxyAdmin);
+    await proxyAdmin.connect(guardianSigner).upgrade(vault, newImplementation);
+    // 验证实现地址已更新
+    const currentImplementation = await proxyAdmin.getProxyImplementation(vault);
+    expect(currentImplementation).to.equal(await newImplementation.getAddress());
+    expect(currentImplementation).to.not.equal(oldImplementation);
+
+    const upgradedVault = await ethers.getContractAt("VaultV2", vault);
+
+    expect(await upgradedVault.connect(manageSigner).withdrawManageFee()).not.to.be.reverted;
+    const beforeAmount = await USDT.balanceOf(feeReceiver);
+    console.log("feeReceiver before amount:",beforeAmount);
+    expect(await upgradedVault.connect(manageSigner).withdrawExtraFund()).not.to.be.reverted;
+    const afterAmount = await USDT.balanceOf(feeReceiver);
+    console.log("feeReceiver after amount:",afterAmount);
+    console.log("withdraw amount:",afterAmount-beforeAmount);
+    expect(afterAmount-beforeAmount).to.equal(extraAmount);
+
   });
 
   function distributeMoneyWithMinimum(
