@@ -38,7 +38,7 @@ describe("BasicVault", function () {
         // Deploy funding
         const CrowdsaleFactory = await ethers.getContractFactory("Crowdsale");
         funding = await CrowdsaleFactory.deploy();
-        
+
         const YieldFactory = await ethers.getContractFactory("AccumulatedYield");
         yieldInstance = await YieldFactory.deploy();
     });
@@ -127,7 +127,15 @@ describe("BasicVault", function () {
             expect(await basicVault.isWhitelisted(user2.address)).to.be.true;
         });
 
-                it("should reject duplicate initialization", async function () {
+        it("should initialize with blank whitelist enabled", async function () {
+            await initializeVault(manager, validator, true, []);
+
+            expect(await basicVault.whitelistEnabled()).to.be.true;
+            expect(await basicVault.isWhitelisted(user1.address)).to.be.false;
+            expect(await basicVault.isWhitelisted(user2.address)).to.be.false;
+        });
+
+        it("should reject duplicate initialization", async function () {
             const newVault = await (await ethers.getContractFactory("BasicVault")).deploy();
             const initData = ethers.AbiCoder.defaultAbiCoder().encode(
                 ["address", "address", "bool", "address[]"],
@@ -156,6 +164,16 @@ describe("BasicVault", function () {
             await expect(
                 basicVault.initiate(invalidValidatorData)
             ).to.be.revertedWith("BasicVault: invalid validator");
+
+
+            const initialInvalidWhitelist = [ethers.ZeroAddress];
+            const invalidWhitelistData = ethers.AbiCoder.defaultAbiCoder().encode(
+                ["address", "address", "bool", "address[]"],
+                [manager.address, validator.address, false, initialInvalidWhitelist]
+            );
+            await expect(
+                basicVault.initiate(invalidWhitelistData)
+            ).to.be.revertedWith("BasicVault: invalid address");
         });
 
         it("should allow initialization from any address (Clones pattern)", async function () {
@@ -166,7 +184,7 @@ describe("BasicVault", function () {
             );
             // In Clones pattern, anyone can initialize the contract
             await newVault.connect(user1).initiate(initData);
-            
+
             // Verify initialization was successful
             expect(await newVault.manager()).to.equal(manager.address);
             expect(await newVault.validator()).to.equal(validator.address);
@@ -275,40 +293,40 @@ describe("BasicVault", function () {
         let testToken: VaultToken;
         let testFunding: HardhatEthersSigner;
         let testYield: AccumulatedYield;
-        
+
         beforeEach(async function () {
             // 创建一个新的测试环境，以避免测试之间的状态干扰
             // 1. 部署 BasicVault 合约
             testVault = await (await ethers.getContractFactory("BasicVault")).deploy();
-            await initializeVaultDirect(testVault, 
+            await initializeVaultDirect(testVault,
                 manager.address,
                 validator.address,
                 false,
                 []
             );
-            
+
             // 2. 部署 VaultToken 合约
             testToken = await (await ethers.getContractFactory("VaultToken")).deploy();
-            await initializeToken(testToken, 
+            await initializeToken(testToken,
                 await testVault.getAddress(),
                 "Test Token",
                 "TEST",
                 TOKEN_DECIMALS
             );
-            
+
             // 3. 部署 AccumulatedYield 合约作为 yield 模块
             testYield = await (await ethers.getContractFactory("AccumulatedYield")).deploy();
-            
+
             // 4. 使用 user1 作为 funding 模块（为了测试方便）
             testFunding = user1;
-            
+
             // 5. 配置模块
             await testVault.connect(manager).configureModules(
                 await testToken.getAddress(),
                 testFunding.address,
                 await testYield.getAddress()
             );
-            
+
             // 6. 解除代币暂停状态，以便进行转账测试
             await testVault.connect(manager).unpauseToken();
         });
@@ -317,22 +335,22 @@ describe("BasicVault", function () {
             it("应该允许 funding 模块铸造代币", async function () {
                 // 1. 记录初始余额
                 const initialBalance = await testToken.balanceOf(user2.address);
-                
+
                 // 2. 通过 funding 模块（user1）铸造代币给 user2
                 await testVault.connect(testFunding).mintToken(user2.address, mintAmount);
-                
+
                 // 3. 验证 user2 的余额增加了正确的数量
                 const finalBalance = await testToken.balanceOf(user2.address);
                 expect(finalBalance).to.equal(initialBalance + mintAmount);
             });
-            
+
             it("应该拒绝非 funding 模块的铸造请求", async function () {
                 // 尝试从非 funding 模块（user2）铸造代币
                 await expect(
                     testVault.connect(user2).mintToken(user2.address, mintAmount)
                 ).to.be.revertedWith("BasicVault: only funding");
             });
-            
+
         });
 
         describe("Burn Token 功能测试", function () {
@@ -342,19 +360,19 @@ describe("BasicVault", function () {
                 // user2 授权 vault 可以销毁其代币
                 await testToken.connect(user2).approve(await testVault.getAddress(), burnAmount);
             });
-            
+
             it("应该允许 funding 模块销毁代币", async function () {
                 // 1. 记录初始余额
                 const initialBalance = await testToken.balanceOf(user2.address);
-                
+
                 // 2. 通过 funding 模块销毁 user2 的代币
                 await testVault.connect(testFunding).burnToken(user2.address, burnAmount);
-                
+
                 // 3. 验证 user2 的余额减少了正确的数量
                 const finalBalance = await testToken.balanceOf(user2.address);
                 expect(finalBalance).to.equal(initialBalance - burnAmount);
             });
-            
+
             it("应该拒绝非 funding 模块的销毁请求", async function () {
                 // 尝试从非 funding 模块（user3）销毁代币
                 await expect(
@@ -374,7 +392,7 @@ describe("BasicVault", function () {
             );
 
             // Initialize vault token
-            await initializeToken(vaultToken, 
+            await initializeToken(vaultToken,
                 await basicVault.getAddress(),
                 "Test Token",
                 "TEST",
@@ -404,7 +422,7 @@ describe("BasicVault", function () {
 
         it("should return false when token not set", async function () {
             const newVault = await (await ethers.getContractFactory("BasicVault")).deploy();
-            await initializeVaultDirect(newVault, 
+            await initializeVaultDirect(newVault,
                 manager.address,
                 validator.address,
                 false,
@@ -425,7 +443,7 @@ describe("BasicVault", function () {
             );
 
             // Initialize vault token
-            await initializeToken(vaultToken, 
+            await initializeToken(vaultToken,
                 await basicVault.getAddress(),
                 "Test Token",
                 "TEST",
