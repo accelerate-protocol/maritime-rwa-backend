@@ -29,10 +29,10 @@ interface ICrowdsale {
     }
     
     // ============ Events ============
-    event Deposit(address indexed operator, address indexed receiver, uint256 assertAmount, uint256 manageFee, uint256 shares);
+    event Deposit(address indexed operator, address indexed receiver, uint256 assetAmount, uint256 manageFee, uint256 shares);
     event FundFailedRedeem(address indexed operator, address indexed redeemReceiver,uint256 shares,uint256 assetAmount,uint256 feeAmount);
-    event OffChainDeposit(address indexed operator, address indexed receiver,uint256 shares, uint256 assertAmount);
-    event OffChainRedeem(address indexed operator, address indexed redeemReceiver,uint256 shares,uint256 assertAmount);
+    event OffChainDeposit(address indexed operator, address indexed receiver,uint256 shares, uint256 assetAmount);
+    event OffChainRedeem(address indexed operator, address indexed redeemReceiver,uint256 shares,uint256 assetAmount);
     event FundingAssetsWithdrawn(address indexed operator, address indexed receiver, uint256 amount);
     event ManageFeeWithdrawn(address indexed operator, address indexed receiver, uint256 amount);
     event TokenUnpausedOnFundingSuccess();
