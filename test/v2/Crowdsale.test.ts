@@ -634,8 +634,8 @@ describe("Crowdsale", function () {
             // Perform redeem (will redeem all shares)
             await expect(
                 testCrowdsale.connect(user1).redeem(initialBalance, receiver, signature)
-            ).to.emit(testCrowdsale, "FundFailRedeem")
-                .withArgs(receiver, initialBalance, expectedAssetAmount, expectedFeeAmount);
+            ).to.emit(testCrowdsale, "FundFailedRedeem")
+                .withArgs(user1.address, receiver, initialBalance, expectedAssetAmount, expectedFeeAmount);
 
             // User should have no remaining balance after redeeming all shares
             expect(await testVaultToken.balanceOf(user1.address)).to.equal(0);
@@ -672,8 +672,8 @@ describe("Crowdsale", function () {
             // Perform partial redeem
             await expect(
                 testCrowdsale.connect(user1).redeem(partialAmount, receiver, signature)
-            ).to.emit(testCrowdsale, "FundFailRedeem")
-                .withArgs(receiver, partialAmount, expectedAssetAmount, expectedFeeAmount);
+            ).to.emit(testCrowdsale, "FundFailedRedeem")
+                .withArgs(user1.address, receiver, partialAmount, expectedAssetAmount, expectedFeeAmount);
 
             // User should have remaining balance after partial redeem
             expect(await testVaultToken.balanceOf(user1.address)).to.equal(initialBalance - partialAmount);
@@ -743,7 +743,7 @@ describe("Crowdsale", function () {
             await expect(
                 testCrowdsale.connect(manager).offChainRedeem(receiver)
             ).to.emit(testCrowdsale, "OffChainRedeem")
-                .withArgs(receiver, expectedAssetAmount);
+                .withArgs(manager.address, receiver, expectedAssetAmount);
 
             // User should have no remaining balance after redeeming all shares
             expect(await testVaultToken.balanceOf(receiver)).to.equal(0);

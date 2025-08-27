@@ -39,9 +39,15 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "address",
-        "name": "redeemer",
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "redeemReceiver",
         "type": "address"
       },
       {
@@ -63,7 +69,7 @@
         "type": "uint256"
       }
     ],
-    "name": "FundFailRedeem",
+    "name": "FundFailedRedeem",
     "type": "event"
   },
   {
@@ -141,7 +147,13 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "receiver",
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "redeemReceiver",
         "type": "address"
       },
       {

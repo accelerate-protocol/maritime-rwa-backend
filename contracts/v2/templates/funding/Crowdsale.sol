@@ -242,7 +242,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         // Refund assets (including management fee)
         IERC20(assetToken).safeTransfer(receiver, assetAmount + feeAmount);
         
-        emit FundFailRedeem(receiver, amount, assetAmount, feeAmount);
+        emit FundFailedRedeem(msg.sender, receiver, amount, assetAmount, feeAmount);
     }
     
     /**
@@ -333,7 +333,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         // Burn all tokens through vault
         IVault(vault).burnToken(receiver, userShares);
                 
-        emit OffChainRedeem(receiver, assetAmount);
+        emit OffChainRedeem(msg.sender, receiver, assetAmount);
     }
     
     // ============ Fund Management ============
