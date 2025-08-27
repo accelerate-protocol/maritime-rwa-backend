@@ -184,11 +184,12 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     }
     
     /**
-     * @dev Redeem all shares (user initiated, requires manager signature)
+     * @dev Redeem specified amount of shares (user initiated, requires manager signature)
+     * @param amount Amount of shares to redeem
      * @param receiver Receiver address
      * @param signature Manager signature
      */
-    function redeem(address receiver, bytes memory signature) 
+    function redeem(uint256 amount, address receiver, bytes memory signature) 
         external 
         override 
         onlyAfterFundingFailed 
@@ -197,17 +198,18 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     {
         require(!isFundingSuccessful(), "Crowdsale: funding was successful");
         require(receiver != address(0), "Crowdsale: invalid receiver");
+        require(amount > 0, "Crowdsale: amount must be greater than 0");
         
-        // Get user's total balance (redeem all shares)
+        // Get user's total balance and verify they have enough shares
         uint256 userShares = IToken(IVault(vault).vaultToken()).balanceOf(msg.sender);
-        require(userShares > 0, "Crowdsale: no shares to redeem");
+        require(userShares >= amount, "Crowdsale: insufficient shares to redeem");
         
         // Verify signature using OnChainSignatureData structure
         uint256 nonce = callerNonce[msg.sender]++;
         
         ICrowdsale.OnChainSignatureData memory sigData = ICrowdsale.OnChainSignatureData({
             operation: "redeem",
-            amount: userShares,
+            amount: amount,
             receiver: receiver,
             nonce: nonce,
             chainId: block.chainid,
@@ -226,12 +228,12 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         address signer = ethSignedMessageHash.recover(signature);
         require(signer == manager, "Crowdsale: invalid signature");
         
-        // Calculate refund assets for all shares
-        uint256 assetAmount = _getAssetsForShares(userShares);
+        // Calculate refund assets for the specified amount of shares
+        uint256 assetAmount = _getAssetsForShares(amount);
         uint256 feeAmount = (assetAmount * manageFeeBps) / BPS_DENOMINATOR;
         
-        // Burn all tokens through vault
-        IVault(vault).burnToken(msg.sender, userShares);
+        // Burn the specified amount of tokens through vault
+        IVault(vault).burnToken(msg.sender, amount);
         
         // Update state
         fundingAssets -= assetAmount;
@@ -240,7 +242,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         // Refund assets (including management fee)
         IERC20(assetToken).safeTransfer(receiver, assetAmount + feeAmount);
         
-        emit FundFailRedeem(receiver, userShares, assetAmount, feeAmount);
+        emit FundFailRedeem(receiver, amount, assetAmount, feeAmount);
     }
     
     /**

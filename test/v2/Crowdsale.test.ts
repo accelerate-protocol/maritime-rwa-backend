@@ -610,7 +610,7 @@ describe("Crowdsale", function () {
             const initialBalance = await testVaultToken.balanceOf(user1.address);
             // console.log("Initial balance-3:", initialBalance.toString());
 
-            // Generate signature for all shares (amount parameter is ignored but needed for signature)
+            // Generate signature for all shares
             const nonce = await testCrowdsale.getCallerNonce(user1.address);
             const messageHash = await testCrowdsale.getRedeemSignatureMessage(
                 initialBalance, // Use actual balance for signature
@@ -633,12 +633,93 @@ describe("Crowdsale", function () {
 
             // Perform redeem (will redeem all shares)
             await expect(
-                testCrowdsale.connect(user1).redeem(receiver, signature)
+                testCrowdsale.connect(user1).redeem(initialBalance, receiver, signature)
             ).to.emit(testCrowdsale, "FundFailRedeem")
                 .withArgs(receiver, initialBalance, expectedAssetAmount, expectedFeeAmount);
 
             // User should have no remaining balance after redeeming all shares
             expect(await testVaultToken.balanceOf(user1.address)).to.equal(0);
+        });
+
+        it("should allow partial redeem with valid signature when funding fails", async function () {
+            const receiver = user1.address;
+
+            // Check initial balance
+            const initialBalance = await testVaultToken.balanceOf(user1.address);
+            const partialAmount = initialBalance / 2n; // Redeem half of the shares
+
+            // Generate signature for partial amount
+            const nonce = await testCrowdsale.getCallerNonce(user1.address);
+            const messageHash = await testCrowdsale.getRedeemSignatureMessage(
+                partialAmount,
+                receiver,
+                nonce
+            );
+            const signature = await manager.signMessage(ethers.getBytes(messageHash));
+
+            // Calculate expected values for event verification
+            const sharePrice = await testCrowdsale.sharePrice();
+            const decimalsMultiplier = await testCrowdsale.decimalsMultiplier();
+            const manageFeeBps = await testCrowdsale.manageFeeBps();
+
+            // Calculate asset amount: shares * sharePrice / SHARE_PRICE_DENOMINATOR / decimalsMultiplier
+            const expectedAssetAmount = (partialAmount * BigInt(sharePrice)) / (10n ** 8n) / BigInt(decimalsMultiplier);
+            const expectedFeeAmount = (expectedAssetAmount * BigInt(manageFeeBps)) / 10000n;
+
+            // Approve vault to burn tokens (required for redeem operation)
+            await testVaultToken.connect(user1).approve(await testVault.getAddress(), partialAmount);
+
+            // Perform partial redeem
+            await expect(
+                testCrowdsale.connect(user1).redeem(partialAmount, receiver, signature)
+            ).to.emit(testCrowdsale, "FundFailRedeem")
+                .withArgs(receiver, partialAmount, expectedAssetAmount, expectedFeeAmount);
+
+            // User should have remaining balance after partial redeem
+            expect(await testVaultToken.balanceOf(user1.address)).to.equal(initialBalance - partialAmount);
+        });
+
+        it("should reject redeem with zero amount", async function () {
+            const receiver = user1.address;
+
+            // Generate signature for zero amount
+            const nonce = await testCrowdsale.getCallerNonce(user1.address);
+            const messageHash = await testCrowdsale.getRedeemSignatureMessage(
+                0,
+                receiver,
+                nonce
+            );
+            const signature = await manager.signMessage(ethers.getBytes(messageHash));
+
+            // Should reject redeem with zero amount
+            await expect(
+                testCrowdsale.connect(user1).redeem(0, receiver, signature)
+            ).to.be.revertedWith("Crowdsale: amount must be greater than 0");
+        });
+
+        it("should reject redeem with insufficient shares", async function () {
+            const receiver = user1.address;
+
+            // Check initial balance
+            const initialBalance = await testVaultToken.balanceOf(user1.address);
+            const excessiveAmount = initialBalance + 1000n; // Try to redeem more than available
+
+            // Generate signature for excessive amount
+            const nonce = await testCrowdsale.getCallerNonce(user1.address);
+            const messageHash = await testCrowdsale.getRedeemSignatureMessage(
+                excessiveAmount,
+                receiver,
+                nonce
+            );
+            const signature = await manager.signMessage(ethers.getBytes(messageHash));
+
+            // Approve vault to burn tokens
+            await testVaultToken.connect(user1).approve(await testVault.getAddress(), excessiveAmount);
+
+            // Should reject redeem with insufficient shares
+            await expect(
+                testCrowdsale.connect(user1).redeem(excessiveAmount, receiver, signature)
+            ).to.be.revertedWith("Crowdsale: insufficient shares to redeem");
         });
 
         it("should allow off-chain redeem with valid manager", async function () {

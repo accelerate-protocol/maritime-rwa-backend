@@ -93,6 +93,11 @@
         "type": "address"
       },
       {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
         "internalType": "bytes",
         "name": "initData",
         "type": "bytes"

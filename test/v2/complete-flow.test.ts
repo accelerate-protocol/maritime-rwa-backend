@@ -623,7 +623,7 @@ describe("V2 架构完整业务流程测试", function () {
                 await token.connect(user1).approve(await vault.getAddress(), userBalance);
 
                 const initialUsdtBalance = await usdt.balanceOf(user1.address);
-                const tx = await fund.connect(user1).redeem(user1.address, redeemSignature);
+                const tx = await fund.connect(user1).redeem(userBalance, user1.address, redeemSignature);
 
                 // 验证资产返还
                 const finalUsdtBalance = await usdt.balanceOf(user1.address);
@@ -2574,19 +2574,19 @@ describe("V2 架构完整业务流程测试", function () {
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
                 await fund.connect(user1).deposit(depositAmount, user1.address, signature);
     
-                // 等待融资期结束（假设融资失败）
+                                // 等待融资期结束（假设融资失败）
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
-    
+
                 const userBalance = await token.balanceOf(user1.address);
                 const redeemSignature = await prepareRedeemSignature(user1, userBalance, user1.address);
-    
+
                 // 批准代币燃烧 - 需要批准给vault地址
                 await token.connect(user1).approve(await vault.getAddress(), userBalance);
-    
+
                 const initialUsdtBalance = await usdt.balanceOf(user1.address);
-                const tx = await fund.connect(user1).redeem(user1.address, redeemSignature);
-    
+                const tx = await fund.connect(user1).redeem(userBalance, user1.address, redeemSignature);
+
                 // 验证资产返还
                 const finalUsdtBalance = await usdt.balanceOf(user1.address);
                 expect(finalUsdtBalance).to.be.gt(initialUsdtBalance);

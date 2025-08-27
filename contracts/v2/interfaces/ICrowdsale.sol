@@ -58,8 +58,8 @@ interface ICrowdsale {
     // User initiated, requires manager signature
     function deposit(uint256 amount, address receiver, bytes memory signature) external;
     
-    // User initiated, requires manager signature - redeems all user shares
-    function redeem(address receiver, bytes memory signature) external;
+    // User initiated, requires manager signature - redeems specified amount of shares
+    function redeem(uint256 amount, address receiver, bytes memory signature) external;
     
     // Backend manager initiated, requires DRDS signature verification
     function offChainDeposit(uint256 amount, address receiver, bytes memory drdsSignature) external;
