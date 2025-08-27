@@ -333,7 +333,7 @@ describe("Crowdsale", function () {
 
             // Verify event emission
             await expect(tx).to.emit(crowdsale, "Deposit")
-                .withArgs(receiver, depositAmount, expectedManageFee, balance);
+                .withArgs(user1.address, receiver, depositAmount, expectedManageFee, balance);
         });
 
         it("should reject deposit with invalid signature", async function () {
@@ -430,19 +430,12 @@ describe("Crowdsale", function () {
             ).to.be.revertedWith("Crowdsale: not in funding period");
         });
 
-        it("should allow off-chain deposit with valid DRDS signature", async function () {
+        it("should allow off-chain deposit with valid manager", async function () {
             const depositAmount = ethers.parseUnits("1000", TOKEN_DECIMALS);
             const receiver = user1.address;
 
-            // Generate DRDS signature (validator signature)
-            const messageHash = ethers.keccak256(ethers.solidityPacked(
-                ["string", "uint256", "address", "uint256", "address"],
-                ["offChainDeposit", depositAmount, receiver, await ethers.provider.getNetwork().then(n => n.chainId), await crowdsale.getAddress()]
-            ));
-            const drdsSignature = await validator.signMessage(ethers.getBytes(messageHash));
-
             // Perform off-chain deposit
-            const tx = await crowdsale.connect(manager).offChainDeposit(depositAmount, receiver, drdsSignature);
+            const tx = await crowdsale.connect(manager).offChainDeposit(depositAmount, receiver);
 
             // Check that tokens were minted
             const balance = await vaultToken.balanceOf(receiver);
@@ -457,38 +450,15 @@ describe("Crowdsale", function () {
 
             // Verify event emission
             await expect(tx).to.emit(crowdsale, "OffChainDeposit")
-                .withArgs(receiver, depositAmount, balance, drdsSignature);
-        });
-
-        it("should reject off-chain deposit with invalid DRDS signature", async function () {
-            const depositAmount = ethers.parseUnits("1000", TOKEN_DECIMALS);
-            const receiver = user1.address;
-
-            // Generate signature with wrong signer
-            const messageHash = ethers.keccak256(ethers.solidityPacked(
-                ["string", "uint256", "address", "uint256", "address"],
-                ["offChainDeposit", depositAmount, receiver, await ethers.provider.getNetwork().then(n => n.chainId), await crowdsale.getAddress()]
-            ));
-            const drdsSignature = await user2.signMessage(ethers.getBytes(messageHash));
-
-            await expect(
-                crowdsale.connect(manager).offChainDeposit(depositAmount, receiver, drdsSignature)
-            ).to.be.revertedWith("Crowdsale: invalid drds signature");
+                .withArgs(manager.address, receiver, balance, depositAmount);
         });
 
         it("should reject off-chain deposit from non-manager", async function () {
             const depositAmount = ethers.parseUnits("1000", TOKEN_DECIMALS);
             const receiver = user1.address;
 
-            // Generate valid DRDS signature
-            const messageHash = ethers.keccak256(ethers.solidityPacked(
-                ["string", "uint256", "address", "uint256", "address"],
-                ["offChainDeposit", depositAmount, receiver, await ethers.provider.getNetwork().then(n => n.chainId), await crowdsale.getAddress()]
-            ));
-            const drdsSignature = await validator.signMessage(ethers.getBytes(messageHash));
-
             await expect(
-                crowdsale.connect(user1).offChainDeposit(depositAmount, receiver, drdsSignature)
+                crowdsale.connect(user1).offChainDeposit(depositAmount, receiver)
             ).to.be.revertedWith("Crowdsale: only manager");
         });
 
@@ -496,38 +466,21 @@ describe("Crowdsale", function () {
             const depositAmount = ethers.parseUnits("50", TOKEN_DECIMALS); // Below minimum
             const receiver = user1.address;
 
-            // Generate valid DRDS signature
-            const messageHash = ethers.keccak256(ethers.solidityPacked(
-                ["string", "uint256", "address", "uint256", "address"],
-                ["offChainDeposit", depositAmount, receiver, await ethers.provider.getNetwork().then(n => n.chainId), await crowdsale.getAddress()]
-            ));
-            const drdsSignature = await validator.signMessage(ethers.getBytes(messageHash));
-
             await expect(
-                crowdsale.connect(manager).offChainDeposit(depositAmount, receiver, drdsSignature)
+                crowdsale.connect(manager).offChainDeposit(depositAmount, receiver)
             ).to.be.revertedWith("Crowdsale: amount less than minimum");
         });
 
         it("should handle partial off-chain deposit when exceeding max supply", async function () {
             // First off-chain deposit to get close to softcap
             const firstDepositAmount = ethers.parseUnits("4000", TOKEN_DECIMALS);
-            const messageHash1 = ethers.keccak256(ethers.solidityPacked(
-                ["string", "uint256", "address", "uint256", "address"],
-                ["offChainDeposit", firstDepositAmount, user1.address, await ethers.provider.getNetwork().then(n => n.chainId), await crowdsale.getAddress()]
-            ));
-            const drdsSignature1 = await validator.signMessage(ethers.getBytes(messageHash1));
-            await crowdsale.connect(manager).offChainDeposit(firstDepositAmount, user1.address, drdsSignature1);
+            await crowdsale.connect(manager).offChainDeposit(firstDepositAmount, user1.address);
 
             // Second off-chain deposit that exceeds remaining supply
             const secondDepositAmount = ethers.parseUnits("6000", TOKEN_DECIMALS);
-            const messageHash2 = ethers.keccak256(ethers.solidityPacked(
-                ["string", "uint256", "address", "uint256", "address"],
-                ["offChainDeposit", secondDepositAmount, user2.address, await ethers.provider.getNetwork().then(n => n.chainId), await crowdsale.getAddress()]
-            ));
-            const drdsSignature2 = await validator.signMessage(ethers.getBytes(messageHash2));
 
             await expect(
-                crowdsale.connect(manager).offChainDeposit(secondDepositAmount, user2.address, drdsSignature2)
+                crowdsale.connect(manager).offChainDeposit(secondDepositAmount, user2.address)
             ).to.emit(crowdsale, "OffChainDeposit");
 
             // Should only get remaining shares
@@ -742,8 +695,8 @@ describe("Crowdsale", function () {
             // Perform off-chain redeem (manager can redeem for any user)
             await expect(
                 testCrowdsale.connect(manager).offChainRedeem(receiver)
-            ).to.emit(testCrowdsale, "OffChainRedeem")
-                .withArgs(manager.address, receiver, expectedAssetAmount);
+                        ).to.emit(testCrowdsale, "OffChainRedeem")
+                .withArgs(manager.address, receiver, initialBalance, expectedAssetAmount);
 
             // User should have no remaining balance after redeeming all shares
             expect(await testVaultToken.balanceOf(receiver)).to.equal(0);
@@ -887,7 +840,7 @@ describe("Crowdsale", function () {
             await expect(
                 testCrowdsale.connect(fundingReceiver).withdrawFundingAssets()
             ).to.emit(testCrowdsale, "FundingAssetsWithdrawn")
-                .withArgs(fundingReceiver.address, fundingAssets);
+                .withArgs(fundingReceiver.address, fundingReceiver.address, fundingAssets);
 
             expect(await assetToken.balanceOf(fundingReceiver.address)).to.equal(initialBalance + fundingAssets);
             expect(await testCrowdsale.fundingAssets()).to.equal(0);
@@ -900,7 +853,7 @@ describe("Crowdsale", function () {
             await expect(
                 testCrowdsale.connect(manageFeeReceiver).withdrawManageFee()
             ).to.emit(testCrowdsale, "ManageFeeWithdrawn")
-                .withArgs(manageFeeReceiver.address, manageFee);
+                .withArgs(manageFeeReceiver.address, manageFeeReceiver.address, manageFee);
 
             expect(await assetToken.balanceOf(manageFeeReceiver.address)).to.equal(initialBalance + manageFee);
             expect(await testCrowdsale.manageFee()).to.equal(0);

@@ -29,12 +29,12 @@ interface ICrowdsale {
     }
     
     // ============ Events ============
-    event Deposit(address indexed receiver, uint256 assertAmount, uint256 manageFee, uint256 shares);
+    event Deposit(address indexed operator, address indexed receiver, uint256 assertAmount, uint256 manageFee, uint256 shares);
     event FundFailedRedeem(address indexed operator, address indexed redeemReceiver,uint256 shares,uint256 assetAmount,uint256 feeAmount);
-    event OffChainDeposit(address indexed receiver, uint256 assertAmount, uint256 shares, bytes signature);
-    event OffChainRedeem(address indexed operator, address indexed redeemReceiver, uint256 assertAmount);
-    event FundingAssetsWithdrawn(address indexed receiver, uint256 amount);
-    event ManageFeeWithdrawn(address indexed receiver, uint256 amount);
+    event OffChainDeposit(address indexed operator, address indexed receiver,uint256 shares, uint256 assertAmount);
+    event OffChainRedeem(address indexed operator, address indexed redeemReceiver,uint256 shares,uint256 assertAmount);
+    event FundingAssetsWithdrawn(address indexed operator, address indexed receiver, uint256 amount);
+    event ManageFeeWithdrawn(address indexed operator, address indexed receiver, uint256 amount);
     event TokenUnpausedOnFundingSuccess();
 
     // ============ Basic Field Query Interface ============
@@ -61,8 +61,8 @@ interface ICrowdsale {
     // User initiated, requires manager signature - redeems specified amount of shares
     function redeem(uint256 amount, address receiver, bytes memory signature) external;
     
-    // Backend manager initiated, requires DRDS signature verification
-    function offChainDeposit(uint256 amount, address receiver, bytes memory drdsSignature) external;
+    // Backend manager operate
+    function offChainDeposit(uint256 amount, address receiver) external;
     
     // Backend manager initiated - redeems all user shares
     function offChainRedeem(address receiver) external;

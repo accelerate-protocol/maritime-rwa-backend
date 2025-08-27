@@ -721,16 +721,16 @@ describe("V2 架构完整业务流程测试", function () {
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
 
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                // const tx = await fund.connect(user1).offChainDeposit(depositAmount, user1.address, signature);
+                // const tx = await fund.connect(user1).offChainDeposit(depositAmount, user1.address);
 
-                const tx = await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                const tx = await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
 
 
                 // 验证份额计算
                 const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
                 const actualShares = await token.balanceOf(user1.address);
 
-                // console.log("actualShares", actualShares);
+                // console.log("actualShares");
                 // console.log("expectedShares", expectedShares);
 
                 expect(actualShares).to.equal(expectedShares);
@@ -743,12 +743,12 @@ describe("V2 架构完整业务流程测试", function () {
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
 
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                // const tx = await fund.connect(user1).offChainDeposit(depositAmount, user1.address, signature);
+                // const tx = await fund.connect(user1).offChainDeposit(depositAmount, user1.address);
 
-                // const tx = await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                // const tx = await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
 
                 await expect(
-                    fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature)
+                    fund.connect(manager).offChainDeposit(depositAmount, user1.address)
                 ).to.be.revertedWith("Crowdsale: amount less than minimum");
             });
 
@@ -758,7 +758,7 @@ describe("V2 架构完整业务流程测试", function () {
 
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
                 await expect(
-                    fund.connect(manager).offChainDeposit(depositAmount, user1.address, invalidSignature)
+                    fund.connect(manager).offChainDeposit(depositAmount, user1.address)
                 ).to.be.revertedWith("ECDSA: invalid signature");
             });
 
@@ -769,7 +769,7 @@ describe("V2 架构完整业务流程测试", function () {
 
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
                 await expect(
-                    fund.connect(manager).offChainDeposit(depositAmount, user1.address, signature)
+                    fund.connect(manager).offChainDeposit(depositAmount, user1.address)
                 ).to.be.revertedWith("Crowdsale: invalid drds signature");
             });
 
@@ -779,7 +779,7 @@ describe("V2 架构完整业务流程测试", function () {
 
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
                 await expect(
-                    fund.connect(user1).offChainDeposit(depositAmount, user1.address, offDepositSignature)
+                    fund.connect(user1).offChainDeposit(depositAmount, user1.address)
                 ).to.be.revertedWith("Crowdsale: only manager");
             });
 
@@ -794,7 +794,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const offDepositSignature = await prepareOffDepositSignature(remainingAmount, user2.address);
 
                 await usdt.connect(user2).approve(await fund.getAddress(), remainingAmount);
-                const tx = await fund.connect(manager).offChainDeposit(remainingAmount, user2.address, offDepositSignature);
+                const tx = await fund.connect(manager).offChainDeposit(remainingAmount, user2.address);
 
                 // 验证用户获得了份额，但可能少于预期（因为供应量限制）
                 expect(await token.balanceOf(user2.address)).to.be.gt(0);
@@ -810,7 +810,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
 
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
 
                 // 验证代币被暂停
                 expect(await token.paused()).to.be.true;
@@ -835,7 +835,7 @@ describe("V2 架构完整业务流程测试", function () {
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
 
                 await expect(
-                    fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature)
+                    fund.connect(manager).offChainDeposit(depositAmount, user1.address)
                 ).to.be.revertedWith("Crowdsale: not in funding period");
 
 
@@ -849,7 +849,7 @@ describe("V2 架构完整业务流程测试", function () {
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
 
                 await expect(
-                    fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature)
+                    fund.connect(manager).offChainDeposit(depositAmount, user1.address)
                 ).to.be.revertedWith("Crowdsale: amount less than minimum");
 
             });
@@ -860,7 +860,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
 
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
 
                 // 验证份额计算
                 const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
@@ -881,7 +881,7 @@ describe("V2 架构完整业务流程测试", function () {
 
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
                 await expect(
-                    fund.connect(manager).offChainDeposit(depositAmount, ethers.ZeroAddress, offDepositSignature)
+                    fund.connect(manager).offChainDeposit(depositAmount, ethers.ZeroAddress)
                 ).to.be.revertedWith("Crowdsale: invalid receiver");
             });
 
@@ -895,7 +895,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
 
                 // 等待融资期结束（假设融资失败）
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -929,7 +929,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
 
                 // 等待融资期结束（假设融资失败）
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -959,7 +959,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
 
                 // // 等待融资期结束（假设融资失败）
                 // await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -989,7 +989,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
 
                 // // 等待融资期结束（假设融资失败）
                 // await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -1019,7 +1019,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
 
                 // 等待融资期结束（假设融资失败）
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -1049,7 +1049,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
 
                 // 等待融资期结束（假设融资失败）
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -1079,7 +1079,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
 
                 // 等待融资期结束（假设融资失败）
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -1109,7 +1109,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
 
                 // 等待融资期结束（假设融资失败）
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -1169,13 +1169,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
 
                 // 等待融资期结束并解锁代币
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -1219,13 +1219,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
 
                 // 等待融资期结束并解锁代币
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -1296,7 +1296,7 @@ describe("V2 架构完整业务流程测试", function () {
             //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
             //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
             //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
             //     // 激活收益模块
             //     await expect(
@@ -1310,7 +1310,7 @@ describe("V2 架构完整业务流程测试", function () {
             //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
             //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
             //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
             //     // 分发分红
             //     await expect(
             //         distributeDividend()
@@ -1322,13 +1322,13 @@ describe("V2 架构完整业务流程测试", function () {
             //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
             //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
             //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
             //     var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
             //     offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
             //     await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-            //     await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+            //     await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
             //     await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
             //     await ethers.provider.send("evm_mine", []);
             //     await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -1356,13 +1356,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -1379,13 +1379,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -1410,13 +1410,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -1441,13 +1441,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -1472,13 +1472,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -1503,13 +1503,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -1536,13 +1536,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -1567,13 +1567,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -1600,13 +1600,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
 
                 // 等待融资期结束并解锁代币
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -1691,13 +1691,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
 
                 // 等待融资期结束并解锁代币
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -1804,13 +1804,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
 
                 // 等待融资期结束并解锁代币
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -1982,7 +1982,7 @@ describe("V2 架构完整业务流程测试", function () {
             //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
             //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
             //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
             //     // user1领取分红
@@ -1997,7 +1997,7 @@ describe("V2 架构完整业务流程测试", function () {
             //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
             //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
             //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
             //     // user1领取分红
@@ -2012,13 +2012,13 @@ describe("V2 架构完整业务流程测试", function () {
             //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
             //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
             //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
             //     var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
             //     offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
             //     await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-            //     await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+            //     await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
 
             //     // user1领取分红
             //     await expect(
@@ -2033,13 +2033,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
 
                 // 激活收益模块
                 await accumulatedYield.connect(manager).updateGlobalPoolStatus(true);
@@ -2060,13 +2060,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
 
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
@@ -2082,13 +2082,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
 
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
@@ -2104,7 +2104,7 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
@@ -2119,13 +2119,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
 
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
@@ -2141,13 +2141,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
 
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
@@ -2163,7 +2163,7 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
@@ -2182,12 +2182,12 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 expect(await fund.isFundingSuccessful()).to.be.true;
 
                 // await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -2205,12 +2205,12 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 expect(await fund.isFundingSuccessful()).to.be.true;
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
                 expect(await token.paused()).to.be.false;
@@ -2221,12 +2221,12 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 expect(await fund.isFundingSuccessful()).to.be.true;
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
                 expect(await token.paused()).to.be.false;
@@ -2238,12 +2238,12 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 expect(await fund.isFundingSuccessful()).to.be.true;
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
@@ -2255,7 +2255,7 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
 
                 await expect(fund.connect(manager).unpauseTokenOnFundingSuccess()).to.revertedWith("Crowdsale: funding was not successful");
             });
@@ -2685,9 +2685,9 @@ describe("V2 架构完整业务流程测试", function () {
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
     
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                // const tx = await fund.connect(user1).offChainDeposit(depositAmount, user1.address, signature);
+                // const tx = await fund.connect(user1).offChainDeposit(depositAmount, user1.address);
     
-                const tx = await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                const tx = await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
     
     
                 // 验证份额计算
@@ -2708,12 +2708,12 @@ describe("V2 架构完整业务流程测试", function () {
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
     
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                // const tx = await fund.connect(user1).offChainDeposit(depositAmount, user1.address, signature);
+                // const tx = await fund.connect(user1).offChainDeposit(depositAmount, user1.address);
     
-                // const tx = await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                // const tx = await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
     
                 await expect(
-                    fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature)
+                    fund.connect(manager).offChainDeposit(depositAmount, user1.address)
                 ).to.be.revertedWith("Crowdsale: amount less than minimum");
             });
     
@@ -2723,7 +2723,7 @@ describe("V2 架构完整业务流程测试", function () {
     
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
                 await expect(
-                    fund.connect(manager).offChainDeposit(depositAmount, user1.address, invalidSignature)
+                    fund.connect(manager).offChainDeposit(depositAmount, user1.address)
                 ).to.be.revertedWith("ECDSA: invalid signature");
             });
     
@@ -2734,7 +2734,7 @@ describe("V2 架构完整业务流程测试", function () {
     
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
                 await expect(
-                    fund.connect(manager).offChainDeposit(depositAmount, user1.address, signature)
+                    fund.connect(manager).offChainDeposit(depositAmount, user1.address)
                 ).to.be.revertedWith("Crowdsale: invalid drds signature");
             });
     
@@ -2744,7 +2744,7 @@ describe("V2 架构完整业务流程测试", function () {
     
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
                 await expect(
-                    fund.connect(user1).offChainDeposit(depositAmount, user1.address, offDepositSignature)
+                    fund.connect(user1).offChainDeposit(depositAmount, user1.address)
                 ).to.be.revertedWith("Crowdsale: only manager");
             });
     
@@ -2759,7 +2759,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const offDepositSignature = await prepareOffDepositSignature(remainingAmount, user2.address);
     
                 await usdt.connect(user2).approve(await fund.getAddress(), remainingAmount);
-                const tx = await fund.connect(manager).offChainDeposit(remainingAmount, user2.address, offDepositSignature);
+                const tx = await fund.connect(manager).offChainDeposit(remainingAmount, user2.address);
     
                 // 验证用户获得了份额，但可能少于预期（因为供应量限制）
                 expect(await token.balanceOf(user2.address)).to.be.gt(0);
@@ -2775,7 +2775,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
     
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
     
                 // 验证代币被暂停
                 expect(await token.paused()).to.be.true;
@@ -2800,7 +2800,7 @@ describe("V2 架构完整业务流程测试", function () {
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
     
                 await expect(
-                    fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature)
+                    fund.connect(manager).offChainDeposit(depositAmount, user1.address)
                 ).to.be.revertedWith("Crowdsale: not in funding period");
     
     
@@ -2814,7 +2814,7 @@ describe("V2 架构完整业务流程测试", function () {
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
     
                 await expect(
-                    fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature)
+                    fund.connect(manager).offChainDeposit(depositAmount, user1.address)
                 ).to.be.revertedWith("Crowdsale: amount less than minimum");
     
             });
@@ -2825,7 +2825,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
     
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
     
                 // 验证份额计算
                 const expectedShares = (depositAmount * TEST_CONFIG.SHARE_PRICE_DENOMINATOR) / BigInt(TEST_CONFIG.SHARE_PRICE);
@@ -2846,7 +2846,7 @@ describe("V2 架构完整业务流程测试", function () {
     
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
                 await expect(
-                    fund.connect(manager).offChainDeposit(depositAmount, ethers.ZeroAddress, offDepositSignature)
+                    fund.connect(manager).offChainDeposit(depositAmount, ethers.ZeroAddress)
                 ).to.be.revertedWith("Crowdsale: invalid receiver");
             });
     
@@ -2861,7 +2861,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
     
                 // 等待融资期结束（假设融资失败）
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -2895,7 +2895,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
     
                 // 等待融资期结束（假设融资失败）
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -2925,7 +2925,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
     
                 // // 等待融资期结束（假设融资失败）
                 // await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -2955,7 +2955,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
     
                 // // 等待融资期结束（假设融资失败）
                 // await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -2985,7 +2985,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("10000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
     
                 // 等待融资期结束（假设融资失败）
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -3015,7 +3015,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
     
                 // 等待融资期结束（假设融资失败）
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -3045,7 +3045,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
     
                 // 等待融资期结束（假设融资失败）
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -3075,7 +3075,7 @@ describe("V2 架构完整业务流程测试", function () {
                 const depositAmount = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 const offDepositSignature = await prepareOffDepositSignature(depositAmount, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount);
-                await fund.connect(manager).offChainDeposit(depositAmount, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount, user1.address);
     
                 // 等待融资期结束（假设融资失败）
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -3135,13 +3135,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 // 等待融资期结束并解锁代币
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -3185,13 +3185,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 // 等待融资期结束并解锁代币
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -3262,7 +3262,7 @@ describe("V2 架构完整业务流程测试", function () {
             //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
             //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
             //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
             //     // 激活收益模块
             //     await expect(
@@ -3276,7 +3276,7 @@ describe("V2 架构完整业务流程测试", function () {
             //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
             //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
             //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
             //     // 分发分红
             //     await expect(
             //         distributeDividend()
@@ -3288,13 +3288,13 @@ describe("V2 架构完整业务流程测试", function () {
             //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
             //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
             //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
             //     var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
             //     offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
             //     await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-            //     await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+            //     await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
             //     await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
             //     await ethers.provider.send("evm_mine", []);
             //     await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -3322,13 +3322,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -3345,13 +3345,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -3376,13 +3376,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -3407,13 +3407,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -3438,13 +3438,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -3469,13 +3469,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -3502,13 +3502,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -3533,13 +3533,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
                 await fund.connect(manager).unpauseTokenOnFundingSuccess();
@@ -3567,13 +3567,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 // 等待融资期结束并解锁代币
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -3658,13 +3658,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 // 等待融资期结束并解锁代币
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -3771,13 +3771,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 // 等待融资期结束并解锁代币
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -3952,13 +3952,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 // 等待融资期结束并解锁代币
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -3988,7 +3988,7 @@ describe("V2 架构完整业务流程测试", function () {
             //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
             //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
             //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
             //     // user1领取分红
@@ -4003,7 +4003,7 @@ describe("V2 架构完整业务流程测试", function () {
             //     var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
             //     var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
             //     await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+            //     await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
             //     // user1领取分红
@@ -4018,13 +4018,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
 
                 //关闭收益模块
                 await accumulatedYield.connect(manager).updateGlobalPoolStatus(false);
@@ -4081,13 +4081,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 // 激活收益模块
                 await accumulatedYield.connect(manager).updateGlobalPoolStatus(true);
@@ -4108,13 +4108,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
@@ -4130,13 +4130,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
@@ -4152,13 +4152,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 await expect(
                     fund.connect(fundingReceiver).withdrawFundingAssets()
@@ -4171,7 +4171,7 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
@@ -4186,13 +4186,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
@@ -4208,13 +4208,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
@@ -4230,13 +4230,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 await expect(
                     fund.connect(manageFeeReceiver).withdrawManageFee()
@@ -4249,7 +4249,7 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
                 await ethers.provider.send("evm_mine", []);
@@ -4268,13 +4268,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 // 等待融资期结束并解锁代币
                 await ethers.provider.send("evm_increaseTime", [TEST_CONFIG.FUNDING_DURATION + 1]);
@@ -4381,13 +4381,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 var actualSharesUser1 = await token.balanceOf(user1.address);
                 expect(actualSharesUser1).to.be.equal(depositAmount_user1 * TEST_CONFIG.SHARE_PRICE_DENOMINATOR / TEST_CONFIG.SHARE_PRICE);
@@ -4521,13 +4521,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 var actualSharesUser1 = await token.balanceOf(user1.address);
                 expect(actualSharesUser1).to.be.equal(depositAmount_user1 * TEST_CONFIG.SHARE_PRICE_DENOMINATOR / TEST_CONFIG.SHARE_PRICE);
@@ -4728,12 +4728,12 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 expect(await fund.isFundingSuccessful()).to.be.true;
     
                 await vault.connect(manager).disableWhitelist();
@@ -4762,12 +4762,12 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 expect(await fund.isFundingSuccessful()).to.be.true;
     
                 await vault.connect(manager).disableWhitelist();
@@ -4813,13 +4813,13 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
     
                 //禁用白名单
                 await vault.connect(manager).disableWhitelist();
@@ -5028,12 +5028,12 @@ describe("V2 架构完整业务流程测试", function () {
                 var depositAmount_user1 = ethers.parseUnits("1000", TEST_CONFIG.TOKEN_DECIMALS);
                 var offDepositSignature = await prepareOffDepositSignature(depositAmount_user1, user1.address);
                 await usdt.connect(user1).approve(await fund.getAddress(), depositAmount_user1);
-                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user1, user1.address);
     
                 var depositAmount_user2 = ethers.parseUnits("9000", TEST_CONFIG.TOKEN_DECIMALS);
                 offDepositSignature = await prepareOffDepositSignature(depositAmount_user2, user2.address);
                 await usdt.connect(user2).approve(await fund.getAddress(), depositAmount_user2);
-                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address, offDepositSignature);
+                await fund.connect(manager).offChainDeposit(depositAmount_user2, user2.address);
                 expect(await fund.isFundingSuccessful()).to.be.true;
     
                 await vault.connect(manager).disableWhitelist();

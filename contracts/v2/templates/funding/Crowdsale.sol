@@ -180,7 +180,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         // Mint tokens through vault
         IVault(vault).mintToken(receiver, actualShares);
         
-        emit Deposit(receiver, actualAmount, manageFeeAmount, actualShares);
+        emit Deposit(msg.sender, receiver, actualAmount, manageFeeAmount, actualShares);
     }
     
     /**
@@ -246,12 +246,11 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     }
     
     /**
-     * @dev Off-chain deposit (only manager can call, requires DRDS signature verification)
+     * @dev Off-chain deposit (only manager can call)
      * @param amount Deposit amount
      * @param receiver Receiver address
-     * @param drdsSignature DRDS signature data
      */
-    function offChainDeposit(uint256 amount, address receiver, bytes memory drdsSignature) 
+    function offChainDeposit(uint256 amount, address receiver) 
         external 
         override 
         onlyManager 
@@ -260,27 +259,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     {
         require(amount >= minDepositAmount, "Crowdsale: amount less than minimum");
         require(receiver != address(0), "Crowdsale: invalid receiver");
-        
-        // Verify DRDS signature using OffChainSignatureData structure
-        ICrowdsale.OffChainSignatureData memory sigData = ICrowdsale.OffChainSignatureData({
-            amount: amount,
-            receiver: receiver
-        });
-
-        // Get validator address from Vault
-        address validator = IVault(vault).validator();
-        require(validator != address(0), "Crowdsale: validator not set");
-        
-        bytes32 messageHash = keccak256(abi.encodePacked(
-            "offChainDeposit",
-            sigData.amount,
-            sigData.receiver,
-            block.chainid,
-            address(this)
-        ));
-        bytes32 ethSignedMessageHash = messageHash.toEthSignedMessageHash();
-        address signer = ethSignedMessageHash.recover(drdsSignature);
-        require(signer == validator, "Crowdsale: invalid drds signature");
         
         // Calculate shares for the requested amount (no fee deduction for off-chain)
         uint256 requestedShares = _getSharesForAssets(amount);
@@ -306,7 +284,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         // Mint tokens through vault
         IVault(vault).mintToken(receiver, actualShares);
         
-        emit OffChainDeposit(receiver, actualAmount, actualShares, drdsSignature);
+        emit OffChainDeposit(msg.sender, receiver, actualShares, actualAmount);
     }
     
     /**
@@ -333,7 +311,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         // Burn all tokens through vault
         IVault(vault).burnToken(receiver, userShares);
                 
-        emit OffChainRedeem(msg.sender, receiver, assetAmount);
+        emit OffChainRedeem(msg.sender, receiver, userShares, assetAmount);
     }
     
     // ============ Fund Management ============
@@ -350,7 +328,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         
         IERC20(assetToken).safeTransfer(fundingReceiver, amount);
         
-        emit FundingAssetsWithdrawn(fundingReceiver, amount);
+        emit FundingAssetsWithdrawn(msg.sender, fundingReceiver, amount);
     }
     
     /**
@@ -365,7 +343,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         
         IERC20(assetToken).safeTransfer(manageFeeReceiver, amount);
         
-        emit ManageFeeWithdrawn(manageFeeReceiver, amount);
+        emit ManageFeeWithdrawn(msg.sender, manageFeeReceiver, amount);
     }
     
     /**

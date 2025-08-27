@@ -10,6 +10,12 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "receiver",
         "type": "address"
       },
@@ -78,6 +84,12 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "receiver",
         "type": "address"
       },
@@ -94,6 +106,12 @@
   {
     "anonymous": false,
     "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      },
       {
         "indexed": true,
         "internalType": "address",
@@ -116,14 +134,14 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "receiver",
+        "name": "operator",
         "type": "address"
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "assertAmount",
-        "type": "uint256"
+        "indexed": true,
+        "internalType": "address",
+        "name": "receiver",
+        "type": "address"
       },
       {
         "indexed": false,
@@ -133,9 +151,9 @@
       },
       {
         "indexed": false,
-        "internalType": "bytes",
-        "name": "signature",
-        "type": "bytes"
+        "internalType": "uint256",
+        "name": "assertAmount",
+        "type": "uint256"
       }
     ],
     "name": "OffChainDeposit",
@@ -155,6 +173,12 @@
         "internalType": "address",
         "name": "redeemReceiver",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "shares",
+        "type": "uint256"
       },
       {
         "indexed": false,
@@ -578,11 +602,6 @@
         "internalType": "address",
         "name": "receiver",
         "type": "address"
-      },
-      {
-        "internalType": "bytes",
-        "name": "drdsSignature",
-        "type": "bytes"
       }
     ],
     "name": "offChainDeposit",
