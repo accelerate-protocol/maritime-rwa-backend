@@ -4,6 +4,7 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "../interfaces/ICreation.sol";
+import "../interfaces/IVault.sol";
 import "../factories/VaultFactory.sol";
 import "../factories/TokenFactory.sol";
 import "../factories/FundFactory.sol";
@@ -123,7 +124,11 @@ contract Creation is ICreation, Ownable {
             yieldInitData
         );
         require(accumulatedYield != address(0), "Creation: yield creation failed");
-        // 5. Create project record
+        
+        // 5. Configure Vault modules (cross-contract call)
+        IVault(vault).configureModules(token, fund, accumulatedYield);
+        
+        // 6. Create project record
         projects[projectName] = Project({
             name: projectName,
             vault: vault,

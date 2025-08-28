@@ -50,6 +50,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     // Initialization state
     bool private _initialized;
     
+
+    
     
     // ============ Modifiers ============
     
@@ -59,15 +61,14 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     }
     
     modifier onlyDuringFunding() {
-        require(!isFundingSuccessful(), "Crowdsale: funding was successful");
-        require(isFundingPeriodActive(), "Crowdsale: not in funding period");
+        require(block.timestamp >= startTime && block.timestamp <= endTime, "Crowdsale: not in funding period");
+        require(!isFundingSuccessful(), "Crowdsale: funding already successful");
         _;
     }
     
-
     modifier onlyAfterFundingFailed() {
-        require(!isFundingSuccessful(), "Crowdsale: funding was successful");
         require(block.timestamp > endTime, "Crowdsale: funding period not ended");
+        require(!isFundingSuccessful(), "Crowdsale: funding was successful");
         _;
     }
 
@@ -196,7 +197,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         whenInitialized
         nonReentrant 
     {
-        require(!isFundingSuccessful(), "Crowdsale: funding was successful");
         require(receiver != address(0), "Crowdsale: invalid receiver");
         require(amount > 0, "Crowdsale: amount must be greater than 0");
         
@@ -298,7 +298,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         onlyAfterFundingFailed 
         whenInitialized
     {
-        require(!isFundingSuccessful(), "Crowdsale: funding was successful");
         require(receiver != address(0), "Crowdsale: invalid receiver");
         
         // Get user's total balance (redeem all shares)
@@ -364,9 +363,24 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     /**
      * @dev Check if funding is successful
      * @return Whether funding is successful
+     * Success conditions:
+     * 1. MaxSupply reached (immediate success)
+     * 2. Time ended AND softCap reached
      */
     function isFundingSuccessful() public view override returns (bool) {
-        return IToken(IVault(vault).vaultToken()).totalSupply() >= softCap;
+        uint256 currentSupply = IToken(IVault(vault).vaultToken()).totalSupply();
+        
+        // Condition 1: MaxSupply reached (immediate success)
+        if (currentSupply >= maxSupply) {
+            return true;
+        }
+        
+        // Condition 2: Time ended AND softCap reached
+        if (block.timestamp > endTime && currentSupply >= softCap) {
+            return true;
+        }
+        
+        return false;
     }
     
     /**
@@ -374,7 +388,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
      * @return Whether funding period is active
      */
     function isFundingPeriodActive() public view override returns (bool) {
-        return block.timestamp >= startTime && block.timestamp <= endTime;
+        return block.timestamp >= startTime && block.timestamp <= endTime && !isFundingSuccessful();
     }
     
     /**
@@ -400,6 +414,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     function isInitialized() external view returns (bool) {
         return _initialized;
     }
+    
+
 
     /**
      * @dev Query caller nonce for signature verification
@@ -562,4 +578,5 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         uint256 scaledAmount = (shareAmount * sharePrice) / SHARE_PRICE_DENOMINATOR;
         return _scaleDown(scaledAmount);
     }
+    
 } 

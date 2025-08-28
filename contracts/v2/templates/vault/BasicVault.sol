@@ -210,7 +210,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     }
     
     // ============ Vault Token Management ============
-    function configureModules(address _vaultToken, address _funding, address _yield) external override onlyOwner whenInitialized {
+    function configureModules(address _vaultToken, address _funding, address _yield) external override whenInitialized {
         _setVaultToken(_vaultToken);
         _setFundingModule(_funding);
         _setDividendModule(_yield);
