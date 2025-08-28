@@ -560,6 +560,12 @@ describe("RWA:", function () {
           managerSigner
     );
 
+//     var MockUSDT = await ethers.getContractAt(
+//       "MockUSDT",
+//       usdt.address,
+// );
+// var USDT = MockUSDT.connect(manager)
+
     const extraAmount=2000000000;
     await expect(USDT.mint(manager, extraAmount)).not.to.be.reverted;
 

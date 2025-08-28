@@ -3,6 +3,8 @@ import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-ethers";
 import "hardhat-deploy";
 import { ethers } from "ethers";
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -61,8 +63,13 @@ const config: HardhatUserConfig = {
     },
     bscTestnet:{
       url: "https://bsc-testnet.bnbchain.org",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 97
+      accounts: [
+        process.env.PRIVATE_KEY_1!,
+      ],
+      chainId: 97,
+      gasPrice: 5000000000, // 5 Gwei
+      gas: 8000000, // 8M gas
+      timeout: 120000, // 2 分钟超时
     },
     bscMainnet:{
       url: "https://bsc-dataseed.bnbchain.org",
