@@ -109,8 +109,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     function deposit(uint256 amount, address receiver, bytes memory signature) 
         external 
         override 
-        onlyDuringFunding 
         whenInitialized
+        onlyDuringFunding 
         nonReentrant 
     {
         require(amount >= minDepositAmount, "Crowdsale: amount less than minimum");
@@ -193,8 +193,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     function redeem(uint256 amount, address receiver, bytes memory signature) 
         external 
         override 
-        onlyAfterFundingFailed 
         whenInitialized
+        onlyAfterFundingFailed 
         nonReentrant 
     {
         require(receiver != address(0), "Crowdsale: invalid receiver");
@@ -253,9 +253,9 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     function offChainDeposit(uint256 amount, address receiver) 
         external 
         override 
+        whenInitialized
         onlyManager 
         onlyDuringFunding 
-        whenInitialized
     {
         require(amount >= minDepositAmount, "Crowdsale: amount less than minimum");
         require(receiver != address(0), "Crowdsale: invalid receiver");
@@ -294,9 +294,9 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     function offChainRedeem(address receiver) 
         external 
         override 
+        whenInitialized
         onlyManager 
         onlyAfterFundingFailed 
-        whenInitialized
     {
         require(receiver != address(0), "Crowdsale: invalid receiver");
         
@@ -318,7 +318,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     /**
      * @dev Withdraw funding assets (only when funding is successful)
      */
-    function withdrawFundingAssets() external override onlyAfterFundingSuccess whenInitialized nonReentrant {
+    function withdrawFundingAssets() external override whenInitialized onlyAfterFundingSuccess nonReentrant {
         require(msg.sender == fundingReceiver, "Crowdsale: only funding receiver");
         require(fundingAssets > 0, "Crowdsale: no funding assets");
         
@@ -333,7 +333,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     /**
      * @dev Withdraw management fee (only when funding is successful)
      */
-    function withdrawManageFee() external override onlyAfterFundingSuccess whenInitialized nonReentrant {
+    function withdrawManageFee() external override whenInitialized onlyAfterFundingSuccess nonReentrant {
         require(msg.sender == manageFeeReceiver, "Crowdsale: only manage fee receiver");
         require(manageFee > 0, "Crowdsale: no manage fee");
         
@@ -349,7 +349,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
      * @dev Unpause token trading when funding is successful
      * This function should be called after funding period ends and funding is successful
      */
-    function unpauseTokenOnFundingSuccess() external override onlyManager onlyAfterFundingSuccess whenInitialized {
+    function unpauseTokenOnFundingSuccess() external override whenInitialized onlyManager onlyAfterFundingSuccess {
         // Unpause token trading through vault
         IVault(vault).unpauseToken();
         

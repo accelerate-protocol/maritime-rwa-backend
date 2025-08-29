@@ -86,7 +86,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @dev Add address to whitelist
      * @param _addr Address to add
      */
-    function addToWhitelist(address _addr) external override onlyManager whenInitialized {
+    function addToWhitelist(address _addr) external override whenInitialized onlyManager {
         _addToWhitelist(_addr);
     }
     
@@ -94,7 +94,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @dev Remove address from whitelist
      * @param _addr Address to remove
      */
-    function removeFromWhitelist(address _addr) external override onlyManager whenInitialized {
+    function removeFromWhitelist(address _addr) external override whenInitialized onlyManager {
         require(isWhitelisted[_addr], "BasicVault: not whitelisted");
         
         isWhitelisted[_addr] = false;
@@ -105,7 +105,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     /**
      * @dev Enable whitelist
      */
-    function enableWhitelist() external override onlyManager whenInitialized {
+    function enableWhitelist() external override whenInitialized onlyManager {
         whitelistEnabled = true;
         emit WhitelistStatusChanged(true);
     }
@@ -113,7 +113,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     /**
      * @dev Disable whitelist
      */
-    function disableWhitelist() external override onlyManager whenInitialized {
+    function disableWhitelist() external override whenInitialized onlyManager {
         whitelistEnabled = false;
         emit WhitelistStatusChanged(false);
     }
@@ -140,7 +140,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @param hash Data hash
      * @param _signature Signature data
      */
-    function updateVerifyData(bytes memory hash, bytes memory _signature) external override onlyManager whenInitialized {
+    function updateVerifyData(bytes memory hash, bytes memory _signature) external override onlyManager {
         dataHash = hash;
         signature = _signature;
         emit VerifyDataUpdated(hash, _signature);
@@ -149,7 +149,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     /**
      * @dev Pause token
      */
-    function pauseToken() external override onlyManager whenInitialized {
+    function pauseToken() external override whenInitialized onlyManager {
         require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).pause();
         emit TokenPaused();
@@ -181,7 +181,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @param to Recipient address
      * @param amount Amount to mint
      */
-    function mintToken(address to, uint256 amount) external override onlyFunding whenInitialized whenWhitelisted(to) {
+    function mintToken(address to, uint256 amount) external override whenInitialized onlyFunding whenWhitelisted(to) {
         require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).mint(to, amount);
     }
@@ -191,7 +191,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @param from Address to burn from
      * @param amount Amount to burn
      */
-    function burnToken(address from, uint256 amount) external override onlyFunding whenInitialized whenWhitelisted(from) {
+    function burnToken(address from, uint256 amount) external override whenInitialized onlyFunding whenWhitelisted(from) {
         require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).burnFrom(from, amount);
     }

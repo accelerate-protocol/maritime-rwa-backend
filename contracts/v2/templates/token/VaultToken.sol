@@ -104,7 +104,7 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
      * @param to Recipient address
      * @param amount Mint amount
      */
-    function mint(address to, uint256 amount) external override onlyVault whenInitialized {
+    function mint(address to, uint256 amount) external override whenInitialized onlyVault {
         require(to != address(0), "VaultToken: mint to zero address");
         require(amount > 0, "VaultToken: mint amount must be positive");
         
@@ -118,7 +118,7 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
      * @param account Address to burn from
      * @param amount Burn amount
      */
-    function burnFrom(address account, uint256 amount) external override onlyVault whenInitialized {
+    function burnFrom(address account, uint256 amount) external override whenInitialized onlyVault {
         require(account != address(0), "VaultToken: burn from zero address");
         require(amount > 0, "VaultToken: burn amount must be positive");
         require(balanceOf(account) >= amount, "VaultToken: insufficient balance");
@@ -136,7 +136,7 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
      * @param to Recipient address
      * @param amount Transfer amount
      */
-    function transfer(address to, uint256 amount) public virtual override(ERC20, IERC20) whenWhitelisted(_msgSender()) whenWhitelisted(to) returns (bool) {
+    function transfer(address to, uint256 amount) public virtual override(ERC20, IERC20) whenInitialized whenWhitelisted(_msgSender()) whenWhitelisted(to) returns (bool) {
         return super.transfer(to, amount);
     }
 
@@ -146,7 +146,7 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
      * @param to Recipient address
      * @param amount Transfer amount
      */
-    function transferFrom(address from, address to, uint256 amount) public virtual override(ERC20, IERC20) whenWhitelisted(from) whenWhitelisted(to) returns (bool) {
+    function transferFrom(address from, address to, uint256 amount) public virtual override(ERC20, IERC20) whenInitialized whenWhitelisted(from) whenWhitelisted(to) returns (bool) {
         return super.transferFrom(from, to, amount);
     }
 
@@ -155,7 +155,7 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
     /**
      * @dev Pause token transfers
      */
-    function pause() external override onlyVault whenInitialized {
+    function pause() external override whenInitialized onlyVault {
         if (!paused()) {
             _pause();
             emit TokenPaused();
@@ -165,7 +165,7 @@ contract VaultToken is ERC20, Pausable, IToken, Ownable {
     /**
      * @dev Resume token transfers
      */
-    function unpause() external override onlyVault whenInitialized whenPaused {
+    function unpause() external override whenInitialized onlyVault whenPaused {
         _unpause();
         
         emit TokenUnpaused();

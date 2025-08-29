@@ -82,7 +82,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
      * @dev Set manager
      * @param _manager New manager address
      */
-    function setManager(address _manager) external override onlyOwner whenInitialized {
+    function setManager(address _manager) external override whenInitialized onlyManager {
         require(_manager != address(0), "AccumulatedYield: invalid manager");
         address oldManager = manager;
         manager = _manager;
@@ -99,7 +99,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
      * @dev Set dividend treasury address
      * @param _dividendTreasury New dividend treasury address
      */
-    function setDividendTreasury(address _dividendTreasury) external override onlyManager whenInitialized {
+    function setDividendTreasury(address _dividendTreasury) external override whenInitialized onlyManager {
         require(_dividendTreasury != address(0), "AccumulatedYield: invalid dividend treasury");
         address oldTreasury = dividendTreasury;
         dividendTreasury = _dividendTreasury;
@@ -113,7 +113,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
      */
     function updateGlobalPoolStatus(
         bool isActive
-    ) external override onlyManager whenInitialized {
+    ) external override whenInitialized onlyManager {
         // if (isActive) {
         //     // require funding successful
         //     require(IVault(vault).isFundingSuccessful(), "AccumulatedYield: funding was not successful");
@@ -125,7 +125,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     /**
      * @dev User claim rewards
      */
-    function claimReward() external override onlyActivePool whenInitialized nonReentrant {
+    function claimReward() external override whenInitialized onlyActivePool nonReentrant {
         // First update user pool information
         _updateUserPool(msg.sender);
         
@@ -156,7 +156,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     function distributeDividend(
         uint256 dividendAmount,
         bytes memory signature
-    ) external override onlyDividendTreasury onlyActivePool whenInitialized nonReentrant {
+    ) external override whenInitialized onlyDividendTreasury onlyActivePool nonReentrant {
         require(dividendAmount > 0, "AccumulatedYield: invalid dividend amount");
         
         // Get validator address from Vault
