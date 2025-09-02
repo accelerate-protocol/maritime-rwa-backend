@@ -511,7 +511,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         require(_endTime > block.timestamp, "Crowdsale: end time in past");
         require(_assetToken != address(0), "Crowdsale: invalid asset token");
         require(_maxSupply > 0, "Crowdsale: invalid max supply");
-        require(_softCap > 0 && _softCap <= _maxSupply, "Crowdsale: invalid soft cap");
+        require(_softCap >= 0 && _softCap <= _maxSupply, "Crowdsale: invalid soft cap");
         require(_sharePrice > 0, "Crowdsale: invalid share price");
         require(_minDepositAmount > 0, "Crowdsale: invalid min deposit");
         require(_manageFeeBps <= BPS_DENOMINATOR, "Crowdsale: invalid manage fee");
