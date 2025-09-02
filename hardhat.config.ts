@@ -24,21 +24,6 @@ const config: HardhatUserConfig = {
     ],
   },
 
-  namedAccounts: {
-    deployer: 0,
-    guardian: 1,
-    manager: 2,
-    rbfSigner: 3,
-    depositTreasury: 4,
-    feeReceiver: 5,
-    investor1: 6,
-    investor2: 7,
-    investor3: 8,
-    investor4: 9,
-    investor5: 10,
-    drds:11,
-  },
-
   networks: {
     hardhat: {
       allowUnlimitedContractSize: true,
@@ -66,6 +51,31 @@ const config: HardhatUserConfig = {
     },
   },
   
+  // hardhat-deploy 配置
+  namedAccounts: {
+    deployer: 0,
+    guardian: 1,
+    manager: 2,
+    rbfSigner: 3,
+    depositTreasury: 4,
+    feeReceiver: 5,
+    investor1: 6,
+    investor2: 7,
+    investor3: 8,
+    investor4: 9,
+    investor5: 10,
+    drds: 11,
+  },
+  
+  // hardhat-deploy 插件配置
+  paths: {
+    deployments: "deployments",
+    deploy: "deploy",
+    artifacts: "artifacts",
+    cache: "cache",
+    sources: "contracts",
+    tests: "test"
+  }
 };
 
 export default config;

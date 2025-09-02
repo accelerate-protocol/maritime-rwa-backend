@@ -22,7 +22,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "assertAmount",
+        "name": "assetAmount",
         "type": "uint256"
       },
       {
@@ -152,7 +152,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "assertAmount",
+        "name": "assetAmount",
         "type": "uint256"
       }
     ],
@@ -183,7 +183,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "assertAmount",
+        "name": "assetAmount",
         "type": "uint256"
       }
     ],
