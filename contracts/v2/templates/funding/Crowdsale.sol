@@ -92,11 +92,12 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     /**
      * @dev Unified initialization interface
      * @param _vault Vault address
+     * @param _token Token address
      * @param _initData Encoded initialization data
      */
-    function initiate(address _vault,address _token,bytes memory _initData) external override {
+    function initiate(address _vault, address _token, bytes memory _initData) external override {
         (uint256 _startTime, uint256 _endTime, address _assetToken, uint256 _maxSupply, uint256 _softCap, uint256 _sharePrice, uint256 _minDepositAmount, uint256 _manageFeeBps, address _fundingReceiver, address _manageFeeReceiver, address _manager) = abi.decode(_initData, (uint256, uint256, address, uint256, uint256, uint256, uint256, uint256, address, address, address));
-        _initCrowdsale(_vault,_token, _startTime, _endTime, _assetToken, _maxSupply, _softCap, _sharePrice, _minDepositAmount, _manageFeeBps, _fundingReceiver, _manageFeeReceiver, _manager);
+        _initCrowdsale(_vault, _token, _startTime, _endTime, _assetToken, _maxSupply, _softCap, _sharePrice, _minDepositAmount, _manageFeeBps, _fundingReceiver, _manageFeeReceiver, _manager);
     }
     
     // ============ Funding Operations ============
@@ -154,7 +155,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         if (requestedShares > remainingSupply) {
             // Calculate actual amount that can be deposited
             actualShares = remainingSupply;
-            uint256 actualNetAmount = _getAssetsForShares(remainingSupply);
+            uint256 actualNetAmount = _getNetAssetsForShares(remainingSupply);
             actualAmount = (actualNetAmount * BPS_DENOMINATOR) / (BPS_DENOMINATOR - manageFeeBps); // Convert back to gross amount
             
             require(actualAmount >= minDepositAmount, "Crowdsale: remaining amount below minimum");
@@ -229,20 +230,21 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         require(signer == manager, "Crowdsale: invalid signature");
         
         // Calculate refund assets for the specified amount of shares
-        uint256 assetAmount = _getAssetsForShares(amount);
-        uint256 feeAmount = (assetAmount * manageFeeBps) / BPS_DENOMINATOR;
+        uint256 netAssetAmount = _getNetAssetsForShares(amount);
+        uint256 feeAmount = _gethManagerFeeWithShares(amount);
+        uint256 grossAssetAmount = netAssetAmount + feeAmount;
         
         // Burn the specified amount of tokens through vault
         IVault(vault).burnToken(msg.sender, amount);
         
         // Update state
-        fundingAssets -= assetAmount;
+        fundingAssets -= netAssetAmount;
         manageFee -= feeAmount;
         
         // Refund assets (including management fee)
-        IERC20(assetToken).safeTransfer(receiver, assetAmount + feeAmount);
+        IERC20(assetToken).safeTransfer(receiver, grossAssetAmount);
         
-        emit FundFailedRedeem(msg.sender, receiver, amount, assetAmount, feeAmount);
+        emit FundFailedRedeem(msg.sender, receiver, amount, netAssetAmount, feeAmount);
     }
     
     /**
@@ -272,7 +274,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         if (requestedShares > remainingSupply) {
             // Calculate actual amount that can be deposited
             actualShares = remainingSupply;
-            actualAmount = _getAssetsForShares(remainingSupply);
+            actualAmount = _getNetAssetsForShares(remainingSupply);
             require(actualAmount >= minDepositAmount, "Crowdsale: remaining amount below minimum");
         } else {
             actualShares = requestedShares;
@@ -305,7 +307,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         require(userShares > 0, "Crowdsale: no shares to redeem");
         
         // Calculate refund assets for all shares
-        uint256 assetAmount = _getAssetsForShares(userShares);
+        uint256 assetAmount = _getNetAssetsForShares(userShares);
         
         // Burn all tokens through vault
         IVault(vault).burnToken(receiver, userShares);
@@ -568,15 +570,42 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     }
     
     /**
-     * @dev Calculate assets for given share amount
+     * @dev Calculate the net asset amount that shares represent (internal helper)
      * @param shareAmount Share amount
-     * @return Asset amount
+     * @return Net asset amount (without fee compensation)
      */
-    function _getAssetsForShares(uint256 shareAmount) internal view returns (uint256) {
-        // 1. scaledAmount = shareAmount * sharePrice / SHARE_PRICE_DENOMINATOR
-        // 2. then scaleDown
+    function _getNetAssetsForShares(uint256 shareAmount) internal view returns (uint256) {
+        // Calculate the net asset amount that these shares represent
         uint256 scaledAmount = (shareAmount * sharePrice) / SHARE_PRICE_DENOMINATOR;
-        return _scaleDown(scaledAmount);
+        uint256 netAssetAmount = _scaleDown(scaledAmount);
+        
+        return netAssetAmount;
+    }
+    
+    /**
+     * @dev Calculate ManagerFee for given share amount
+     * @param shareAmount Share amount
+     * @return managerFee amount
+     */
+    function _gethManagerFeeWithShares(uint256 shareAmount) internal view returns (uint256) {
+        // 1. Get the net asset amount using shared logic
+        uint256 netAssetAmount = _getNetAssetsForShares(shareAmount);
+        
+        // 2. Calculate the management fee
+        // Formula: fee = netAmount * manageFeeBps / (BPS_DENOMINATOR - manageFeeBps)
+        // This calculates the fee that would be charged on the gross amount
+        // G = Gross amount (original deposit)
+        // N = Net amount (after fee deduction)
+        // R = Management fee rate (manageFeeBps / BPS_DENOMINATOR)
+        // F = Management fee
+        // Relations:
+        // N = G * (1 - R)              // Net amount = Gross amount * (1 - rate)
+        // G = N / (1 - R)              // Gross amount = Net amount / (1 - rate)
+        // F = G * R                    // Fee = Gross amount * rate
+        // F = N * R / (1 - R)          // Fee = Net amount * rate / (1 - rate)
+        uint256 managerFee = (netAssetAmount * manageFeeBps) / (BPS_DENOMINATOR - manageFeeBps);
+        
+        return managerFee;
     }
     
 } 
