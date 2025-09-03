@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/IFactory.sol";
 
+import "../interfaces/IVaultTempFactory.sol";
+
 contract VaultFactory is IVaultFactory, Ownable {
     using Clones for address;
     
@@ -23,26 +25,26 @@ contract VaultFactory is IVaultFactory, Ownable {
         emit TemplateAdded(templateId, template);
     }
     
-    function createVault(uint256 templateId, bytes memory initData) external override returns (address vault) {
+    function createVault(uint256 templateId, bytes memory initData,address guardian) external override returns (address vault) {
         address template = templates[templateId];
         require(template != address(0), "VaultFactory: template not found");
-        
-        vault = template.clone();
-        (bool success, bytes memory returndata) = vault.call(
-            abi.encodeWithSignature("initiate(bytes)", initData)
-        );
-        if (!success) {
-            if (returndata.length > 0) {
-                string memory reason;
-                assembly { returndata := add(returndata, 0x04) }
-                reason = abi.decode(returndata, (string));
-                revert(string(abi.encodePacked("VaultFactory: initialization failed: ", reason)));
-            } else {
-                revert("VaultFactory: initialization failed");
-            }
-        }
-        
-        emit VaultCreated(templateId, vault, msg.sender);
+
+        (address vaultProxy,address proxyAdmin,address implementation) = IVaultTempFactory(template).newVault(initData,guardian);
+        emit VaultCreated(templateId, vaultProxy, msg.sender);
+        // vault = template.clone();
+        // (bool success, bytes memory returndata) = vault.call(
+        //     abi.encodeWithSignature("initiate(bytes)", initData)
+        // );
+        // if (!success) {
+        //     if (returndata.length > 0) {
+        //         string memory reason;
+        //         assembly { returndata := add(returndata, 0x04) }
+        //         reason = abi.decode(returndata, (string));
+        //         revert(string(abi.encodePacked("VaultFactory: initialization failed: ", reason)));
+        //     } else {
+        //         revert("VaultFactory: initialization failed");
+        //     }
+        // }
         
         return vault;
     }

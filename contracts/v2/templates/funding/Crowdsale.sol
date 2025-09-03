@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "../../interfaces/ICrowdsale.sol";
 import "../../interfaces/IVault.sol";
 import "../../interfaces/IToken.sol";
-
 
 
 /**
@@ -18,7 +18,7 @@ import "../../interfaces/IToken.sol";
  * @dev Crowdsale template implementation, providing fair fundraising functionality
  * @notice Supports on-chain and off-chain deposits, refundable if funding fails
  */
-contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
+contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable {
     using SafeERC20 for IERC20;
     using ECDSA for bytes32;
     
@@ -47,11 +47,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     // Nonce tracking for users (to prevent replay attacks)
     mapping(address => uint256) public callerNonce;
 
-    // Initialization state
-    bool private _initialized;
-    
-
-    
     
     // ============ Modifiers ============
     
@@ -77,14 +72,11 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         _;
     }
     
-    modifier whenInitialized() {
-        require(_initialized, "Crowdsale: not initialized");
-        _;
-    }
     
     // ============ Constructor ============
     
     constructor() {
+        _disableInitializers();
     }
     
     // ============ Initialization Function ============
@@ -95,7 +87,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
      * @param _token Token address
      * @param _initData Encoded initialization data
      */
-    function initiate(address _vault, address _token, bytes memory _initData) external override {
+    function initiate(address _vault, address _token, bytes memory _initData) external  initializer {
         (uint256 _startTime, uint256 _endTime, address _assetToken, uint256 _maxSupply, uint256 _softCap, uint256 _sharePrice, uint256 _minDepositAmount, uint256 _manageFeeBps, address _fundingReceiver, address _manageFeeReceiver, address _manager) = abi.decode(_initData, (uint256, uint256, address, uint256, uint256, uint256, uint256, uint256, address, address, address));
         _initCrowdsale(_vault, _token, _startTime, _endTime, _assetToken, _maxSupply, _softCap, _sharePrice, _minDepositAmount, _manageFeeBps, _fundingReceiver, _manageFeeReceiver, _manager);
     }
@@ -110,7 +102,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     function deposit(uint256 amount, address receiver, bytes memory signature) 
         external 
         override 
-        whenInitialized
+        onlyInitializing
         onlyDuringFunding 
         nonReentrant 
     {
@@ -194,7 +186,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     function redeem(uint256 amount, address receiver, bytes memory signature) 
         external 
         override 
-        whenInitialized
+        onlyInitializing
         onlyAfterFundingFailed 
         nonReentrant 
     {
@@ -255,7 +247,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     function offChainDeposit(uint256 amount, address receiver) 
         external 
         override 
-        whenInitialized
+        onlyInitializing
         onlyManager 
         onlyDuringFunding 
     {
@@ -296,7 +288,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     function offChainRedeem(address receiver) 
         external 
         override 
-        whenInitialized
+        onlyInitializing
         onlyManager 
         onlyAfterFundingFailed 
     {
@@ -320,7 +312,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     /**
      * @dev Withdraw funding assets (only when funding is successful)
      */
-    function withdrawFundingAssets() external override whenInitialized onlyAfterFundingSuccess nonReentrant {
+    function withdrawFundingAssets() external override onlyInitializing onlyAfterFundingSuccess nonReentrant {
         require(msg.sender == fundingReceiver, "Crowdsale: only funding receiver");
         require(fundingAssets > 0, "Crowdsale: no funding assets");
         
@@ -335,7 +327,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     /**
      * @dev Withdraw management fee (only when funding is successful)
      */
-    function withdrawManageFee() external override whenInitialized onlyAfterFundingSuccess nonReentrant {
+    function withdrawManageFee() external override onlyInitializing onlyAfterFundingSuccess nonReentrant {
         require(msg.sender == manageFeeReceiver, "Crowdsale: only manage fee receiver");
         require(manageFee > 0, "Crowdsale: no manage fee");
         
@@ -351,7 +343,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
      * @dev Unpause token trading when funding is successful
      * This function should be called after funding period ends and funding is successful
      */
-    function unpauseTokenOnFundingSuccess() external override whenInitialized onlyManager onlyAfterFundingSuccess {
+    function unpauseTokenOnFundingSuccess() external override onlyInitializing onlyManager onlyAfterFundingSuccess {
         // Unpause token trading through vault
         IVault(vault).unpauseToken();
         
@@ -408,13 +400,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     function getRemainingSupply() external view override returns (uint256) {
         uint256 currentSupply = IToken(IVault(vault).vaultToken()).totalSupply();
         return maxSupply > currentSupply ? maxSupply - currentSupply : 0;
-    }
-    
-    /**
-     * @dev Query if initialized
-     */
-    function isInitialized() external view returns (bool) {
-        return _initialized;
     }
     
 
@@ -507,7 +492,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         address _manageFeeReceiver,
         address _manager
     ) internal {
-        require(!_initialized, "Crowdsale: already initialized");
         require(_vault != address(0), "Crowdsale: invalid vault");
         require(_startTime < _endTime, "Crowdsale: invalid time range");
         require(_endTime > block.timestamp, "Crowdsale: end time in past");
@@ -520,7 +504,9 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
         require(_fundingReceiver != address(0), "Crowdsale: invalid funding receiver");
         require(_manageFeeReceiver != address(0), "Crowdsale: invalid fee receiver");
         require(_manager != address(0), "Crowdsale: invalid manager");
-        
+
+        __Ownable_init();
+        __ReentrancyGuard_init();
         vault = _vault;
         startTime = _startTime;
         endTime = _endTime;
@@ -537,7 +523,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
                 (IERC20Metadata(_token).decimals() -
                     IERC20Metadata(_assetToken).decimals());
         manager = _manager;
-        _initialized = true;
         _transferOwnership(_manager);
     }
     

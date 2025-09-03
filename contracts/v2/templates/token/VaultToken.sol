@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "../../interfaces/IToken.sol";
 import "../../interfaces/IVault.sol";
 
@@ -27,17 +28,6 @@ contract VaultToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
     
     modifier onlyVault() {
         require(msg.sender == vault, "VaultToken: only vault");
-        _;
-    }
-
-    modifier whenWhitelisted(address user) {
-        // Skip whitelist check for mint (from = address(0)) and burn (to = address(0)) operations
-        if (user != address(0)) {
-            IVault vaultContract = IVault(vault);
-            if (vaultContract.whitelistEnabled()) {
-                require(vaultContract.isWhitelisted(user), "VaultToken: not whitelisted");
-            }
-        }
         _;
     }
     
@@ -101,7 +91,7 @@ contract VaultToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
      * @param to Recipient address
      * @param amount Transfer amount
      */
-    function transfer(address to, uint256 amount) public virtual override(IERC20Upgradeable,ERC20Upgradeable) onlyInitializing whenWhitelisted(_msgSender()) whenWhitelisted(to) returns (bool) {
+    function transfer(address to, uint256 amount) public virtual override(IERC20Upgradeable,ERC20Upgradeable) onlyInitializing whenNotPaused returns (bool) {
         return super.transfer(to, amount);
     }
 
@@ -111,7 +101,7 @@ contract VaultToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
      * @param to Recipient address
      * @param amount Transfer amount
      */
-    function transferFrom(address from, address to, uint256 amount) public virtual override(IERC20Upgradeable,ERC20Upgradeable) onlyInitializing whenWhitelisted(from) whenWhitelisted(to) returns (bool) {
+    function transferFrom(address from, address to, uint256 amount) public virtual override(IERC20Upgradeable,ERC20Upgradeable) onlyInitializing whenNotPaused returns (bool) {
         return super.transferFrom(from, to, amount);
     }
 
@@ -179,12 +169,6 @@ contract VaultToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
         uint256 amount
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, amount);
-        
-        // Check pause status (allow minting and burning during pause)
-        if (from != address(0) && to != address(0)) {
-            require(!paused(), "VaultToken: token transfer while paused");
-        }
-        
         // Call vault hook on token transfer
         if (from != address(0) && to != address(0)) {
             // Only call if vault is a valid contract

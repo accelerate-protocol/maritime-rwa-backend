@@ -52,6 +52,4 @@ interface IVault {
     // ============ Funding Status Query Interface ============
     function isFundingSuccessful() external view returns (bool);
     
-    // ============ Unified Initialization Interface ============
-    function initiate(bytes memory _initData) external;
 } 

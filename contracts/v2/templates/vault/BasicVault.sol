@@ -1,19 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "../../interfaces/IVault.sol";
 import "../../interfaces/IToken.sol";
 import "../../interfaces/IAccumulatedYield.sol";
 import "../../interfaces/ICrowdsale.sol";
+
 
 /**
  * @title BasicVault
  * @dev Basic vault template implementation, providing fundamental storage and permission management
  * @notice This contract does not contain specific business logic, business functions are implemented by other modules
  */
-contract BasicVault is IVault, Ownable, ReentrancyGuard {
+contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     // ============ State Variables ============
     
     address public override manager;
@@ -25,11 +27,9 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     
     // Cross-contract addresses
     address public yield;
-    address public override vaultToken;
+    address public vaultToken;
     address public funding;
     
-    // Initialization state
-    bool private _initialized;
     
     // ============ Modifiers ============
     
@@ -55,24 +55,21 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         _;
     }
     
-    modifier whenInitialized() {
-        require(_initialized, "BasicVault: not initialized");
-        _;
-    }
-    
     // ============ Constructor ============
     
+     /**
+     * @dev  Constructor function to disable initializers
+     */
     constructor() {
+        _disableInitializers();
     }
     
     // ============ Initialization Function ============
-    
-
     /**
      * @dev Unified initialization interface
      * @param _initData Encoded initialization data
      */
-    function initiate(bytes memory _initData) external override {
+    function initiate(bytes memory _initData) external initializer{
         // decode init data
         (address _manager, address _validator, bool _whitelistEnabled, address[] memory _initialWhitelist) = 
             abi.decode(_initData, (address, address, bool, address[]));
@@ -83,10 +80,10 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     // ============ IVault Interface Implementation ============
     
     /**
-     * @dev Add address to whitelist
+     * @dev Add address to whitelistonlyInitializing
      * @param _addr Address to add
      */
-    function addToWhitelist(address _addr) external override whenInitialized onlyManager {
+    function addToWhitelist(address _addr) external override onlyInitializing onlyManager {
         _addToWhitelist(_addr);
     }
     
@@ -94,18 +91,17 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @dev Remove address from whitelist
      * @param _addr Address to remove
      */
-    function removeFromWhitelist(address _addr) external override whenInitialized onlyManager {
+    function removeFromWhitelist(address _addr) external override onlyInitializing onlyManager {
         require(isWhitelisted[_addr], "BasicVault: not whitelisted");
         
         isWhitelisted[_addr] = false;
-        
         emit WhitelistRemoved(_addr);
     }
     
     /**
      * @dev Enable whitelist
      */
-    function enableWhitelist() external override whenInitialized onlyManager {
+    function enableWhitelist() external override onlyInitializing onlyManager {
         whitelistEnabled = true;
         emit WhitelistStatusChanged(true);
     }
@@ -113,7 +109,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     /**
      * @dev Disable whitelist
      */
-    function disableWhitelist() external override whenInitialized onlyManager {
+    function disableWhitelist() external override onlyInitializing onlyManager {
         whitelistEnabled = false;
         emit WhitelistStatusChanged(false);
     }
@@ -149,7 +145,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     /**
      * @dev Pause token
      */
-    function pauseToken() external override whenInitialized onlyManager {
+    function pauseToken() external override onlyInitializing onlyManager {
         require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).pause();
         emit TokenPaused();
@@ -158,7 +154,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     /**
      * @dev Unpause token
      */
-    function unpauseToken() external override whenInitialized {
+    function unpauseToken() external override onlyInitializing {
         require(msg.sender == manager || msg.sender == funding, "BasicVault: only manager or funding");
         require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).unpause();
@@ -181,7 +177,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @param to Recipient address
      * @param amount Amount to mint
      */
-    function mintToken(address to, uint256 amount) external override whenInitialized onlyFunding whenWhitelisted(to) {
+    function mintToken(address to, uint256 amount) external override onlyInitializing onlyFunding whenWhitelisted(to) {
         require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).mint(to, amount);
     }
@@ -191,7 +187,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @param from Address to burn from
      * @param amount Amount to burn
      */
-    function burnToken(address from, uint256 amount) external override whenInitialized onlyFunding whenWhitelisted(from) {
+    function burnToken(address from, uint256 amount) external override onlyInitializing onlyFunding whenWhitelisted(from) {
         require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).burnFrom(from, amount);
     }
@@ -202,7 +198,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
      * @param to To address
      * @param amount Transfer amount
      */
-    function onTokenTransfer(address from, address to, uint256 amount) external override whenInitialized whenWhitelisted(from) whenWhitelisted(to) {
+    function onTokenTransfer(address from, address to, uint256 amount) external override onlyInitializing whenWhitelisted(from) whenWhitelisted(to) {
         require(msg.sender == vaultToken, "BasicVault: only token can call");
         if (yield != address(0) && from != address(0) && to != address(0)) {
             IAccumulatedYield(yield).updateUserPoolsOnTransfer(from, to, amount);
@@ -210,7 +206,7 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
     }
     
     // ============ Vault Token Management ============
-    function configureModules(address _vaultToken, address _funding, address _yield) external override whenInitialized {
+    function configureModules(address _vaultToken, address _funding, address _yield) external override onlyInitializing {
         _setVaultToken(_vaultToken);
         _setFundingModule(_funding);
         _setDividendModule(_yield);
@@ -282,7 +278,6 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
         bool _whitelistEnabled,
         address[] memory _initialWhitelist
     ) internal {
-        require(!_initialized, "BasicVault: already initialized");
         require(_manager != address(0), "BasicVault: invalid manager");
         require(_validator != address(0), "BasicVault: invalid validator");
         if (_whitelistEnabled) {
@@ -290,17 +285,17 @@ contract BasicVault is IVault, Ownable, ReentrancyGuard {
                 require(_initialWhitelist[i] != address(0), "BasicVault: whitelist address cannot be zero");
             }
         }
-        
+
+        __Ownable_init();
+        __ReentrancyGuard_init();
         manager = _manager;
         validator = _validator;
         whitelistEnabled = _whitelistEnabled;
-        _initialized = true;
         
         // Add initial whitelist
         for (uint256 i = 0; i < _initialWhitelist.length; i++) {
             _addToWhitelist(_initialWhitelist[i]);
         }
-        
         _transferOwnership(_manager);
     }
     

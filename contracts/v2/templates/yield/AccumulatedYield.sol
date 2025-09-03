@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "../../interfaces/IAccumulatedYield.sol";
 import "../../interfaces/IVault.sol";
@@ -14,7 +15,7 @@ import "../../interfaces/IVault.sol";
  * @dev Accumulated yield template implementation, providing yield distribution based on token holdings
  * @notice Supports accumulated yield and real-time claiming, similar to MasterChef design
  */
-contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
+contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable, OwnableUpgradeable  {
     using SafeERC20 for IERC20;
     
     // ============ State Variables ============
@@ -55,11 +56,11 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     }
     
     // ============ Constructor ============
-    
-    /**
-     * @dev Constructor
+     /**
+     * @dev  Constructor function to disable initializers
      */
     constructor() {
+        _disableInitializers();
     }
 
 
@@ -70,7 +71,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
      * @param _vaultToken Vault token address
      * @param _initData Encoded initialization data (contains token and original initData)
      */
-    function initiate(address _vault, address _vaultToken, bytes memory _initData) external override {
+    function initiate(address _vault, address _vaultToken, bytes memory _initData) external initializer override {
         (address rewardToken, address rewardManager, address dividendTreasuryAddr) = abi.decode(_initData, (address, address, address));
         _initGlobalPool(_vault, rewardManager, dividendTreasuryAddr, _vaultToken, rewardToken);
     }
@@ -114,10 +115,6 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
     function updateGlobalPoolStatus(
         bool isActive
     ) external override whenInitialized onlyManager {
-        // if (isActive) {
-        //     // require funding successful
-        //     require(IVault(vault).isFundingSuccessful(), "AccumulatedYield: funding was not successful");
-        // }
         globalPool.isActive = isActive;
     }
     
@@ -335,6 +332,9 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuard, Ownable {
         require(_dividendTreasury != address(0), "AccumulatedYield: invalid dividend treasury");
         require(shareToken != address(0), "AccumulatedYield: invalid share token");
         require(rewardToken != address(0), "AccumulatedYield: invalid reward token");
+
+        __Ownable_init();
+        __ReentrancyGuard_init();
         
         // Set vault, manager and dividendTreasury
         vault = _vault;

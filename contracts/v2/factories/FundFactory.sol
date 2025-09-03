@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/IFactory.sol";
 
+import "../interfaces/IFundTempFactory.sol";
+
 contract FundFactory is IFundFactory, Ownable {
     using Clones for address;
     
@@ -22,27 +24,29 @@ contract FundFactory is IFundFactory, Ownable {
         emit TemplateAdded(templateId, template);
     }
     
-    function createFund(uint256 templateId, address vault,address token,bytes memory initData) external override returns (address fund) {
+    function createFund(uint256 templateId, address vault,address token,bytes memory initData,address guardian) external override returns (address fund) {
         address template = templates[templateId];
         require(template != address(0), "FundFactory: template not found");
-        
-        fund = template.clone();
-        
-        (bool success, bytes memory returndata) = fund.call(
-            abi.encodeWithSignature("initiate(address,address,bytes)", vault,token, initData)
-        );
-        if (!success) {
-            if (returndata.length > 0) {
-                string memory reason;
-                assembly { returndata := add(returndata, 0x04) }
-                reason = abi.decode(returndata, (string));
-                revert(string(abi.encodePacked("FundFactory: initialization failed: ", reason)));
-            } else {
-                revert("FundFactory: initialization failed");
-            }
-        }
-        
+
+        (address fund,address proxyAdmin,address implementation) = IFundTempFactory(template).newFund(vault,token,initData,guardian);
         emit FundCreated(templateId, fund, msg.sender);
+        
+        // fund = template.clone();
+        
+        // (bool success, bytes memory returndata) = fund.call(
+        //     abi.encodeWithSignature("initiate(address,address,bytes)", vault,token, initData)
+        // );
+        // if (!success) {
+        //     if (returndata.length > 0) {
+        //         string memory reason;
+        //         assembly { returndata := add(returndata, 0x04) }
+        //         reason = abi.decode(returndata, (string));
+        //         revert(string(abi.encodePacked("FundFactory: initialization failed: ", reason)));
+        //     } else {
+        //         revert("FundFactory: initialization failed");
+        //     }
+        // }
+    
         
         return fund;
     }

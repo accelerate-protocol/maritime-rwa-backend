@@ -9,7 +9,7 @@ interface IVaultFactory {
     event TemplateAdded(uint256 indexed templateId, address indexed template);
     event VaultCreated(uint256 indexed templateId, address indexed vault, address indexed deployer);
     
-    function createVault(uint256 templateId, bytes memory initData) external returns (address);
+    function createVault(uint256 templateId, bytes memory initData,address guardian) external returns (address);
     function addTemplate(uint256 templateId, address template) external;
     function getTemplate(uint256 templateId) external view returns (address);
     function getTemplateCount() external view returns (uint256);
@@ -37,7 +37,7 @@ interface IFundFactory {
     event TemplateAdded(uint256 indexed templateId, address indexed template);
     event FundCreated(uint256 indexed templateId, address indexed fund, address indexed vault);
     
-    function createFund(uint256 templateId, address vault,address token, bytes memory initData) external returns (address);
+    function createFund(uint256 templateId, address vault,address token, bytes memory initData,address guardian) external returns (address);
     function addTemplate(uint256 templateId, address template) external;
     function getTemplate(uint256 templateId) external view returns (address);
     function getTemplateCount() external view returns (uint256);
@@ -51,7 +51,7 @@ interface IYieldFactory {
     event TemplateAdded(uint256 indexed templateId, address indexed template);
     event YieldCreated(uint256 indexed templateId, address indexed accumulatedYield, address indexed vault);
     
-    function createYield(uint256 templateId, address vault, address token, bytes memory initData) external returns (address);
+    function createYield(uint256 templateId, address vault, address token, bytes memory initData,address guardian) external returns (address);
     function addTemplate(uint256 templateId, address template) external;
     function getTemplate(uint256 templateId) external view returns (address);
     function getTemplateCount() external view returns (uint256);

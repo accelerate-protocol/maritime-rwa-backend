@@ -109,20 +109,21 @@ contract Creation is ICreation, Ownable {
         require(bytes(projectName).length > 0, "Creation: project name cannot be empty");
         require(bytes(projects[projectName].name).length == 0, "Creation: project name already exists");
         // 1. Deploy Vault
-        address vault = vaultFactory.createVault(vaultTemplateId, vaultInitData);
+        address vault = vaultFactory.createVault(vaultTemplateId, vaultInitData,guardian);
         require(vault != address(0), "Creation: vault creation failed");
         // 2. Deploy Token (requires vault parameter)
         address token = tokenFactory.createToken(tokenTemplateId, vault, tokenInitData,guardian);
         require(token != address(0), "Creation: token creation failed");
         // 3. Deploy Fund
-        address fund = fundFactory.createFund(fundTemplateId, vault,token,fundInitData);
+        address fund = fundFactory.createFund(fundTemplateId, vault,token,fundInitData,guardian);
         require(fund != address(0), "Creation: fund creation failed");
         // 4. Deploy Yield
         address accumulatedYield = yieldFactory.createYield(
             yieldTemplateId,
             vault,
             token,
-            yieldInitData
+            yieldInitData,
+            guardian
         );
         require(accumulatedYield != address(0), "Creation: yield creation failed");
         
