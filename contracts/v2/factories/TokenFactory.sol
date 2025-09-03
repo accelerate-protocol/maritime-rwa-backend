@@ -4,6 +4,7 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/IFactory.sol";
+import "../interfaces/ITokenTempFactory.sol";
 
 contract TokenFactory is ITokenFactory, Ownable {
     using Clones for address;
@@ -22,26 +23,29 @@ contract TokenFactory is ITokenFactory, Ownable {
         emit TemplateAdded(templateId, template);
     }
     
-    function createToken(uint256 templateId, address vault, bytes memory initData) external override returns (address token) {
+    function createToken(uint256 templateId, address vault, bytes memory initData,address guardian) external override returns (address token) {
         address template = templates[templateId];
         require(template != address(0), "TokenFactory: template not found");
+
+        (address proxy,address proxyAdmin,address implementation) = ITokenTempFactory(template).newToken(vault,initData,guardian);
+        emit TokenCreated(templateId, proxy, msg.sender);
         
-        token = template.clone();
-        (bool success, bytes memory returndata) = token.call(
-            abi.encodeWithSignature("initiate(address,bytes)", vault, initData)
-        );
-        if (!success) {
-            if (returndata.length > 0) {
-                string memory reason;
-                assembly { returndata := add(returndata, 0x04) }
-                reason = abi.decode(returndata, (string));
-                revert(string(abi.encodePacked("TokenFactory: initialization failed: ", reason)));
-            } else {
-                revert("TokenFactory: initialization failed");
-            }
-        }
+        // token = template.clone();
+        // (bool success, bytes memory returndata) = token.call(
+        //     abi.encodeWithSignature("initiate(address,bytes)", vault, initData)
+        // );
+        // if (!success) {
+        //     if (returndata.length > 0) {
+        //         string memory reason;
+        //         assembly { returndata := add(returndata, 0x04) }
+        //         reason = abi.decode(returndata, (string));
+        //         revert(string(abi.encodePacked("TokenFactory: initialization failed: ", reason)));
+        //     } else {
+        //         revert("TokenFactory: initialization failed");
+        //     }
+        // }
         
-        emit TokenCreated(templateId, token, msg.sender);
+        
         
         return token;
     }

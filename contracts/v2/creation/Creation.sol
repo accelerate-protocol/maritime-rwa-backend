@@ -103,7 +103,8 @@ contract Creation is ICreation, Ownable {
         uint256 fundTemplateId,
         bytes memory fundInitData,
         uint256 yieldTemplateId,
-        bytes memory yieldInitData
+        bytes memory yieldInitData,
+        address guardian
     ) external override onlyWhitelisted {
         require(bytes(projectName).length > 0, "Creation: project name cannot be empty");
         require(bytes(projects[projectName].name).length == 0, "Creation: project name already exists");
@@ -111,7 +112,7 @@ contract Creation is ICreation, Ownable {
         address vault = vaultFactory.createVault(vaultTemplateId, vaultInitData);
         require(vault != address(0), "Creation: vault creation failed");
         // 2. Deploy Token (requires vault parameter)
-        address token = tokenFactory.createToken(tokenTemplateId, vault, tokenInitData);
+        address token = tokenFactory.createToken(tokenTemplateId, vault, tokenInitData,guardian);
         require(token != address(0), "Creation: token creation failed");
         // 3. Deploy Fund
         address fund = fundFactory.createFund(fundTemplateId, vault,token,fundInitData);

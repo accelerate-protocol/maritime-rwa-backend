@@ -1,6 +1,0 @@
-#! /bin/bash
-set -e
-
-base_dir=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)
-
-${base_dir}/tools/bin/token-engine --rp ${base_dir} --efp ${base_dir}/.env $*

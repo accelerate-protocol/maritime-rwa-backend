@@ -48,7 +48,8 @@ interface ICreation {
         uint256 fundTemplateId,
         bytes memory fundInitData,
         uint256 dividendTemplateId,
-        bytes memory dividendInitData
+        bytes memory dividendInitData,
+        address guardian
     ) external;
     /**
      * @notice Set the addresses of all factory contracts.
