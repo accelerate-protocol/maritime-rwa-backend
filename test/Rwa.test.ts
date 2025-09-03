@@ -333,7 +333,7 @@ describe("RWA:", function () {
     ).to.be.revertedWith("Auth/not-authorized");
   });
 
-  it("rbf and vault dividend", async function () {
+  it("rbf and vault dividend with VaultV3 and RBFV2", async function () {
     const VAULT = await ethers.getContractAt("Vault", vault);
     const maxSupply = await VAULT.maxSupply();
     const financePrice = await VAULT.financePrice();
@@ -346,6 +346,7 @@ describe("RWA:", function () {
       whitelists.length,
       minAmount
     );
+    console.log("投资分布:", distribution);
     var vaultInvest: any;
     var USDT: any;
     const managerSigner = await ethers.getSigner(manager);
@@ -494,6 +495,34 @@ describe("RWA:", function () {
     await expect(rbfDrds.claimDeposit()).to.be.revertedWith(
       expectedErrorMessage
     );
+
+
+    //Update contract to VaultV3 and RBFV2
+    const guardianSigner = await ethers.getSigner(guardian);
+
+    const VaultV3 = await ethers.getContractFactory("VaultV3");
+    var vaultV3 = await VaultV3.deploy();
+    await vaultV3.waitForDeployment();
+    const vaultData = await vaultRouter.getVaultInfo(vaultId);
+    const vaultProxyAdmin = vaultData.vaultProxyAdmin;
+    const proxyAdmin = await ethers.getContractAt("ProxyAdmin", vaultProxyAdmin);
+    await proxyAdmin.connect(guardianSigner).upgrade(vault, vaultV3);
+    const RBFV2 = await ethers.getContractFactory("RBFV2");
+    var rbfV2 = await RBFV2.deploy();
+    await rbfV2.waitForDeployment();
+    const rbfData = await rbfRouter.getRBFInfo(vaultId);
+    const rbfProxyAdmin = rbfData.rbfProxyAdmin;
+    const proxyAdminRBF = await ethers.getContractAt("ProxyAdmin", rbfProxyAdmin);
+    await proxyAdminRBF.connect(guardianSigner).upgrade(rbf, rbfV2);
+
+
+    const vaultManagerV3 = await hre.ethers.getContractAt(
+      "VaultV3",
+      vault,
+      managerSigner
+    );
+
+
     await expect(rbfDrds.dividend()).to.be.revertedWith(expectedErrorMessage);
 
     await expect(rbfManager.dividend()).to.be.revertedWith(
@@ -528,7 +557,22 @@ describe("RWA:", function () {
         USDTdepositTreasury.transfer(rbfDividendTreasury, dividendAmount)
       ).not.to.be.reverted;
       await expect(rbfManager.dividend()).not.to.be.reverted;
-      await expect(vaultManager.dividend()).not.to.be.reverted;
+      console.log("累计派息权重",await vaultManagerV3.totalAccumulatedShares());
+      console.log("累计派息额",await vaultManagerV3.totalDividend());
+      console.log("供应量",await vaultManagerV3.totalSupply());
+      for (let i = 0; i < whitelists.length; i++) {
+        console.log("investor:", whitelists[i], "balance:",await vaultManagerV3.balanceOf(whitelists[i]),"pendingReward:",await vaultManagerV3.pendingReward(whitelists[i]));
+        const investSigner = await ethers.getSigner(whitelists[i]);
+        vaultInvest = await hre.ethers.getContractAt(
+        "VaultV3",
+        vault,
+        investSigner
+        );
+        await vaultInvest.claimReward();
+      }
+
+      
+      //await expect(vaultManager.dividend()).not.to.be.reverted;
     }
     await expect(priceFeedDrds.addPrice(0, Math.floor(Date.now() / 1000))).not
       .to.be.reverted;
@@ -544,6 +588,7 @@ describe("RWA:", function () {
       incomeArr.push(investorBalance);
       totalDividend = totalDividend + investorBalance;
     }
+
     console.log("总派息额", totalDividend);
     console.log(investArr);
     console.log(incomeArr);
@@ -562,8 +607,6 @@ describe("RWA:", function () {
 
     const extraAmount=2000000000;
     await expect(USDT.mint(manager, extraAmount)).not.to.be.reverted;
-
-    
     const vaultData = await vaultRouter.getVaultInfo(vaultId);
     const vault = vaultData.vault;
     const vaultProxyAdmin = vaultData.vaultProxyAdmin;

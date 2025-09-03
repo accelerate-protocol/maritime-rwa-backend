@@ -15,7 +15,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
-import "../vault/Vault.sol";
+import "../vault/VaultV3.sol";
 import "../interface/AggregatorV3Interface.sol";
 import "../interface/IRBF.sol";
 
@@ -184,17 +184,20 @@ contract RBFV2 is
             balanceOf(vault) > 0,
             "RBF: vault balance must be greater than 0"
         );
-        address vaultDividendTreasury = Vault(vault).dividendTreasury();
+        uint256 dividendAmount = (balanceOf(vault) * totalDividend) / totalSupply;
         require(
-            vaultDividendTreasury != address(0),
-            "RBF: vault dividendTreasury cant not be zero"
+            dividendAmount > 0,
+            "RBF: dividendAmount must greater than zero"
         );
-        _dividend(
-            balanceOf(vault),
-            totalSupply,
-            totalDividend,
-            vaultDividendTreasury
+        SafeERC20.safeTransferFrom(
+            IERC20(assetToken),
+            dividendTreasury,
+            address(this),
+            dividendAmount
         );
+        bool authRes = IERC20(assetToken).approve(vault, dividendAmount);
+        require(authRes, "Vault: assetToken approve error");
+        VaultV3(vault).dividend(dividendAmount);
     }
 
     /**
@@ -283,24 +286,6 @@ contract RBFV2 is
         return rbfDecimals;
     }
 
-    function _dividend(
-        uint256 rbfAmount,
-        uint256 totalSupply,
-        uint256 totalDividend,
-        address receiver
-    ) internal {
-        uint256 dividendAmount = (rbfAmount * totalDividend) / totalSupply;
-        require(
-            dividendAmount > 0,
-            "RBF: dividendAmount must greater than zero"
-        );
-        SafeERC20.safeTransferFrom(
-            IERC20(assetToken),
-            dividendTreasury,
-            receiver,
-            dividendAmount
-        );
-    }
 
     function _scaleUp(uint256 amount) internal view returns (uint256) {
         return amount * decimalsMultiplier;
