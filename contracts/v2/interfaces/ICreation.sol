@@ -74,6 +74,13 @@ interface ICreation {
      */
     function removeFromWhitelist(address user) external;
 
+    /**
+     * @notice Check if a user is whitelisted.
+     * @param user The address to check.
+     * @return True if the user is whitelisted.
+     */
+    function whitelist(address user) external view returns (bool);
+
     // ============ Query Interfaces ============
     /**
      * @notice Get the addresses of all factory contracts.

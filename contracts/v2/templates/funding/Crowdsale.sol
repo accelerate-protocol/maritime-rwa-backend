@@ -394,8 +394,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuard, Ownable {
     }
     
     /**
-     * @dev Get total amount raised
-     * @return Total amount raised
+     * @dev Get total asset amount raised
+     * @return Total asset raised
      */
     function getTotalRaised() external view override returns (uint256) {
         return fundingAssets;
