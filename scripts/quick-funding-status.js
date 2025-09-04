@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 
 async function main() {
     // 众筹合约地址 - 请根据实际情况修改
-    const fundAddress = "0x756E852C21bC1a7f7235638EF333a21a95d214fA"; // 替换为实际的众筹合约地址
+    const fundAddress = "0x613A471042Ee37501cFE17c3F09673b633969827"; // 替换为实际的众筹合约地址
     
     try {
         const fund = await ethers.getContractAt("Crowdsale", fundAddress);
@@ -13,7 +13,7 @@ async function main() {
         
         // 基础状态
         const isInitialized = await fund.isInitialized();
-        const isFundingPeriodActive = await fund.isFundingSuccessful();
+        const isFundingPeriodActive = await fund.isFundingPeriodActive();
         const isFundingSuccessful = await fund.isFundingSuccessful();
         
         console.log(`状态: ${isInitialized ? '✅ 已初始化' : '❌ 未初始化'}`);
@@ -21,7 +21,7 @@ async function main() {
         console.log(`众筹结果: ${isFundingSuccessful ? '🎉 成功' : '⏳ 进行中/失败'}`);
         
         // 关键数据
-        const totalRaised = await fund.getTotalRaised();
+        const totalRaisedUsd = await fund.getTotalRaised();
         const softCap = await fund.softCap();
         const maxSupply = await fund.maxSupply();
         const remainingSupply = await fund.getRemainingSupply();
@@ -31,22 +31,25 @@ async function main() {
         const sharePrice = await fund.sharePrice();
         
         console.log(`\n💰 资金状态:`);
-        console.log(`总筹集: ${ethers.formatUnits(totalRaised, 6)} asset`);
-        console.log(`软顶: ${ethers.formatUnits(softCap, 6)} asset`);
-        console.log(`最大供应: ${ethers.formatUnits(maxSupply, 6)} asset`);
-        console.log(`剩余供应: ${ethers.formatUnits(remainingSupply, 6)} asset`);
+        console.log(`总筹集: ${ethers.formatUnits(totalRaisedUsd, 6)} asset`);
+        console.log(`软顶: ${ethers.formatUnits(softCap, 6)} vlt`);
+        console.log(`最大供应: ${ethers.formatUnits(maxSupply, 6)} vlt`);
+        console.log(`剩余供应: ${ethers.formatUnits(remainingSupply, 6)} vlt`);
         console.log(`管理费: ${ethers.formatUnits(manageFee, 6)} asset`);
-        console.log(`管理费比例: ${manageFeeBps}%`);
+        console.log(`管理费比例: ${Number(manageFeeBps) / 100}%`);
         console.log(`资金资产: ${ethers.formatUnits(fundingAssets, 6)} asset`);
-        console.log(`份额代币价格: ${ethers.formatUnits(sharePrice, 8)} asset`);
+        console.log(`份额代币价格: ${ethers.formatUnits(sharePrice, 8)} funding`);
         
         // 进度条
-        const softCapProgress = (Number(totalRaised) / Number(softCap)) * 100;
-        const maxProgress = (Number(totalRaised) / Number(maxSupply)) * 100;
+        const totalRaised = Number(totalRaisedUsd) * 1e8 / Number(sharePrice);
+        const softCapProgress = (totalRaised / Number(softCap)) * 100;
+        const maxProgress = (totalRaised / Number(maxSupply)) * 100;
         
         console.log(`\n📊 进度:`);
-        console.log(`软顶达成: ${softCapProgress.toFixed(1)}% ${'█'.repeat(Math.floor(softCapProgress/5))}${'░'.repeat(20-Math.floor(softCapProgress/5))}`);
-        console.log(`最大供应: ${maxProgress.toFixed(1)}% ${'█'.repeat(Math.floor(maxProgress/5))}${'░'.repeat(20-Math.floor(maxProgress/5))}`);
+        const softCapBars = Math.max(0, Math.min(20, Math.floor(softCapProgress/5)));
+        const maxProgressBars = Math.max(0, Math.min(20, Math.floor(maxProgress/5)));
+        console.log(`软顶达成: ${softCapProgress.toFixed(1)}% ${'█'.repeat(softCapBars)}${'░'.repeat(20-softCapBars)}`);
+        console.log(`最大供应: ${maxProgress.toFixed(1)}% ${'█'.repeat(maxProgressBars)}${'░'.repeat(20-maxProgressBars)}`);
         
         // 时间信息
         const startTime = await fund.startTime();
