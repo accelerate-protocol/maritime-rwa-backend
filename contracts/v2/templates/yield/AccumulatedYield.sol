@@ -4,6 +4,7 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -15,26 +16,25 @@ import "../../interfaces/IVault.sol";
  * @dev Accumulated yield template implementation, providing yield distribution based on token holdings
  * @notice Supports accumulated yield and real-time claiming, similar to MasterChef design
  */
-contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable, OwnableUpgradeable  {
+contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,PausableUpgradeable,OwnableUpgradeable  {
+
     using SafeERC20 for IERC20;
     
     // ============ State Variables ============
-    
+    // Precision constant
+    uint256 private constant PRECISION = 1e18;
     GlobalPoolInfo public globalPool;
     mapping(address => UserInfo) public users;
     
     address public vault;
     address public manager;
     address public dividendTreasury;
-    
     // Add nonce for replay protection
     uint256 public dividendNonce;
     
-    // Precision constant
-    uint256 private constant PRECISION = 1e18;
+    
     
     // ============ Modifiers ============
-    
     modifier onlyManager() {
         require(msg.sender == manager, "AccumulatedYield: only manager");
         _;
@@ -83,7 +83,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable, Owna
      * @dev Set manager
      * @param _manager New manager address
      */
-    function setManager(address _manager) external override whenInitialized onlyManager {
+    function setManager(address _manager) external override whenInitialized onlyManager whenNotPaused{
         require(_manager != address(0), "AccumulatedYield: invalid manager");
         address oldManager = manager;
         manager = _manager;
@@ -100,7 +100,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable, Owna
      * @dev Set dividend treasury address
      * @param _dividendTreasury New dividend treasury address
      */
-    function setDividendTreasury(address _dividendTreasury) external override whenInitialized onlyManager {
+    function setDividendTreasury(address _dividendTreasury) external override whenInitialized onlyManager whenNotPaused {
         require(_dividendTreasury != address(0), "AccumulatedYield: invalid dividend treasury");
         address oldTreasury = dividendTreasury;
         dividendTreasury = _dividendTreasury;
@@ -114,7 +114,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable, Owna
      */
     function updateGlobalPoolStatus(
         bool isActive
-    ) external override whenInitialized onlyManager {
+    ) external override whenInitialized onlyManager whenNotPaused{
         globalPool.isActive = isActive;
     }
     
@@ -122,7 +122,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable, Owna
     /**
      * @dev User claim rewards
      */
-    function claimReward() external override whenInitialized onlyActivePool nonReentrant {
+    function claimReward() external override whenInitialized onlyActivePool nonReentrant whenNotPaused {
         // First update user pool information
         _updateUserPool(msg.sender);
         
@@ -153,7 +153,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable, Owna
     function distributeDividend(
         uint256 dividendAmount,
         bytes memory signature
-    ) external override whenInitialized onlyDividendTreasury onlyActivePool nonReentrant {
+    ) external override whenInitialized onlyDividendTreasury onlyActivePool nonReentrant whenNotPaused {
         require(dividendAmount > 0, "AccumulatedYield: invalid dividend amount");
         
         // Get validator address from Vault
@@ -198,7 +198,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable, Owna
         address from,
         address to,
         uint256 amount
-    ) external override {
+    ) external override whenNotPaused {
         require(msg.sender == vault, "AccumulatedYield: only vault can call");
         
         if (from != address(0)) {
@@ -335,6 +335,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable, Owna
 
         __Ownable_init();
         __ReentrancyGuard_init();
+        __Pausable_init();
         
         // Set vault, manager and dividendTreasury
         vault = _vault;
@@ -425,6 +426,20 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable, Owna
         uint256 pending = totalReward > userInfo.totalClaimed ? totalReward - userInfo.totalClaimed : 0;
         
         return pending;
+    }
+
+     /**
+     * @dev Pause 
+     */
+    function pause() external onlyInitializing onlyManager {
+        _pause();
+    }
+    
+    /**
+     * @dev Resume 
+     */
+    function unpause() external  onlyInitializing onlyManager  {
+        _unpause();
     }
     
 

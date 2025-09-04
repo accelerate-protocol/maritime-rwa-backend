@@ -16,13 +16,15 @@ import "../../interfaces/IVault.sol";
  */
 contract VaultToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgradeable {
     // ============ State Variables ============
+    // Constants
+    uint8 private constant MAX_DECIMALS = 24;
+
     address public vault;
     
     // Token metadata
     uint8 private _tokenDecimals;
     
-    // Constants
-    uint8 private constant MAX_DECIMALS = 24;
+    
     
     // ============ Modifiers ============
     
@@ -65,7 +67,6 @@ contract VaultToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
      * @param amount Mint amount
      */
     function mint(address to, uint256 amount) external override onlyInitializing onlyVault {
-        require(to != address(0), "VaultToken: mint to zero address");
         require(amount > 0, "VaultToken: mint amount must be positive");
         _mint(to, amount);
     }
@@ -76,9 +77,7 @@ contract VaultToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
      * @param amount Burn amount
      */
     function burnFrom(address account, uint256 amount) external override onlyInitializing onlyVault {
-        require(account != address(0), "VaultToken: burn from zero address");
         require(amount > 0, "VaultToken: burn amount must be positive");
-        require(balanceOf(account) >= amount, "VaultToken: insufficient balance");
         
         _spendAllowance(account, _msgSender(), amount);
         _burn(account, amount);
@@ -124,7 +123,7 @@ contract VaultToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
     /**
      * @dev Resume token transfers
      */
-    function unpause() external override onlyInitializing onlyVault whenPaused {
+    function unpause() external override onlyInitializing onlyVault {
         _unpause();
     }
     
@@ -152,6 +151,7 @@ contract VaultToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
 
         __ERC20_init(_name, _symbol);
         __Ownable_init();
+        __Pausable_init();
         // Transfer ownership to vault
         _transferOwnership(_vault);
         // Pause token trading during funding period

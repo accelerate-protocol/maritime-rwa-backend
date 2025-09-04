@@ -18,6 +18,7 @@ contract AccumulatedYieldFactory is IYieldTempFactory {
         bytes memory initData,
         address guardian
     ) public override returns (address,address,address) { 
+        require(guardian != address(0), "AccumulatedYieldFactory: guardian can not be zero address");
         AccumulatedYield yieldImpl = new AccumulatedYield();
         ProxyAdmin proxyAdmin = new ProxyAdmin();
         TransparentUpgradeableProxy vaultProxy = new TransparentUpgradeableProxy(

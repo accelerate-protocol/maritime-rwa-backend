@@ -4,6 +4,7 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../../interfaces/IVault.sol";
 import "../../interfaces/IToken.sol";
 import "../../interfaces/IAccumulatedYield.sol";
@@ -15,15 +16,15 @@ import "../../interfaces/ICrowdsale.sol";
  * @dev Basic vault template implementation, providing fundamental storage and permission management
  * @notice This contract does not contain specific business logic, business functions are implemented by other modules
  */
-contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable,PausableUpgradeable {
     // ============ State Variables ============
     
-    address public override manager;
-    bool public override whitelistEnabled;
-    mapping(address => bool) public override isWhitelisted;
-    address public override validator;
-    bytes public override dataHash;
-    bytes public override signature;
+    address public manager;
+    bool public  whitelistEnabled;
+    mapping(address => bool) public isWhitelisted;
+    address public validator;
+    bytes public dataHash;
+    bytes public signature;
     
     // Cross-contract addresses
     address public yield;
@@ -83,7 +84,7 @@ contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @dev Add address to whitelistonlyInitializing
      * @param _addr Address to add
      */
-    function addToWhitelist(address _addr) external override onlyInitializing onlyManager {
+    function addToWhitelist(address _addr) external override onlyInitializing onlyManager whenNotPaused{
         _addToWhitelist(_addr);
     }
     
@@ -91,7 +92,7 @@ contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @dev Remove address from whitelist
      * @param _addr Address to remove
      */
-    function removeFromWhitelist(address _addr) external override onlyInitializing onlyManager {
+    function removeFromWhitelist(address _addr) external override onlyInitializing onlyManager whenNotPaused{
         require(isWhitelisted[_addr], "BasicVault: not whitelisted");
         
         isWhitelisted[_addr] = false;
@@ -101,7 +102,7 @@ contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev Enable whitelist
      */
-    function enableWhitelist() external override onlyInitializing onlyManager {
+    function enableWhitelist() external override onlyInitializing onlyManager whenNotPaused{
         whitelistEnabled = true;
         emit WhitelistStatusChanged(true);
     }
@@ -109,7 +110,7 @@ contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev Disable whitelist
      */
-    function disableWhitelist() external override onlyInitializing onlyManager {
+    function disableWhitelist() external override onlyInitializing onlyManager whenNotPaused{
         whitelistEnabled = false;
         emit WhitelistStatusChanged(false);
     }
@@ -136,7 +137,7 @@ contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @param hash Data hash
      * @param _signature Signature data
      */
-    function updateVerifyData(bytes memory hash, bytes memory _signature) external override onlyManager {
+    function updateVerifyData(bytes memory hash, bytes memory _signature) external override onlyManager whenNotPaused {
         dataHash = hash;
         signature = _signature;
         emit VerifyDataUpdated(hash, _signature);
@@ -145,7 +146,7 @@ contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev Pause token
      */
-    function pauseToken() external override onlyInitializing onlyManager {
+    function pauseToken() external override onlyInitializing onlyManager whenNotPaused {
         require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).pause();
         emit TokenPaused();
@@ -154,8 +155,8 @@ contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev Unpause token
      */
-    function unpauseToken() external override onlyInitializing {
-        require(msg.sender == manager || msg.sender == funding, "BasicVault: only manager or funding");
+    function unpauseToken() external override onlyInitializing whenNotPaused {
+        require(msg.sender == manager, "BasicVault: only manager or funding");
         require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).unpause();
         emit TokenUnpaused();
@@ -177,7 +178,7 @@ contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @param to Recipient address
      * @param amount Amount to mint
      */
-    function mintToken(address to, uint256 amount) external override onlyInitializing onlyFunding whenWhitelisted(to) {
+    function mintToken(address to, uint256 amount) external override onlyInitializing onlyFunding whenWhitelisted(to) whenNotPaused {
         require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).mint(to, amount);
     }
@@ -187,7 +188,7 @@ contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @param from Address to burn from
      * @param amount Amount to burn
      */
-    function burnToken(address from, uint256 amount) external override onlyInitializing onlyFunding whenWhitelisted(from) {
+    function burnToken(address from, uint256 amount) external override onlyInitializing onlyFunding whenWhitelisted(from) whenNotPaused{
         require(vaultToken != address(0), "BasicVault: token not set");
         IToken(vaultToken).burnFrom(from, amount);
     }
@@ -198,7 +199,7 @@ contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @param to To address
      * @param amount Transfer amount
      */
-    function onTokenTransfer(address from, address to, uint256 amount) external override onlyInitializing whenWhitelisted(from) whenWhitelisted(to) {
+    function onTokenTransfer(address from, address to, uint256 amount) external override onlyInitializing whenWhitelisted(from) whenWhitelisted(to) whenNotPaused {
         require(msg.sender == vaultToken, "BasicVault: only token can call");
         if (yield != address(0) && from != address(0) && to != address(0)) {
             IAccumulatedYield(yield).updateUserPoolsOnTransfer(from, to, amount);
@@ -206,7 +207,7 @@ contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
     
     // ============ Vault Token Management ============
-    function configureModules(address _vaultToken, address _funding, address _yield) external override onlyInitializing {
+    function configureModules(address _vaultToken, address _funding, address _yield) external override onlyInitializing  whenNotPaused{
         _setVaultToken(_vaultToken);
         _setFundingModule(_funding);
         _setDividendModule(_yield);
@@ -288,6 +289,7 @@ contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         __Ownable_init();
         __ReentrancyGuard_init();
+        __Pausable_init();
         manager = _manager;
         validator = _validator;
         whitelistEnabled = _whitelistEnabled;
@@ -297,6 +299,20 @@ contract BasicVault is IVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
             _addToWhitelist(_initialWhitelist[i]);
         }
         _transferOwnership(_manager);
+    }
+
+     /**
+     * @dev Pause 
+     */
+    function pause() external onlyInitializing onlyManager {
+        _pause();
+    }
+    
+    /**
+     * @dev Resume
+     */
+    function unpause() external  onlyInitializing onlyManager  {
+        _unpause();
     }
     
 } 

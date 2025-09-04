@@ -19,6 +19,7 @@ contract CrowdsaleFactory is IFundTempFactory {
         bytes memory initData,
         address guardian
     ) public override returns (address,address,address) { 
+        require(guardian != address(0), "CrowdsaleFactory: guardian can not be zero address");
         Crowdsale fundImpl = new Crowdsale();
         ProxyAdmin proxyAdmin = new ProxyAdmin();
         TransparentUpgradeableProxy tokenProxy = new TransparentUpgradeableProxy(

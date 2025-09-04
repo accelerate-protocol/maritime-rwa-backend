@@ -4,6 +4,7 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -18,38 +19,36 @@ import "../../interfaces/IToken.sol";
  * @dev Crowdsale template implementation, providing fair fundraising functionality
  * @notice Supports on-chain and off-chain deposits, refundable if funding fails
  */
-contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable {
+contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable,PausableUpgradeable{
     using SafeERC20 for IERC20;
     using ECDSA for bytes32;
-    
-    // ============ State Variables ============
-    
-    address public override vault;
-    uint256 public override startTime;
-    uint256 public override endTime;
-    address public override assetToken;
-    uint256 public override maxSupply;
-    uint256 public override softCap;
-    uint256 public override sharePrice;
-    uint256 public override minDepositAmount;
-    uint256 public override manageFeeBps;
-    address public override fundingReceiver;
-    address public override manageFeeReceiver;
-    uint256 public override decimalsMultiplier;
-    address public override manager;
-    uint256 public override fundingAssets;
-    uint256 public override manageFee;
 
-    // Constants
+     // Constants
     uint256 public constant BPS_DENOMINATOR = 10_000;
     uint256 public constant SHARE_PRICE_DENOMINATOR = 10**8;
     
+    // ============ State Variables ============
+    address public vault;
+    uint256 public startTime;
+    uint256 public endTime;
+    address public assetToken;
+    uint256 public maxSupply;
+    uint256 public softCap;
+    uint256 public sharePrice;
+    uint256 public minDepositAmount;
+    uint256 public manageFeeBps;
+    address public fundingReceiver;
+    address public manageFeeReceiver;
+    uint256 public decimalsMultiplier;
+    address public manager;
+    uint256 public fundingAssets;
+    uint256 public manageFee;
+
     // Nonce tracking for users (to prevent replay attacks)
     mapping(address => uint256) public callerNonce;
 
     
     // ============ Modifiers ============
-    
     modifier onlyManager() {
         require(msg.sender == manager, "Crowdsale: only manager");
         _;
@@ -74,7 +73,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     
     
     // ============ Constructor ============
-    
     constructor() {
         _disableInitializers();
     }
@@ -105,6 +103,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         onlyInitializing
         onlyDuringFunding 
         nonReentrant 
+        whenNotPaused
     {
         require(amount >= minDepositAmount, "Crowdsale: amount less than minimum");
         require(receiver != address(0), "Crowdsale: invalid receiver");
@@ -149,7 +148,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
             actualShares = remainingSupply;
             uint256 actualNetAmount = _getNetAssetsForShares(remainingSupply);
             actualAmount = (actualNetAmount * BPS_DENOMINATOR) / (BPS_DENOMINATOR - manageFeeBps); // Convert back to gross amount
-            
             require(actualAmount >= minDepositAmount, "Crowdsale: remaining amount below minimum");
         } else {
             actualShares = requestedShares;
@@ -189,6 +187,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         onlyInitializing
         onlyAfterFundingFailed 
         nonReentrant 
+        whenNotPaused
     {
         require(receiver != address(0), "Crowdsale: invalid receiver");
         require(amount > 0, "Crowdsale: amount must be greater than 0");
@@ -250,6 +249,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         onlyInitializing
         onlyManager 
         onlyDuringFunding 
+        nonReentrant
+        whenNotPaused
     {
         require(amount >= minDepositAmount, "Crowdsale: amount less than minimum");
         require(receiver != address(0), "Crowdsale: invalid receiver");
@@ -291,6 +292,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         onlyInitializing
         onlyManager 
         onlyAfterFundingFailed 
+        nonReentrant
+        whenNotPaused
     {
         require(receiver != address(0), "Crowdsale: invalid receiver");
         
@@ -312,7 +315,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     /**
      * @dev Withdraw funding assets (only when funding is successful)
      */
-    function withdrawFundingAssets() external override onlyInitializing onlyAfterFundingSuccess nonReentrant {
+    function withdrawFundingAssets() external override onlyInitializing onlyAfterFundingSuccess nonReentrant whenNotPaused {
         require(msg.sender == fundingReceiver, "Crowdsale: only funding receiver");
         require(fundingAssets > 0, "Crowdsale: no funding assets");
         
@@ -327,7 +330,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     /**
      * @dev Withdraw management fee (only when funding is successful)
      */
-    function withdrawManageFee() external override onlyInitializing onlyAfterFundingSuccess nonReentrant {
+    function withdrawManageFee() external override onlyInitializing onlyAfterFundingSuccess nonReentrant whenNotPaused {
         require(msg.sender == manageFeeReceiver, "Crowdsale: only manage fee receiver");
         require(manageFee > 0, "Crowdsale: no manage fee");
         
@@ -343,7 +346,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
      * @dev Unpause token trading when funding is successful
      * This function should be called after funding period ends and funding is successful
      */
-    function unpauseTokenOnFundingSuccess() external override onlyInitializing onlyManager onlyAfterFundingSuccess {
+    function unpauseTokenOnFundingSuccess() external override onlyInitializing onlyManager onlyAfterFundingSuccess whenNotPaused {
         // Unpause token trading through vault
         IVault(vault).unpauseToken();
         
@@ -507,6 +510,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
 
         __Ownable_init();
         __ReentrancyGuard_init();
+        __Pausable_init();
         vault = _vault;
         startTime = _startTime;
         endTime = _endTime;
@@ -591,6 +595,21 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         uint256 managerFee = (netAssetAmount * manageFeeBps) / (BPS_DENOMINATOR - manageFeeBps);
         
         return managerFee;
+    }
+
+
+     /**
+     * @dev Pause 
+     */
+    function pause() external onlyInitializing onlyManager {
+        _pause();
+    }
+    
+    /**
+     * @dev Resume 
+     */
+    function unpause() external  onlyInitializing onlyManager  {
+        _unpause();
     }
     
 } 

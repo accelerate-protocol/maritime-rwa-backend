@@ -18,6 +18,7 @@ contract VaultTokenFactory is ITokenTempFactory {
         bytes memory initData,
         address guardian
     ) public override returns (address,address,address) { 
+        require(guardian != address(0), "VaultTokenFactory: guardian can not be zero address");
         VaultToken tokenImpl = new VaultToken();
         ProxyAdmin proxyAdmin = new ProxyAdmin();
         TransparentUpgradeableProxy tokenProxy = new TransparentUpgradeableProxy(

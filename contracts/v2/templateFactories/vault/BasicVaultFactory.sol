@@ -16,6 +16,7 @@ contract BasicVaultFactory is IVaultTempFactory {
         bytes memory initData,
         address guardian
     ) public override returns (address,address,address) { 
+        require(guardian != address(0), "BasicVaultFactory: guardian can not be zero address");
         BasicVault vaultImpl = new BasicVault();
         ProxyAdmin proxyAdmin = new ProxyAdmin();
         TransparentUpgradeableProxy vaultProxy = new TransparentUpgradeableProxy(
