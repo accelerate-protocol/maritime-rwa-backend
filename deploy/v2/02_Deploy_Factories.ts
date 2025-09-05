@@ -59,10 +59,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("=== 添加 Mock 模板到工厂 ===");
 
   // 获取已部署的真实模板合约
-  const basicVault = await get("BasicVault");
-  const vaultToken = await get("VaultToken");
-  const crowdsale = await get("Crowdsale");
-  const accumulatedYield = await get("AccumulatedYield");
+  const basicVault = await get("BasicVaultFactory");
+  const vaultToken = await get("VaultTokenFactory");
+  const crowdsale = await get("CrowdsaleFactory");
+  const accumulatedYield = await get("AccumulatedYieldFactory");
 
   // 5. 添加模板到 VaultFactory
   console.log("添加 BasicVault 到 VaultFactory...");

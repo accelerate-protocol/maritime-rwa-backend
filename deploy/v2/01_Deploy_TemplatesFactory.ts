@@ -9,9 +9,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("=== 部署 V2 模板合约 ===");
 
   // 1. 部署 BasicVault 模板
-  console.log("部署 BasicVault 模板...");
-  const basicVault = await deploy("BasicVault", {
-    contract: "contracts/v2/templates/vault/BasicVault.sol:BasicVault",
+  console.log("部署 BasicVaultFactory 模板...");
+  const basicVault = await deploy("BasicVaultFactory", {
+    contract: "contracts/v2/templateFactories/vault/BasicVaultFactory.sol:BasicVaultFactory",
     from: deployer,
     args: [],
     log: true,
@@ -21,9 +21,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await new Promise(resolve => setTimeout(resolve, 2000));
 
   // 2. 部署 VaultToken 模板
-  console.log("部署 VaultToken 模板...");
-  const vaultToken = await deploy("VaultToken", {
-    contract: "contracts/v2/templates/token/VaultToken.sol:VaultToken",
+  console.log("部署 VaultTokenFactory 模板...");
+  const vaultToken = await deploy("VaultTokenFactory", {
+    contract: "contracts/v2/templateFactories/token/VaultTokenFactory.sol:VaultTokenFactory",
     from: deployer,
     args: [],
     log: true,
@@ -34,8 +34,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // 3. 部署 funding 模板
   console.log("部署 funding 模板...");
-  const crowdsale = await deploy("Crowdsale", {
-    contract: "contracts/v2/templates/funding/Crowdsale.sol:Crowdsale",
+  const crowdsale = await deploy("CrowdsaleFactory", {
+    contract: "contracts/v2/templateFactories/funding/CrowdsaleFactory.sol:CrowdsaleFactory",
     from: deployer,
     args: [],
     log: true,
@@ -46,8 +46,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // 4. 部署 Yield 模板
   console.log("部署 Yield 模板...");
-  const accumulatedYield = await deploy("AccumulatedYield", {
-    contract: "contracts/v2/templates/yield/AccumulatedYield.sol:AccumulatedYield",
+  const accumulatedYield = await deploy("AccumulatedYieldFactory", {
+    contract: "contracts/v2/templateFactories/yield/AccumulatedYieldFactory.sol:AccumulatedYieldFactory",
     from: deployer,
     args: [],
     log: true,
