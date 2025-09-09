@@ -2,41 +2,41 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { getNamedAccounts } = hre;
-  const { deployer } = await getNamedAccounts();
+  console.log("=== Accelerate Protocol V2 Architecture Description ===");
+  console.log("V2 architecture adopts a modular design, mainly including the following components:");
+  
+  console.log("1. Template Contracts (Templates):");
+console.log("   - CoreVault: Vault template contract");
+console.log("   - ShareToken: Token template contract");
+console.log("   - Crowdsale: Crowdfunding template contract");
+console.log("   - AccumulatedYield: Yield template contract");
 
-  console.log("==========================================");
-  console.log("      开始部署 Accelerate V2 架构         ");
-  console.log("==========================================");
-  console.log("部署账户 (deployer):", deployer);
-  console.log("网络 (network):", hre.network.name);
-  console.log("区块号 (block number):", await hre.ethers.provider.getBlockNumber());
-  console.log("==========================================");
-  console.log(`
-  V2架构部署顺序：
+console.log("2. Template Factories (TemplateFactories):");
+console.log("   - CoreVaultTemplateFactory: Vault template factory, responsible for creating vault instances");
+console.log("   - ShareTokenTemplateFactory: Token template factory, responsible for creating token instances");
+console.log("   - CrowdsaleTemplateFactory: Crowdfunding template factory, responsible for creating crowdfunding instances");
+console.log("   - AccumulatedYieldTemplateFactory: Yield template factory, responsible for creating yield instances");
   
-  1. 📄 部署模板合约 (Templates)
-     ├── Vault 模板（如 BasicVault 等）
-     ├── Token 模板（如 VaultToken 等）
-     ├── Fund 模板（如 Crowdsale 等）
-     └── Yield 模板（如 AccumulatedYield 等）
+  console.log("3. Template Registries (TemplateRegistry):");
+  console.log("   - VaultTemplateRegistry: Vault template registry, manages vault templates");
+  console.log("   - TokenTemplateRegistry: Token template registry, manages token templates");
+  console.log("   - FundTemplateRegistry: Crowdfunding template registry, manages crowdfunding templates");
+  console.log("   - YieldTemplateRegistry: Yield template registry, manages yield templates");
   
-  2. 🏭 部署工厂合约 (Factories)
-     ├── VaultFactory
-     ├── TokenFactory
-     ├── FundFactory
-     └── YieldFactory
+  console.log("4. Creation Contract (Creation):");
+  console.log("   - Creation: One-click deployment contract, integrates all template registries, enables one-click deployment of complete projects");
   
-  3. 🔗 添加模板到工厂
-     └── 为每个模板分配ID
+  console.log("Deployment Process:");
+console.log("1. Deploy template contracts (Templates)");
+console.log("2. Deploy template factories (TemplateFactories)");
+console.log("3. Deploy template registries (TemplateRegistry)");
+console.log("4. Add template factories to corresponding template registries");
+console.log("5. Deploy Creation contract, passing in addresses of each template registry");
   
-  4. 🚀 部署 Creation 部署器
-     └── 设置工厂地址，支持白名单权限
-  开始执行...
-  `);
+  console.log("=== Architecture Description Complete ===");
 };
 
+
 export default func;
-func.tags = ["v2-overview"];
-func.dependencies = []; // 最先执行
-func.runAtTheEnd = false; 
+func.tags = ["v2-deploy-all"];
+func.dependencies = ["v2-creation","ValidatorRegistry"];

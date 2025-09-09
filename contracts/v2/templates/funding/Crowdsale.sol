@@ -9,29 +9,29 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "../../interfaces/ICrowdsale.sol";
-import "../../interfaces/IVault.sol";
-import "../../interfaces/IToken.sol";
-
+import "../../interfaces/templates/ICrowdsale.sol";
+import "../../interfaces/templates/IVault.sol";
+import "../../interfaces/templates/IToken.sol";
 
 /**
  * @title Crowdsale
  * @dev Crowdsale template implementation, providing fair fundraising functionality
  * @notice Supports on-chain and off-chain deposits, refundable if funding fails
  */
-contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable,PausableUpgradeable{
+contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable,PausableUpgradeable {
     using SafeERC20 for IERC20;
     using ECDSA for bytes32;
 
      // Constants
     uint256 public constant BPS_DENOMINATOR = 10_000;
     uint256 public constant SHARE_PRICE_DENOMINATOR = 10**8;
-    
+
     // ============ State Variables ============
     address public vault;
     uint256 public startTime;
     uint256 public endTime;
     address public assetToken;
+    address public shareToken;
     uint256 public maxSupply;
     uint256 public softCap;
     uint256 public sharePrice;
@@ -41,16 +41,26 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     address public manageFeeReceiver;
     uint256 public decimalsMultiplier;
     address public manager;
+    address public offchainManager;
+
     uint256 public fundingAssets;
     uint256 public manageFee;
 
     // Nonce tracking for users (to prevent replay attacks)
     mapping(address => uint256) public callerNonce;
 
+    // Initialization state
+    bool private _initialized;
+
     
     // ============ Modifiers ============
     modifier onlyManager() {
         require(msg.sender == manager, "Crowdsale: only manager");
+        _;
+    }
+
+    modifier onlyOffChainManager() {
+        require(msg.sender == offchainManager, "Crowdsale: only offchain manager");
         _;
     }
     
@@ -70,6 +80,11 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         require(isFundingSuccessful(), "Crowdsale: funding was not successful");
         _;
     }
+
+    modifier onlyInitialized() {
+        require(_initialized, "Crowdsale: not initialized");
+        _;
+    }
     
     
     // ============ Constructor ============
@@ -85,9 +100,19 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
      * @param _token Token address
      * @param _initData Encoded initialization data
      */
-    function initiate(address _vault, address _token, bytes memory _initData) external  initializer {
-        (uint256 _startTime, uint256 _endTime, address _assetToken, uint256 _maxSupply, uint256 _softCap, uint256 _sharePrice, uint256 _minDepositAmount, uint256 _manageFeeBps, address _fundingReceiver, address _manageFeeReceiver, address _manager) = abi.decode(_initData, (uint256, uint256, address, uint256, uint256, uint256, uint256, uint256, address, address, address));
-        _initCrowdsale(_vault, _token, _startTime, _endTime, _assetToken, _maxSupply, _softCap, _sharePrice, _minDepositAmount, _manageFeeBps, _fundingReceiver, _manageFeeReceiver, _manager);
+    function initiate(address _vault, address _token, bytes memory _initData) external initializer {
+        require(!_initialized, "Crowdsale: already initialized");
+        
+        // Decode initialization data
+        CrowdsaleInitializeData memory data = abi.decode(_initData, (CrowdsaleInitializeData));
+        
+        // Set vault and token addresses
+        require(_vault != address(0), "Crowdsale: invalid vault");
+        require(_token != address(0), "Crowdsale: invalid token");
+        vault = _vault;
+        shareToken = _token;
+        
+        _initCrowdsale(data);
     }
     
     // ============ Funding Operations ============
@@ -100,8 +125,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     function deposit(uint256 amount, address receiver, bytes memory signature) 
         external 
         override 
-        onlyInitializing
-        onlyDuringFunding 
+        onlyInitialized
+        onlyDuringFunding
         nonReentrant 
         whenNotPaused
     {
@@ -120,24 +145,14 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
             contractAddress: address(this)
         });
         
-        bytes32 messageHash = keccak256(abi.encodePacked(
-            sigData.operation,
-            sigData.amount,
-            sigData.receiver,
-            sigData.nonce,
-            sigData.chainId,
-            sigData.contractAddress
-        ));
-        bytes32 ethSignedMessageHash = messageHash.toEthSignedMessageHash();
-        address signer = ethSignedMessageHash.recover(signature);
-        require(signer == manager, "Crowdsale: invalid signature");
+        _verifySignature(sigData, signature);
         
         // Calculate shares for the requested amount (with fee deduction for on-chain)
         uint256 feeAmount = (amount * manageFeeBps) / BPS_DENOMINATOR;
         uint256 netAmount = amount - feeAmount;
         uint256 requestedShares = _getSharesForAssets(netAmount);
-        
-        uint256 currentSupply = IToken(IVault(vault).vaultToken()).totalSupply();
+
+        uint256 currentSupply = IToken(shareToken).totalSupply();
         uint256 remainingSupply = maxSupply - currentSupply;
         
         // Check if we can fulfill the full request
@@ -184,7 +199,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     function redeem(uint256 amount, address receiver, bytes memory signature) 
         external 
         override 
-        onlyInitializing
+        onlyInitialized
         onlyAfterFundingFailed 
         nonReentrant 
         whenNotPaused
@@ -193,12 +208,12 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         require(amount > 0, "Crowdsale: amount must be greater than 0");
         
         // Get user's total balance and verify they have enough shares
-        uint256 userShares = IToken(IVault(vault).vaultToken()).balanceOf(msg.sender);
+        uint256 userShares = IToken(shareToken).balanceOf(msg.sender);
         require(userShares >= amount, "Crowdsale: insufficient shares to redeem");
         
         // Verify signature using OnChainSignatureData structure
         uint256 nonce = callerNonce[msg.sender]++;
-        
+
         ICrowdsale.OnChainSignatureData memory sigData = ICrowdsale.OnChainSignatureData({
             operation: "redeem",
             amount: amount,
@@ -208,21 +223,11 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
             contractAddress: address(this)
         });
         
-        bytes32 messageHash = keccak256(abi.encodePacked(
-            sigData.operation,
-            sigData.amount,
-            sigData.receiver,
-            sigData.nonce,
-            sigData.chainId,
-            sigData.contractAddress
-        ));
-        bytes32 ethSignedMessageHash = messageHash.toEthSignedMessageHash();
-        address signer = ethSignedMessageHash.recover(signature);
-        require(signer == manager, "Crowdsale: invalid signature");
+        _verifySignature(sigData, signature);
         
         // Calculate refund assets for the specified amount of shares
         uint256 netAssetAmount = _getNetAssetsForShares(amount);
-        uint256 feeAmount = _gethManagerFeeWithShares(amount);
+        uint256 feeAmount = _getManagerFeeWithShares(amount);
         uint256 grossAssetAmount = netAssetAmount + feeAmount;
         
         // Burn the specified amount of tokens through vault
@@ -246,8 +251,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     function offChainDeposit(uint256 amount, address receiver) 
         external 
         override 
-        onlyInitializing
-        onlyManager 
+        onlyInitialized
+        onlyOffChainManager
         onlyDuringFunding 
         nonReentrant
         whenNotPaused
@@ -257,8 +262,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         
         // Calculate shares for the requested amount (no fee deduction for off-chain)
         uint256 requestedShares = _getSharesForAssets(amount);
-        
-        uint256 currentSupply = IToken(IVault(vault).vaultToken()).totalSupply();
+
+        uint256 currentSupply = IToken(shareToken).totalSupply();
         uint256 remainingSupply = maxSupply - currentSupply;
         
         // Check if we can fulfill the full request
@@ -289,8 +294,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     function offChainRedeem(address receiver) 
         external 
         override 
-        onlyInitializing
-        onlyManager 
+        onlyInitialized
+        onlyOffChainManager
         onlyAfterFundingFailed 
         nonReentrant
         whenNotPaused
@@ -298,7 +303,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         require(receiver != address(0), "Crowdsale: invalid receiver");
         
         // Get user's total balance (redeem all shares)
-        uint256 userShares = IToken(IVault(vault).vaultToken()).balanceOf(receiver);
+        uint256 userShares = IToken(shareToken).balanceOf(receiver);
         require(userShares > 0, "Crowdsale: no shares to redeem");
         
         // Calculate refund assets for all shares
@@ -315,8 +320,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     /**
      * @dev Withdraw funding assets (only when funding is successful)
      */
-    function withdrawFundingAssets() external override onlyInitializing onlyAfterFundingSuccess nonReentrant whenNotPaused {
-        require(msg.sender == fundingReceiver, "Crowdsale: only funding receiver");
+    function withdrawFundingAssets() external override onlyInitialized onlyAfterFundingSuccess nonReentrant whenNotPaused {
+        require(msg.sender == fundingReceiver || msg.sender == manager, "Crowdsale: only funding receiver or manager");
         require(fundingAssets > 0, "Crowdsale: no funding assets");
         
         uint256 amount = fundingAssets;
@@ -330,8 +335,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     /**
      * @dev Withdraw management fee (only when funding is successful)
      */
-    function withdrawManageFee() external override onlyInitializing onlyAfterFundingSuccess nonReentrant whenNotPaused {
-        require(msg.sender == manageFeeReceiver, "Crowdsale: only manage fee receiver");
+    function withdrawManageFee() external override onlyInitialized onlyAfterFundingSuccess nonReentrant whenNotPaused {
+        require(msg.sender == manageFeeReceiver || msg.sender == manager, "Crowdsale: only manage fee receiver or manager");
         require(manageFee > 0, "Crowdsale: no manage fee");
         
         uint256 amount = manageFee;
@@ -341,18 +346,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         
         emit ManageFeeWithdrawn(msg.sender, manageFeeReceiver, amount);
     }
-    
-    /**
-     * @dev Unpause token trading when funding is successful
-     * This function should be called after funding period ends and funding is successful
-     */
-    function unpauseTokenOnFundingSuccess() external override onlyInitializing onlyManager onlyAfterFundingSuccess whenNotPaused {
-        // Unpause token trading through vault
-        IVault(vault).unpauseToken();
-        
-        emit TokenUnpausedOnFundingSuccess();
-    }
-    
     
 
     // ============ Query Interface ============
@@ -365,8 +358,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
      * 2. Time ended AND softCap reached
      */
     function isFundingSuccessful() public view override returns (bool) {
-        uint256 currentSupply = IToken(IVault(vault).vaultToken()).totalSupply();
-        
+        uint256 currentSupply = IToken(shareToken).totalSupply();
+
         // Condition 1: MaxSupply reached (immediate success)
         if (currentSupply >= maxSupply) {
             return true;
@@ -376,7 +369,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         if (block.timestamp > endTime && currentSupply >= softCap) {
             return true;
         }
-        
+
         return false;
     }
     
@@ -401,11 +394,10 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
      * @return Remaining supply
      */
     function getRemainingSupply() external view override returns (uint256) {
-        uint256 currentSupply = IToken(IVault(vault).vaultToken()).totalSupply();
+        uint256 currentSupply = IToken(shareToken).totalSupply();
         return maxSupply > currentSupply ? maxSupply - currentSupply : 0;
     }
     
-
 
     /**
      * @dev Query caller nonce for signature verification
@@ -417,117 +409,72 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     }
     
     /**
-     * @dev Generate deposit signature message hash for backend signing
-     * @param amount Deposit amount
-     * @param receiver Receiver address
-     * @param nonce Manager nonce
-     * @return Message hash to be signed
+     * @dev Set a new manager address
+     * @param newManager The new manager address
      */
-    function getDepositSignatureMessage(
-        uint256 amount,
-        address receiver,
-        uint256 nonce
-    ) external view override returns (bytes32) {
-        bytes32 messageHash = keccak256(abi.encodePacked(
-            "deposit",
-            amount,
-            receiver,
-            nonce,
-            block.chainid,
-            address(this)
-        ));
-        return messageHash;
+    function setManager(address newManager) external override onlyManager {
+        require(newManager != address(0), "Crowdsale: invalid manager address");
+        address oldManager = manager;
+        manager = newManager;
+        emit ManagerChanged(oldManager, newManager);
     }
     
     /**
-     * @dev Generate redeem signature message hash for backend signing
-     * @param amount Number of shares to redeem
-     * @param receiver Receiver address
-     * @param nonce Manager nonce
-     * @return Message hash to be signed
+     * @dev Set a new offchain manager address
+     * @param newOffchainManager The new offchain manager address
      */
-    function getRedeemSignatureMessage(
-        uint256 amount,
-        address receiver,
-        uint256 nonce
-    ) external view override returns (bytes32) {
-        bytes32 messageHash = keccak256(abi.encodePacked(
-            "redeem",
-            amount,
-            receiver,
-            nonce,
-            block.chainid,
-            address(this)
-        ));
-        return messageHash;
+    function setOffchainManager(address newOffchainManager) external override onlyOffChainManager {
+        require(newOffchainManager != address(0), "Crowdsale: invalid offchain manager address");
+        address oldOffchainManager = offchainManager;
+        offchainManager = newOffchainManager;
+        emit OffchainManagerChanged(oldOffchainManager, newOffchainManager);
     }
 
-    
     // ============ Internal Functions ============
 
     /**
      * @dev _Initialize crowdsale contract (for Clones pattern)
-     * @param _vault Vault contract address
-     * @param _startTime Start time
-     * @param _endTime End time
-     * @param _assetToken Asset token address
-     * @param _maxSupply Maximum supply
-     * @param _softCap Soft cap (funding threshold)
-     * @param _sharePrice Share price
-     * @param _minDepositAmount Minimum deposit amount
-     * @param _manageFeeBps Management fee basis points
-     * @param _fundingReceiver Funding receiver address
-     * @param _manageFeeReceiver Management fee receiver address
-     * @param _manager Manager address
+     * @param data Crowdsale initialization data structure
      */
     function _initCrowdsale(
-        address _vault,
-        address _token,
-        uint256 _startTime,
-        uint256 _endTime,
-        address _assetToken,
-        uint256 _maxSupply,
-        uint256 _softCap,
-        uint256 _sharePrice,
-        uint256 _minDepositAmount,
-        uint256 _manageFeeBps,
-        address _fundingReceiver,
-        address _manageFeeReceiver,
-        address _manager
+        CrowdsaleInitializeData memory data
     ) internal {
-        require(_vault != address(0), "Crowdsale: invalid vault");
-        require(_startTime < _endTime, "Crowdsale: invalid time range");
-        require(_endTime > block.timestamp, "Crowdsale: end time in past");
-        require(_assetToken != address(0), "Crowdsale: invalid asset token");
-        require(_maxSupply > 0, "Crowdsale: invalid max supply");
-        require(_softCap >= 0 && _softCap <= _maxSupply, "Crowdsale: invalid soft cap");
-        require(_sharePrice > 0, "Crowdsale: invalid share price");
-        require(_minDepositAmount > 0, "Crowdsale: invalid min deposit");
-        require(_manageFeeBps <= BPS_DENOMINATOR, "Crowdsale: invalid manage fee");
-        require(_fundingReceiver != address(0), "Crowdsale: invalid funding receiver");
-        require(_manageFeeReceiver != address(0), "Crowdsale: invalid fee receiver");
-        require(_manager != address(0), "Crowdsale: invalid manager");
+        require(data.startTime < data.endTime, "Crowdsale: invalid time range");
+        require(data.endTime > block.timestamp, "Crowdsale: end time in past");
+        require(data.assetToken != address(0), "Crowdsale: invalid asset token");
+        require(data.maxSupply > 0, "Crowdsale: invalid max supply");
+        require(data.softCap >= 0 && data.softCap <= data.maxSupply, "Crowdsale: invalid soft cap");
+        require(data.sharePrice > 0, "Crowdsale: invalid share price");
+        require(data.minDepositAmount > 0, "Crowdsale: invalid min deposit");
+        require(data.manageFeeBps <= BPS_DENOMINATOR, "Crowdsale: invalid manage fee");
+        require(data.fundingReceiver != address(0), "Crowdsale: invalid funding receiver");
+        require(data.manageFeeReceiver != address(0), "Crowdsale: invalid fee receiver");
+        require(data.manager != address(0), "Crowdsale: invalid manager");
 
         __Ownable_init();
         __ReentrancyGuard_init();
         __Pausable_init();
-        vault = _vault;
-        startTime = _startTime;
-        endTime = _endTime;
-        assetToken = _assetToken;
-        maxSupply = _maxSupply;
-        softCap = _softCap;
-        sharePrice = _sharePrice;
-        minDepositAmount = _minDepositAmount;
-        manageFeeBps = _manageFeeBps;
-        fundingReceiver = _fundingReceiver;
-        manageFeeReceiver = _manageFeeReceiver;
+        
+        // Set state variables from data structure
+        startTime = data.startTime;
+        endTime = data.endTime;
+        assetToken = data.assetToken;
+        maxSupply = data.maxSupply;
+        softCap = data.softCap;
+        sharePrice = data.sharePrice;
+        minDepositAmount = data.minDepositAmount;
+        manageFeeBps = data.manageFeeBps;
+        fundingReceiver = data.fundingReceiver;
+        manageFeeReceiver = data.manageFeeReceiver;
+        manager = data.manager;
+        offchainManager = data.offchainManager;
 
         decimalsMultiplier = 10 **
-                (IERC20Metadata(_token).decimals() -
-                    IERC20Metadata(_assetToken).decimals());
-        manager = _manager;
-        _transferOwnership(_manager);
+                (IERC20Metadata(shareToken).decimals() -
+                    IERC20Metadata(data.assetToken).decimals());
+        
+        _transferOwnership(data.manager);
+        _initialized = true;
     }
     
     /**
@@ -576,7 +523,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
      * @param shareAmount Share amount
      * @return managerFee amount
      */
-    function _gethManagerFeeWithShares(uint256 shareAmount) internal view returns (uint256) {
+    function _getManagerFeeWithShares(uint256 shareAmount) internal view returns (uint256) {
         // 1. Get the net asset amount using shared logic
         uint256 netAssetAmount = _getNetAssetsForShares(shareAmount);
         
@@ -598,18 +545,41 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     }
 
 
+    /**
+     * @dev Internal function to verify signature for on-chain operations
+     * @param sigData The signature data structure containing operation, amount, receiver, nonce, etc.
+     * @param signature The signature to verify
+     */
+    function _verifySignature(
+        OnChainSignatureData memory sigData,
+        bytes memory signature
+    ) internal view {
+        bytes32 messageHash = keccak256(abi.encodePacked(
+            sigData.operation,
+            sigData.amount,
+            sigData.receiver,
+            sigData.nonce,
+            sigData.chainId,
+            sigData.contractAddress
+        ));
+        bytes32 ethSignedMessageHash = messageHash.toEthSignedMessageHash();
+        address signer = ethSignedMessageHash.recover(signature);
+        require(signer == manager, "Crowdsale: invalid signature");
+    }
+
+
      /**
      * @dev Pause 
      */
-    function pause() external onlyInitializing onlyManager {
+    function pause() external onlyInitialized onlyManager {
         _pause();
     }
     
     /**
      * @dev Resume 
      */
-    function unpause() external  onlyInitializing onlyManager  {
+    function unpause() external onlyInitialized onlyManager  {
         _unpause();
     }
     
-} 
+}

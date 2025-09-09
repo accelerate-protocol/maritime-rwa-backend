@@ -52,3 +52,5 @@ deployments/localhost/VaultFactory.json
 deployments/localhost/VaultToken.json
 deployments/localhost/YieldFactory.json
 deployments/localhost/solcInputs/cb275360d9a04dde38842e7637f9762c.json
+/abis/
+/deployments/

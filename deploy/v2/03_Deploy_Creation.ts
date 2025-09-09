@@ -1,60 +1,60 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 
+// Add delay function
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Get sleep time based on network type
+const getSleepTime = (networkName: string): number => {
+  // Local networks use shorter delay
+  if (networkName === "hardhat" || networkName === "localhost") {
+    return 100; // 100 milliseconds
+  }
+  // Other networks use longer delay
+  return 5000; // 5 seconds
+};
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { deployments, getNamedAccounts, ethers } = hre;
+  const { deployments, getNamedAccounts, network } = hre;
   const { deploy, get } = deployments;
   const { deployer } = await getNamedAccounts();
-
-  console.log("=== 部署 V2 Creation 部署器 ===");
-
-  // ============ 获取工厂地址 ============
-  console.log("获取工厂地址...");
   
-  // 获取已部署的工厂合约地址
-  const vaultFactory = await get("VaultFactory");
-  const tokenFactory = await get("TokenFactory");
-  const fundFactory = await get("FundFactory");
-  const YieldFactory = await get("YieldFactory");
+  // Set sleep time based on network type
+  const sleepTime = getSleepTime(network.name);
 
-  console.log("VaultFactory:", vaultFactory.address);
-  console.log("TokenFactory:", tokenFactory.address);
-  console.log("FundFactory:", fundFactory.address);
-  console.log("YieldFactory:", YieldFactory.address);
+  console.log("=== Deploying V2 Creation Contract ===\n");
 
-  // ============ 部署Creation合约 ============
-  
+  // Get deployed template registries
+  const vaultRegistry = await get("VaultTemplateRegistry");
+  const tokenRegistry = await get("TokenTemplateRegistry");
+  const fundRegistry = await get("FundTemplateRegistry");
+  const yieldRegistry = await get("YieldTemplateRegistry");
+
+  // Deploy Creation contract
+  console.log("Deploying Creation contract...");
   const creation = await deploy("Creation", {
-    from: deployer,
     contract: "contracts/v2/creation/Creation.sol:Creation",
+    from: deployer,
     args: [
-      vaultFactory.address,
-      tokenFactory.address,
-      fundFactory.address,
-      YieldFactory.address
+      vaultRegistry.address,
+      tokenRegistry.address,
+      fundRegistry.address,
+      yieldRegistry.address,
+      [] // initialManagers
     ],
     log: true,
     waitConfirmations: 1,
+    skipIfAlreadyDeployed: false,
   });
-
-  console.log("✓ Creation合约部署完成");
-
-  // ============ 验证配置 ============
-  // sleep 1s
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  console.log("\n=== 验证 Creation 配置 ===");
+  console.log(`✓ Creation contract deployed to: ${creation.address}\n`);
   
-  const creationContract = await ethers.getContractAt("Creation", creation.address);
-  const factories = await creationContract.getFactories();
-  console.log("VaultFactory:", factories[0]);
-  console.log("TokenFactory:", factories[1]); 
-  console.log("FundFactory:", factories[2]);
-  console.log("YieldFactory:", factories[3]);
-
-  console.log("=== V2 Creation 部署完成 ===");
-  console.log("Creation:", creation.address);
+  // Add delay to avoid nonce errors
+  console.log(`Waiting ${sleepTime/1000} seconds...`);
+  await sleep(sleepTime);
+  
+  console.log("V2 deployment completed!");
 };
 
 export default func;
-func.tags = ["v2-infrastructure", "v2-creation"];
-func.dependencies = ["v2-factories"]; // 依赖工厂部署 
+func.tags = ["v2-creation"];
+func.dependencies = ["v2-template-registry"];

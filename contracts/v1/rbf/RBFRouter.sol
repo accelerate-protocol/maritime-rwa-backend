@@ -7,7 +7,7 @@
 /_/  |_|\___/  \___/  \___/ /_/   \___/ /_/     \__,_/  \__/  \___/
 
 */
-pragma solidity 0.8.26;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interface/IRBFFactory.sol";
@@ -228,7 +228,7 @@ contract RBFRouter is IRBFRouter, Ownable {
         bytes32 s;
         uint8 v;
 
-        // 分割 r, s, v
+        // Split r, s, v
         assembly {
             r := mload(add(signature, 0x20))
             s := mload(add(signature, 0x40))

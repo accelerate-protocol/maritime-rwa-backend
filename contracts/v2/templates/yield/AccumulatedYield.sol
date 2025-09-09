@@ -8,8 +8,8 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "../../interfaces/IAccumulatedYield.sol";
-import "../../interfaces/IVault.sol";
+import "../../interfaces/templates/IAccumulatedYield.sol";
+import "../../interfaces/templates/IVault.sol";
 
 /**
  * @title AccumulatedYield
@@ -21,8 +21,6 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
     using SafeERC20 for IERC20;
     
     // ============ State Variables ============
-    // Precision constant
-    uint256 private constant PRECISION = 1e18;
     GlobalPoolInfo public globalPool;
     mapping(address => UserInfo) public users;
     
@@ -32,6 +30,8 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
     // Add nonce for replay protection
     uint256 public dividendNonce;
     
+    // Initialization state
+    bool private _initialized;
     
     
     // ============ Modifiers ============
@@ -45,13 +45,8 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
         _;
     }
     
-    modifier onlyActivePool() {
-        require(globalPool.isActive, "AccumulatedYield: pool not active");
-        _;
-    }
-    
-    modifier whenInitialized() {
-        require(globalPool.shareToken != address(0), "AccumulatedYield: not initialized");
+    modifier onlyInitialized() {
+        require(_initialized, "AccumulatedYield: not initialized");
         _;
     }
     
@@ -72,57 +67,16 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
      * @param _initData Encoded initialization data (contains token and original initData)
      */
     function initiate(address _vault, address _vaultToken, bytes memory _initData) external initializer override {
+        require(_initialized == false, "AccumulatedYield: already initialized");
         (address rewardToken, address rewardManager, address dividendTreasuryAddr) = abi.decode(_initData, (address, address, address));
         _initGlobalPool(_vault, rewardManager, dividendTreasuryAddr, _vaultToken, rewardToken);
-    }
-    
-
-    // ============ Global Pool Management ============
-    
-    /**
-     * @dev Set manager
-     * @param _manager New manager address
-     */
-    function setManager(address _manager) external override whenInitialized onlyManager whenNotPaused{
-        require(_manager != address(0), "AccumulatedYield: invalid manager");
-        address oldManager = manager;
-        manager = _manager;
-        
-        // If needed, transfer ownership to new manager
-        if (owner() == oldManager) {
-            _transferOwnership(_manager);
-        }
-        
-        emit ManagerUpdated(oldManager, _manager);
-    }
-    
-    /**
-     * @dev Set dividend treasury address
-     * @param _dividendTreasury New dividend treasury address
-     */
-    function setDividendTreasury(address _dividendTreasury) external override whenInitialized onlyManager whenNotPaused {
-        require(_dividendTreasury != address(0), "AccumulatedYield: invalid dividend treasury");
-        address oldTreasury = dividendTreasury;
-        dividendTreasury = _dividendTreasury;
-        
-        emit DividendTreasuryUpdated(oldTreasury, _dividendTreasury);
-    }
-    
-    /**
-     * @dev Update global pool status
-     * @param isActive Whether to activate
-     */
-    function updateGlobalPoolStatus(
-        bool isActive
-    ) external override whenInitialized onlyManager whenNotPaused{
-        globalPool.isActive = isActive;
     }
     
     // ============ User Operations ============
     /**
      * @dev User claim rewards
      */
-    function claimReward() external override whenInitialized onlyActivePool nonReentrant whenNotPaused {
+    function claimReward() external override onlyInitialized nonReentrant whenNotPaused {
         // First update user pool information
         _updateUserPool(msg.sender);
         
@@ -153,19 +107,11 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
     function distributeDividend(
         uint256 dividendAmount,
         bytes memory signature
-    ) external override whenInitialized onlyDividendTreasury onlyActivePool nonReentrant whenNotPaused {
+    ) external override onlyInitialized onlyDividendTreasury nonReentrant whenNotPaused {
         require(dividendAmount > 0, "AccumulatedYield: invalid dividend amount");
         
-        // Get validator address from Vault
-        address validator = IVault(vault).validator();
-        require(validator != address(0), "AccumulatedYield: validator not set");
-        
-        // Verify signature with nonce to prevent replay attacks
-        bytes32 payload = keccak256(abi.encodePacked(vault, dividendAmount, dividendNonce));
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(payload);
-        
-        address signer = ECDSA.recover(ethSignedMessageHash, signature);
-        require(signer == validator, "AccumulatedYield: invalid signature");
+        // Verify signature
+        _verifySignature(dividendAmount, signature);
         
         // Increment nonce to prevent replay
         dividendNonce++;
@@ -182,6 +128,8 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
         
         globalPool.totalAccumulatedShares += totalSupply * dividendAmount;
         
+        // Get validator for event emission
+        address validator = IVault(vault).getValidator();
         emit DividendDistributed(dividendAmount, block.timestamp, validator, signature);
     }
     
@@ -213,15 +161,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
     }
     
     // ============ Query Interface ============
-    
-    /**
-     * @dev Query global pool information
-     * @return Global pool information structure
-     */
-    function getGlobalPoolInfo() external view override returns (GlobalPoolInfo memory) {
-        return globalPool;
-    }
-    
+
     /**
      * @dev Query user information
      * @param user User address
@@ -262,52 +202,12 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
     }
     
     /**
-     * @dev Query current manager
-     * @return Manager address
-     */
-    function getManager() external view override returns (address) {
-        return manager;
-    }
-    
-    /**
-     * @dev Query dividend treasury address
-     * @return Dividend treasury address
-     */
-    function getDividendTreasury() external view override returns (address) {
-        return dividendTreasury;
-    }
-    
-    /**
      * @dev Get current dividend nonce
      * @return Current dividend nonce
      */
     function getDividendNonce() external view override returns (uint256) {
         return dividendNonce;
     }
-    
-    /**
-     * @dev Calculate user's accumulated shares at specified balance
-     * @param user User address
-     * @param userBalance Specified user balance
-     * @return Accumulated shares
-     */
-    function calculateAccumulatedShares(address user, uint256 userBalance) external view override returns (uint256) {
-        if (globalPool.shareToken == address(0)) {
-            return 0;
-        }
-        
-        UserInfo memory userInfo = users[user];
-        
-        // Calculate dividend delta
-        uint256 deltaDiv = globalPool.totalDividend - userInfo.lastClaimDividend;
-        
-        // Accumulated shares = user's current accumulated shares + specified balance * dividend delta
-        uint256 accumulatedShares = userInfo.accumulatedShares + userBalance * deltaDiv;
-        
-        return accumulatedShares;
-    }
-    
-
     
     // ============ Internal Functions ============
     /**
@@ -336,7 +236,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
         __Ownable_init();
         __ReentrancyGuard_init();
         __Pausable_init();
-        
+
         // Set vault, manager and dividendTreasury
         vault = _vault;
         manager = _manager;
@@ -349,10 +249,11 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
             totalAccumulatedShares: 0,
             lastDividendTime: block.timestamp,
             totalDividend: 0,
-            isActive: true,
             shareToken: shareToken,
             rewardToken: rewardToken
         });
+    
+        _initialized = true;
         
         emit GlobalPoolInitialized(shareToken, rewardToken, block.timestamp);
     }
@@ -415,9 +316,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
         // 1: Calculate user's total reward with higher precision
         uint256 totalReward;
         if (globalPool.totalAccumulatedShares > 0) {
-            // Use higher precision calculation to avoid precision loss
-            totalReward = (simulatedAccumulatedShares * globalPool.totalDividend * PRECISION) / globalPool.totalAccumulatedShares;
-            totalReward = totalReward / PRECISION; // Convert back to original precision
+            totalReward = (simulatedAccumulatedShares * globalPool.totalDividend) / globalPool.totalAccumulatedShares;
         } else {
             totalReward = 0;
         }
@@ -431,16 +330,46 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
      /**
      * @dev Pause 
      */
-    function pause() external onlyInitializing onlyManager {
+    function pause() external onlyInitialized onlyManager {
         _pause();
     }
     
     /**
      * @dev Resume 
      */
-    function unpause() external  onlyInitializing onlyManager  {
+    function unpause() external onlyInitialized onlyManager  {
         _unpause();
     }
-    
 
-} 
+    /**
+     * @dev Verify signature for dividend distribution
+     * @param dividendAmount Distribution amount
+     * @param signature Dividend signature
+     */
+    function _verifySignature(uint256 dividendAmount, bytes memory signature) internal view {
+        // Get validator address from Vault
+        address validator = IVault(vault).getValidator();
+        require(validator != address(0), "AccumulatedYield: validator not set");
+        
+        // Verify signature with nonce to prevent replay attacks
+        bytes32 payload = keccak256(abi.encodePacked(vault, dividendAmount, dividendNonce));
+        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(payload);
+        
+        address signer = ECDSA.recover(ethSignedMessageHash, signature);
+        require(signer == validator, "AccumulatedYield: invalid signature");
+    }
+
+    // ============ Manager Management Interface ============
+    /**
+     * @dev Set a new manager address
+     * @param newManager The new manager address
+     */
+    function setManager(address newManager) external override onlyManager {
+        require(newManager != address(0), "AccumulatedYield: invalid manager address");
+        address oldManager = manager;
+        manager = newManager;
+        _transferOwnership(newManager);
+        emit ManagerChanged(oldManager, newManager);
+    }
+
+}
