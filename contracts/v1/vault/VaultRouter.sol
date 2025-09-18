@@ -32,9 +32,9 @@ contract VaultRouter is Ownable,IVaultRouter {
         address dividendTreasury;
     }
 
-    // Immutable reference to the escrow factory contract.
+    // Immutable reference to the escrow factories contract.
     IEscrowFactory public immutable escrowFactory;
-    // Immutable reference to the vault factory contract.
+    // Immutable reference to the vault factories contract.
     IVaultFactory public immutable vaultFactory;
     // Counter for tracking the latest deployed vault ID.
     uint64 public vaultNonce;
@@ -44,9 +44,9 @@ contract VaultRouter is Ownable,IVaultRouter {
     mapping(address => bool) public rbfVaultExist;
 
     /**
-     * @dev Constructor initializes the VaultRouter with escrow and vault factory addresses.
-     * @param _escrowFactory Address of the escrow factory contract.
-     * @param _vaultFactory Address of the vault factory contract.
+     * @dev Constructor initializes the VaultRouter with escrow and vault factories addresses.
+     * @param _escrowFactory Address of the escrow factories contract.
+     * @param _vaultFactory Address of the vault factories contract.
      */
     constructor(address _escrowFactory, address _vaultFactory) Ownable() {
         escrowFactory = IEscrowFactory(_escrowFactory);
