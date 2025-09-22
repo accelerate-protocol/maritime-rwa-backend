@@ -5,19 +5,20 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "../../interfaces/templates/IVault.sol";
 import "../../interfaces/templates/ICrowdsale.sol";
 import "../../interfaces/templates/IAccumulatedYield.sol";
 import "../../interfaces/templates/IToken.sol";
 import "../../interfaces/core/IValidatorRegistry.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+
 
 /**
- * @title CoreVault
- * @dev Core vault template implementation, providing fundamental storage and permission management
+ * @title Vault
+ * @dev vault abstract, providing fundamental storage and permission management
  * @notice This contract does not contain specific business logic, business functions are implemented by other modules
  */
-contract CoreVault is
+abstract contract Vault is
     IVault,
     OwnableUpgradeable,
     ReentrancyGuardUpgradeable,
@@ -30,43 +31,42 @@ contract CoreVault is
     // Role identifier for TokenTransfer role
     bytes32 public constant TOKEN_TRANSFER_ROLE = keccak256("TOKEN_TRANSFER_ROLE");
 
+    bytes32 public constant MINT_ROLE = keccak256("MINT_ROLE");
+    bytes32 public constant BURN_ROLE = keccak256("BURN_ROLE");
+    
+
     // ============ State Variables ============
     bool public whitelistEnabled;
-    mapping(address => bool) public isWhitelisted;
+
     // Validator registry address
     address public validatorRegistry;
     
     // Cross-contract addresses
-    address public yield;
     address public vaultToken;
     address public funding;
+    address public yield;
+    
 
     // Initialization state
-    bool private _initialized;
+    bool private initialized;
     
     
     // ============ Modifiers ============
     
     modifier onlyManager() {
-        require(hasRole(MANAGER_ROLE, msg.sender), "CoreVault: only manager");
-        _;
-    }
-    
-    modifier onlyFunding() {
-        require(msg.sender == funding, "CoreVault: only funding");
+        require(hasRole(MANAGER_ROLE, msg.sender), "Vault: only manager");
         _;
     }
 
-    
     modifier whenWhitelisted(address user) {
         if (whitelistEnabled) {
-            require(hasRole(TOKEN_TRANSFER_ROLE, user), "CoreVault: not whitelisted");
+            require(hasRole(TOKEN_TRANSFER_ROLE, user), "Vault: not whitelisted");
         }
         _;
     }
     
     modifier onlyInitialized() {
-        require(_initialized, "CoreVault: not initialized");
+        require(initialized, "Vault: not initialized");
         _;
     }
     
@@ -84,8 +84,7 @@ contract CoreVault is
      * @dev Unified initialization interface
      * @param _initData Encoded initialization data
      */
-    function initiate(bytes memory _initData) external initializer {
-        require(_initialized == false, "CoreVault: already initialized");
+    function initiate(bytes memory _initData) external virtual initializer {
         // decode init data
         (address _manager, address _validator, bool _whitelistEnabled, address[] memory _initialWhitelist) =
         abi.decode(_initData, (address, address, bool, address[]));
@@ -106,8 +105,8 @@ function getValidator() external view returns (address) {
  * @dev Set a new manager address
  * @param newManager The new manager address
  */
-function setManager(address newManager) external override onlyManager {
-    require(newManager != address(0) && newManager!=msg.sender, "CoreVault: invalid manager address");
+function setManager(address newManager) external virtual override onlyManager {
+    require(newManager != address(0) && newManager!=msg.sender, "Vault: invalid manager address");
     _grantRole(MANAGER_ROLE, newManager);
     _revokeRole(MANAGER_ROLE, msg.sender);
     _transferOwnership(newManager);
@@ -117,8 +116,8 @@ function setManager(address newManager) external override onlyManager {
     /**
      * @dev Pause token
      */
-    function pauseToken() external override onlyInitialized onlyManager whenNotPaused {
-        require(vaultToken != address(0), "CoreVault: token not set");
+    function pauseToken() external override virtual onlyInitialized onlyManager whenNotPaused {
+        require(vaultToken != address(0), "Vault: token not set");
         IToken(vaultToken).pause();
         emit TokenPaused();
     }
@@ -126,8 +125,8 @@ function setManager(address newManager) external override onlyManager {
     /**
      * @dev Unpause token
      */
-    function unpauseToken() external override onlyInitialized onlyManager whenNotPaused {
-        require(vaultToken != address(0), "CoreVault: token not set");
+    function unpauseToken() external override virtual onlyInitialized onlyManager whenNotPaused {
+        require(vaultToken != address(0), "Vault: token not set");
         IToken(vaultToken).unpause();
         emit TokenUnpaused();
     }
@@ -148,8 +147,8 @@ function setManager(address newManager) external override onlyManager {
      * @param to Recipient address
      * @param amount Amount to mint
      */
-    function mintToken(address to, uint256 amount) external override onlyInitialized onlyFunding whenWhitelisted(to) whenNotPaused {
-        require(vaultToken != address(0), "CoreVault: token not set");
+    function mintToken(address to, uint256 amount) external virtual override onlyInitialized onlyRole(MINT_ROLE) whenWhitelisted(to) whenNotPaused {
+        require(vaultToken != address(0), "Vault: token not set");
         IToken(vaultToken).mint(to, amount);
     }
     
@@ -158,8 +157,8 @@ function setManager(address newManager) external override onlyManager {
      * @param from Address to burn from
      * @param amount Amount to burn
      */
-    function burnToken(address from, uint256 amount) external override onlyInitialized onlyFunding whenWhitelisted(from) whenNotPaused{
-        require(vaultToken != address(0), "CoreVault: token not set");
+    function burnToken(address from, uint256 amount) external virtual override onlyInitialized onlyRole(BURN_ROLE) whenWhitelisted(from) whenNotPaused{
+        require(vaultToken != address(0), "Vault: token not set");
         IToken(vaultToken).burnFrom(from, amount);
     }
     
@@ -169,24 +168,22 @@ function setManager(address newManager) external override onlyManager {
      * @param to To address
      * @param amount Transfer amount
      */
-    function onTokenTransfer(address from, address to, uint256 amount) external override onlyInitialized whenWhitelisted(from) whenWhitelisted(to) whenNotPaused {
-        require(msg.sender == vaultToken, "CoreVault: only token can call");
-        if (yield != address(0) && from != address(0) && to != address(0)) {
-            IAccumulatedYield(yield).updateUserPoolsOnTransfer(from, to, amount);
-        }
+    function onTokenTransfer(address from, address to, uint256 amount) external virtual override onlyInitialized whenWhitelisted(from) whenWhitelisted(to) whenNotPaused {
+        require(msg.sender == vaultToken, "Vault: only token can call");
+        //empty implementation
     }
     
     // ============ Vault Token Management ============
-    function configureModules(address _vaultToken, address _funding, address _yield) external override onlyInitialized {
+    function configureModules(address _vaultToken, address _funding, address _yield) external virtual override onlyInitialized {
         _setVaultToken(_vaultToken);
         _setFundingModule(_funding);
-        _setDividendModule(_yield);
+        _setYieldModule(_yield);
     }
     
     // Internal methods
-    function _setVaultToken(address _vaultToken) internal {
-        require(vaultToken == address(0), "CoreVault: token already set");
-        require(_vaultToken != address(0), "CoreVault: invalid token address");
+    function _setVaultToken(address _vaultToken) internal virtual {
+        require(vaultToken == address(0), "Vault: token already set");
+        require(_vaultToken != address(0), "Vault: invalid token address");
         vaultToken = _vaultToken;
     }
     
@@ -194,19 +191,19 @@ function setManager(address newManager) external override onlyManager {
      * @dev Set funding module address (can only be set once)
      * @param _funding Funding module address
      */
-    function _setFundingModule(address _funding) internal {
-        require(funding == address(0), "CoreVault: funding already set");
-        require(_funding != address(0), "CoreVault: invalid funding address");
+    function _setFundingModule(address _funding) internal virtual {
+        require(funding == address(0), "Vault: funding already set");
+        require(_funding != address(0), "Vault: invalid funding address");
         funding = _funding;
     }
     
     /**
      * @dev Set dividend module address (can only be set once)
-     * @param _dividendModule Dividend module address
+     * @param _yieldModule Dividend module address
      */
-    function _setDividendModule(address _dividendModule) internal {
-        require(yield == address(0), "CoreVault: dividend module already set");
-        yield = _dividendModule;
+    function _setYieldModule(address _yieldModule) internal virtual {
+        require(yield == address(0), "Vault: dividend module already set");
+        yield = _yieldModule;
     }
     
     // ============ Internal Functions ============
@@ -223,18 +220,20 @@ function setManager(address newManager) external override onlyManager {
         address _validatorRegistry,
         bool _whitelistEnabled,
         address[] memory _initialWhitelist
-    ) internal {
-        require(_manager != address(0), "CoreVault: invalid manager");
-        require(_validatorRegistry != address(0), "CoreVault: invalid validator");
+    ) internal virtual {
+        require(_manager != address(0), "Vault: invalid manager");
+        require(_validatorRegistry != address(0), "Vault: invalid validator");
         // Check if validator implements IValidatorRegistry interface
         try IValidatorRegistry(_validatorRegistry).getValidator() returns (address) {
         } catch {
-            revert("CoreVault: validator does not implement IValidatorRegistry interface");
+            revert("Vault: validator does not implement IValidatorRegistry interface");
         }
 
         __Ownable_init();
         __ReentrancyGuard_init();
         __Pausable_init();
+        __AccessControl_init();
+
         validatorRegistry = _validatorRegistry;
         whitelistEnabled = _whitelistEnabled;
 
@@ -249,20 +248,20 @@ function setManager(address newManager) external override onlyManager {
                 }
             }
         }
-        _initialized = true;
+        initialized = true;
     }
 
      /**
      * @dev Pause 
      */
-    function pause() external onlyInitialized onlyManager {
+    function pause() external virtual onlyInitialized onlyManager {
         _pause();
     }
     
     /**
      * @dev Resume
      */
-    function unpause() external onlyInitialized onlyManager  {
+    function unpause() external virtual onlyInitialized onlyManager  {
         _unpause();
     }
     

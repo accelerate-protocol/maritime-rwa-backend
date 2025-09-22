@@ -86,9 +86,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // Get deployed template factories
   const coreVaultFactory = await get("CoreVaultTemplateFactory");
+  const fundVaultFactory = await get("FundVaultTemplateFactory");
   const shareTokenFactory = await get("ShareTokenTemplateFactory");
   const crowdsaleFactory = await get("CrowdsaleTemplateFactory");
   const accumulatedYieldFactory = await get("AccumulatedYieldTemplateFactory");
+  const fundYieldFactory = await get("FundYieldTemplateFactory");
 
   console.log("=== Adding Template Factories to Corresponding Template Registries ===\n");
 
@@ -102,6 +104,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // Add delay to avoid nonce errors
   console.log(`Waiting ${sleepTime/1000} seconds...`);
   await sleep(sleepTime);
+  await vaultRegistryContract.addTemplate(2,fundVaultFactory.address);
+  console.log(`✓ FundVaultTemplateFactory added to VaultTemplateRegistry\n`);
+
+
 
   // 5.2 Add ShareTokenTemplateFactory to TokenTemplateRegistry
   console.log("Adding ShareTokenTemplateFactory to TokenTemplateRegistry...");
@@ -131,6 +137,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // Add delay to avoid nonce errors
   console.log(`Waiting ${sleepTime/1000} seconds...`);
   await sleep(sleepTime);
+
+
+  console.log("Adding FundYieldTemplateFactory to YieldTemplateRegistry...");
+  await yieldRegistryContract.addTemplate(2, fundYieldFactory.address);
+  console.log(`✓ FundYieldTemplateFactory added to YieldTemplateRegistry\n`);
+
 };
 
 export default func;
