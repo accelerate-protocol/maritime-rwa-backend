@@ -29,6 +29,27 @@ contract VaultV3 is
     OwnableUpgradeable,
     AccessControlUpgradeable
 {
+    event RewardClaimed(
+        address indexed user,
+        uint256 claimedRewardAmount,
+        uint256 timestamp
+    );
+
+     /**
+     * @dev Token transfer event (for tracking transfers that affect yield)
+     */
+    event ShareTokenTransferred(
+        address indexed from,
+        address indexed to,
+        uint256 amount,
+        uint256 timestamp
+    );
+
+    event DividendDistributed(
+        uint256 amount,
+        uint256 timestamp
+    );
+
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     uint256 public constant BPS_DENOMINATOR = 10_000;
     uint256 public constant FINANCE_PRICE_DENOMINATOR = 10 ** 8;
@@ -85,8 +106,6 @@ contract VaultV3 is
     uint8 public vaultDecimals;
 
     // masterchef upgrade 
-    uint256 private constant PRECISION = 1e18;
-
     uint256 public totalAccumulatedShares; 
     uint256 public lastDividendTime; 
     uint256 public totalDividend;
@@ -483,7 +502,9 @@ contract VaultV3 is
         totalDividend+=dividendAmount;
         lastDividendTime=block.timestamp;
         uint256 totalSupply = totalSupply();
-        totalAccumulatedShares+=totalSupply*dividendAmount;        
+        totalAccumulatedShares+=totalSupply*dividendAmount;   
+        emit DividendDistributed(dividendAmount, block.timestamp);
+
     }
 
      function claimReward() public  {
@@ -508,9 +529,7 @@ contract VaultV3 is
             msg.sender,
             pending
         );
-
-
-        //emit RewardClaimed(msg.sender, pending, block.timestamp);
+        emit RewardClaimed(msg.sender, pending, block.timestamp);
     }
 
     
@@ -565,42 +584,6 @@ contract VaultV3 is
         return _calculatePendingRewardAt(user, currentBalance);
     }
 
-    /**
-     * @notice Transfers tokens from the caller to another address.
-     * @dev The function checks if the transfer is authorized before executing it.
-     *      It then updates the sender and receiver balances accordingly.
-     * @param to The recipient address.
-     * @param amount The amount of tokens to transfer.
-     * @return A boolean value indicating whether the transfer was successful.
-     */
-    function transfer(
-        address to,
-        uint256 amount
-    ) public virtual override returns (bool) {
-        _checkTransferAuth(msg.sender, to);
-        bool success = super.transfer(to, amount);
-        return success;
-    }
-
-    /**
-     * @notice Transfers tokens from one address to another using an allowance mechanism.
-     * @dev The function ensures the sender is authorized to transfer on behalf of `from`.
-     *      It then deducts the allowance and transfers the specified amount.
-     * @param from The address from which tokens are transferred.
-     * @param to The recipient address.
-     * @param amount The amount of tokens to transfer.
-     * @return A boolean value indicating whether the transfer was successful.
-     */
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) public virtual override returns (bool) {
-        _checkTransferAuth(from, to);
-        updateUserPoolsOnTransfer(from, to);
-        bool success = super.transferFrom(from, to, amount);
-        return success;
-    }
 
     function _checkTransferAuth(address from, address to) internal view {
         require( 
@@ -652,7 +635,8 @@ contract VaultV3 is
 
      function updateUserPoolsOnTransfer(
         address from,
-        address to
+        address to,
+        uint256 amount
     ) internal  {
         if (from != address(0)) {
             _updateUserPool(from);
@@ -661,7 +645,7 @@ contract VaultV3 is
         if (to != address(0)) {
             _updateUserPool(to);
         }
-        //emit ShareTokenTransferred(from, to, amount, block.timestamp);
+        emit ShareTokenTransferred(from, to, amount, block.timestamp);
     }
 
     function _updateUserPool(address user) internal {
@@ -714,8 +698,7 @@ contract VaultV3 is
         uint256 totalReward;
         if (totalAccumulatedShares > 0) {
             // Use higher precision calculation to avoid precision loss
-            totalReward = (simulatedAccumulatedShares * totalDividend * PRECISION) / totalAccumulatedShares;
-            totalReward = totalReward / PRECISION; // Convert back to original precision
+            totalReward = (simulatedAccumulatedShares * totalDividend ) / totalAccumulatedShares;
         } else {
             totalReward = 0;
         }
@@ -724,6 +707,27 @@ contract VaultV3 is
         uint256 pending = totalReward > userInfo.totalClaimed ? totalReward - userInfo.totalClaimed : 0;
         
         return pending;
+    }
+
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override {
+        super._beforeTokenTransfer(from, to, amount);
+        _checkTransferAuth(from, to);
+        if (from != address(0) && to != address(0)) {
+            updateUserPoolsOnTransfer(from, to, amount);
+        }
+    }
+
+      /**
+     * @dev Query user information
+     * @param user User address
+     * @return User information structure
+     */
+    function getUserInfo(address user) external view returns (UserInfo memory) {
+        return users[user];
     }
 
 

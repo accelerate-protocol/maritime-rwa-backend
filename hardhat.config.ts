@@ -63,9 +63,7 @@ const config: HardhatUserConfig = {
     },
     bscTestnet:{
       url: "https://bsc-testnet.bnbchain.org",
-      accounts: [
-        process.env.PRIVATE_KEY_1!,
-      ],
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 97,
       gasPrice: 5000000000, // 5 Gwei
       gas: 8000000, // 8M gas

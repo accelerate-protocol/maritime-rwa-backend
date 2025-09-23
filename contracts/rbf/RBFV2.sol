@@ -290,9 +290,4 @@ contract RBFV2 is
     function _scaleUp(uint256 amount) internal view returns (uint256) {
         return amount * decimalsMultiplier;
     }
-
-    // 添加新功能或修复 bug
-    function newFunction() public pure returns (string memory) {
-        return "This is RBFV2!";
-    }
 }
