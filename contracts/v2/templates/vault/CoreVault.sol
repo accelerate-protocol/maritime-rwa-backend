@@ -3,8 +3,8 @@ pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "../../interfaces/templates/IVault.sol";
 import "../../interfaces/templates/ICrowdsale.sol";
 import "../../interfaces/templates/IAccumulatedYield.sol";
@@ -106,7 +106,7 @@ function getValidator() external view returns (address) {
  * @dev Set a new manager address
  * @param newManager The new manager address
  */
-function setManager(address newManager) external override onlyManager {
+function setManager(address newManager) external onlyManager {
     require(newManager != address(0) && newManager!=msg.sender, "CoreVault: invalid manager address");
     _grantRole(MANAGER_ROLE, newManager);
     _revokeRole(MANAGER_ROLE, msg.sender);
@@ -232,13 +232,13 @@ function setManager(address newManager) external override onlyManager {
             revert("CoreVault: validator does not implement IValidatorRegistry interface");
         }
 
-        __Ownable_init();
+        __Ownable_init(_manager);
         __ReentrancyGuard_init();
         __Pausable_init();
         validatorRegistry = _validatorRegistry;
         whitelistEnabled = _whitelistEnabled;
 
-        _transferOwnership(_manager);
+
 
         _grantRole(MANAGER_ROLE, _manager);
         _setRoleAdmin(TOKEN_TRANSFER_ROLE, MANAGER_ROLE);

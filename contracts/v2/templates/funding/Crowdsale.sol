@@ -3,12 +3,13 @@ pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "../../interfaces/templates/ICrowdsale.sol";
 import "../../interfaces/templates/IVault.sol";
 import "../../interfaces/templates/IToken.sol";
@@ -443,7 +444,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         require(data.endTime > block.timestamp, "Crowdsale: end time in past");
         require(data.assetToken != address(0), "Crowdsale: invalid asset token");
         require(data.maxSupply > 0, "Crowdsale: invalid max supply");
-        require(data.softCap >= 0 && data.softCap <= data.maxSupply, "Crowdsale: invalid soft cap");
+        require(data.softCap <= data.maxSupply, "Crowdsale: invalid soft cap");
         require(data.sharePrice > 0, "Crowdsale: invalid share price");
         require(data.minDepositAmount > 0, "Crowdsale: invalid min deposit");
         require(data.manageFeeBps <= BPS_DENOMINATOR, "Crowdsale: invalid manage fee");
@@ -451,7 +452,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         require(data.manageFeeReceiver != address(0), "Crowdsale: invalid fee receiver");
         require(data.manager != address(0), "Crowdsale: invalid manager");
 
-        __Ownable_init();
+        __Ownable_init(data.manager);
         __ReentrancyGuard_init();
         __Pausable_init();
         
@@ -473,7 +474,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
                 (IERC20Metadata(shareToken).decimals() -
                     IERC20Metadata(data.assetToken).decimals());
         
-        _transferOwnership(data.manager);
+
         _initialized = true;
     }
     
@@ -562,7 +563,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
             sigData.chainId,
             sigData.contractAddress
         ));
-        bytes32 ethSignedMessageHash = messageHash.toEthSignedMessageHash();
+        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(messageHash);
         address signer = ethSignedMessageHash.recover(signature);
         require(signer == manager, "Crowdsale: invalid signature");
     }

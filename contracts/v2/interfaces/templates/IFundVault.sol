@@ -15,6 +15,7 @@ interface IFundVault is IVault {
     function getRoundData(uint256 roundId) external view returns (RoundData memory);
     function lastestRoundData() external view returns (RoundData memory);
     function lastestPrice() external view returns (uint256);
+    function priceDecimals() external view returns (uint8);
 
     event PriceUpdated(uint256 roundId, uint256 price, uint256 timestamp);
 

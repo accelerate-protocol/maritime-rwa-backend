@@ -17,7 +17,7 @@ contract FundVaultTemplateFactory is IVaultTemplateFactory {
     ) public override returns (address,address,address) { 
         require(guardian != address(0), "FundVaultFactory: guardian can not be zero address");
         FundVault vaultImpl = new FundVault();
-        ProxyAdmin proxyAdmin = new ProxyAdmin();
+        ProxyAdmin proxyAdmin = new ProxyAdmin(guardian);
         TransparentUpgradeableProxy vaultProxy = new TransparentUpgradeableProxy(
                 address(vaultImpl),
                 address(proxyAdmin),
@@ -25,7 +25,6 @@ contract FundVaultTemplateFactory is IVaultTemplateFactory {
         );
         FundVault vaultProxied = FundVault(address(vaultProxy));
         vaultProxied.initiate(initData);
-        proxyAdmin.transferOwnership(guardian);
         emit VaultDeployed(address(vaultProxied),address(proxyAdmin),address(vaultImpl),guardian);
         return (address(vaultProxied),address(proxyAdmin),address(vaultImpl));
     }

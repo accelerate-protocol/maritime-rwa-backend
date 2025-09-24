@@ -29,6 +29,4 @@ interface IVault {
     // ============ Query Interface ============
     function getValidator() external view returns (address);
     
-    // ============ Manager Management Interface ============
-    function setManager(address newManager) external;
 }

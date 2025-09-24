@@ -8,7 +8,6 @@ import "../../interfaces/templates/ICrowdsale.sol";
 contract FundVault is Vault,IFundVault { 
 
     bytes32 public constant FEEDER_ROLE = keccak256("FEEDER_ROLE");
-    uint8 public constant priceDecimals = 8;
     // Mapping to store round data, where the key is the round ID and the value is a RoundData struct
     mapping(uint256 => RoundData) private rounds;
     // Stores the latest round ID, which increments each time new data is added
@@ -59,6 +58,10 @@ contract FundVault is Vault,IFundVault {
         _grantRole(MINT_ROLE, funding);
         _grantRole(BURN_ROLE, funding);
         _grantRole(BURN_ROLE, yield);
+    }
+
+    function priceDecimals() external pure returns (uint8){
+        return 8;
     }
 
 

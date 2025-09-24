@@ -18,7 +18,7 @@ contract CoreVaultTemplateFactory is IVaultTemplateFactory {
     ) public override returns (address,address,address) { 
         require(guardian != address(0), "CoreVaultFactory: guardian can not be zero address");
         CoreVault vaultImpl = new CoreVault();
-        ProxyAdmin proxyAdmin = new ProxyAdmin();
+        ProxyAdmin proxyAdmin = new ProxyAdmin(guardian);
         TransparentUpgradeableProxy vaultProxy = new TransparentUpgradeableProxy(
                 address(vaultImpl),
                 address(proxyAdmin),
@@ -26,7 +26,6 @@ contract CoreVaultTemplateFactory is IVaultTemplateFactory {
         );
         CoreVault vaultProxied = CoreVault(address(vaultProxy));
         vaultProxied.initiate(initData);
-        proxyAdmin.transferOwnership(guardian);
         emit VaultDeployed(address(vaultProxied),address(proxyAdmin),address(vaultImpl),guardian);
         return (address(vaultProxied),address(proxyAdmin),address(vaultImpl));
     }

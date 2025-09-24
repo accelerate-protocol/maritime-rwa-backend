@@ -3,11 +3,12 @@ pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "../../interfaces/templates/IAccumulatedYield.sol";
 import "../../interfaces/templates/IVault.sol";
 
@@ -130,6 +131,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
         
         // Get validator for event emission
         address validator = IVault(vault).getValidator();
+        
         emit DividendDistributed(dividendAmount, block.timestamp, validator, signature);
     }
     
@@ -233,7 +235,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
         require(shareToken != address(0), "AccumulatedYield: invalid share token");
         require(rewardToken != address(0), "AccumulatedYield: invalid reward token");
 
-        __Ownable_init();
+        __Ownable_init(_manager);
         __ReentrancyGuard_init();
         __Pausable_init();
 
@@ -241,9 +243,6 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
         vault = _vault;
         manager = _manager;
         dividendTreasury = _dividendTreasury;
-        
-        // Set owner as manager
-        _transferOwnership(_manager);
         
         globalPool = GlobalPoolInfo({
             totalAccumulatedShares: 0,
@@ -353,7 +352,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
         
         // Verify signature with nonce to prevent replay attacks
         bytes32 payload = keccak256(abi.encodePacked(vault, dividendAmount, dividendNonce));
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(payload);
+        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(payload);
         
         address signer = ECDSA.recover(ethSignedMessageHash, signature);
         require(signer == validator, "AccumulatedYield: invalid signature");

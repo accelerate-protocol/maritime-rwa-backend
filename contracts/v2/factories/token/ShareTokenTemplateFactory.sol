@@ -19,7 +19,7 @@ contract ShareTokenTemplateFactory is ITokenTemplateFactory {
     ) public override returns (address,address,address) { 
         require(guardian != address(0), "ShareTokenFactory: guardian can not be zero address");
         ShareToken tokenImpl = new ShareToken();
-        ProxyAdmin proxyAdmin = new ProxyAdmin();
+        ProxyAdmin proxyAdmin = new ProxyAdmin(guardian);
         TransparentUpgradeableProxy tokenProxy = new TransparentUpgradeableProxy(
                 address(tokenImpl),
                 address(proxyAdmin),
@@ -27,7 +27,6 @@ contract ShareTokenTemplateFactory is ITokenTemplateFactory {
         );
         ShareToken tokenProxied = ShareToken(address(tokenProxy));
         tokenProxied.initiate(vault, initData);
-        proxyAdmin.transferOwnership(guardian);
         emit TokenDeployed(address(tokenProxied),address(proxyAdmin),address(tokenImpl),guardian);
         return (address(tokenProxied),address(proxyAdmin),address(tokenImpl));
     }

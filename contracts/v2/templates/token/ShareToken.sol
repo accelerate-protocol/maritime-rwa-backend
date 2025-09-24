@@ -4,8 +4,8 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "../../interfaces/templates/IToken.sol";
 import "../../interfaces/templates/IVault.sol";
 
@@ -98,7 +98,7 @@ contract ShareToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
      * @param to Recipient address
      * @param amount Transfer amount
      */
-    function transfer(address to, uint256 amount) public virtual override(IERC20Upgradeable,ERC20Upgradeable) onlyInitialized whenNotPaused returns (bool) {
+    function transfer(address to, uint256 amount) public virtual override(IERC20,ERC20Upgradeable) onlyInitialized whenNotPaused returns (bool) {
         return super.transfer(to, amount);
     }
 
@@ -108,7 +108,7 @@ contract ShareToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
      * @param to Recipient address
      * @param amount Transfer amount
      */
-    function transferFrom(address from, address to, uint256 amount) public virtual override(IERC20Upgradeable,ERC20Upgradeable) onlyInitialized whenNotPaused returns (bool) {
+    function transferFrom(address from, address to, uint256 amount) public virtual override(IERC20,ERC20Upgradeable) onlyInitialized whenNotPaused returns (bool) {
         return super.transferFrom(from, to, amount);
     }
 
@@ -158,10 +158,9 @@ contract ShareToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
         require(_decimals <= MAX_DECIMALS, "ShareToken: invalid decimals");
 
         __ERC20_init(_name, _symbol);
-        __Ownable_init();
+        __Ownable_init(_vault);
         __Pausable_init();
-        // Transfer ownership to vault
-        _transferOwnership(_vault);
+
         // Pause token trading during funding period
         _pause();
         vault = _vault;
@@ -172,17 +171,30 @@ contract ShareToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
     /**
      * @dev Pre-transfer checks
      */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual override {
-        super._beforeTokenTransfer(from, to, amount);
+    //use _update instead of _beforeTokenTransfer
+    // function _beforeTokenTransfer(
+    //     address from,
+    //     address to,
+    //     uint256 amount
+    // ) internal virtual override {
+    //     super._beforeTokenTransfer(from, to, amount);
+    //     // Call vault hook on token transfer
+    //     if (from != address(0) && to != address(0)) {
+    //         // Only call if vault is a valid contract
+    //         if (vault.code.length > 0) {
+    //             IVault(vault).onTokenTransfer(from, to, amount);
+    //         }
+    //     }
+    // }
+
+    function _update(address from, address to, uint256 value) internal virtual override {
+        super._update(from, to, value);
         // Call vault hook on token transfer
+        // This condition ensures the logic only runs for transfers between two valid addresses
         if (from != address(0) && to != address(0)) {
             // Only call if vault is a valid contract
             if (vault.code.length > 0) {
-                IVault(vault).onTokenTransfer(from, to, amount);
+                IVault(vault).onTokenTransfer(from, to, value);
             }
         }
     }

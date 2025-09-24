@@ -3,11 +3,12 @@ pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "../../interfaces/templates/IFundVault.sol";
 import "../../interfaces/templates/IFundYield.sol";
 
@@ -20,9 +21,10 @@ contract FundYield is
 {
     using SafeERC20 for IERC20;
 
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     bytes32 public constant SETTLE_ROLE = keccak256("SETTLE_ROLE");
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+
 
     address public vault;
     address public shareToken;
@@ -33,7 +35,7 @@ contract FundYield is
     uint256 public lockedShareToken;
     
     // Initialization state
-    bool private initialized;
+    bool public initialized;
 
     mapping(address => mapping(uint256 => RedemptionRequest)) public redemptionEpochRequests;
     mapping(uint256 => RedemptionEpoch) public redemptionEpochs;
@@ -186,14 +188,14 @@ contract FundYield is
             epoch.epochStatus == EpochStatus.Lock,
             "FundYield:Epoch must be locked"
         );
+        epoch.totalRedemptionAssets = assetAmount;
+        epoch.epochStatus = EpochStatus.Liquidate;
         SafeERC20.safeTransferFrom(
             IERC20(rewardToken),
             msg.sender,
             address(this),
             assetAmount
         );
-        epoch.totalRedemptionAssets = assetAmount;
-        epoch.epochStatus = EpochStatus.Liquidate;
         emit RedemptionEpochLiquidated(
             msg.sender,
             epochId,
@@ -236,9 +238,23 @@ contract FundYield is
         );
     }
 
-    function setStartTime(uint256 _startTime) external onlyRole(MANAGER_ROLE) {
+    function setStartTime(uint256 _startTime) external onlyInitialized onlyRole(MANAGER_ROLE) {
         startTime = _startTime;
         emit StartTimeSet(_startTime);
+    }
+
+     /**
+     * @dev Pause 
+     */
+    function pause() external onlyInitialized onlyRole(PAUSER_ROLE) {
+        _pause();
+    }
+    
+    /**
+     * @dev Resume 
+     */
+    function unpause() external onlyInitialized onlyRole(PAUSER_ROLE)  {
+        _unpause();
     }
 
     function _init(
@@ -260,7 +276,7 @@ contract FundYield is
         require(_rewardToken != address(0), "FundYield: invalid reward token");
         require(initialized == false, "FundYield: already initialized");
 
-        __Ownable_init();
+        __Ownable_init(_manager);
         __ReentrancyGuard_init();
         __Pausable_init();
         __AccessControl_init();
@@ -273,12 +289,9 @@ contract FundYield is
 
         _grantRole(DEFAULT_ADMIN_ROLE, _manager);
         _grantRole(MANAGER_ROLE, _manager);
+        _grantRole(PAUSER_ROLE, _manager);
         _grantRole(SETTLE_ROLE, _settleCaller);
-        _setRoleAdmin(SETTLE_ROLE, DEFAULT_ADMIN_ROLE);
-        _setRoleAdmin(MANAGER_ROLE, DEFAULT_ADMIN_ROLE);
-
-        // Set owner as manager
-        _transferOwnership(_manager);
+        _setRoleAdmin(SETTLE_ROLE, MANAGER_ROLE);
 
         initialized = true;
         emit Initialized(
@@ -302,7 +315,7 @@ contract FundYield is
         bytes32 payload = keccak256(
             abi.encodePacked(vault, epochId, assetAmount)
         );
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(payload);
+        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(payload);
         address signer = ECDSA.recover(ethSignedMessageHash, signature);
         require(signer == validator, "FundYield: invalid signature");
     }
@@ -334,4 +347,6 @@ contract FundYield is
     ) public view returns (RedemptionRequest memory) {
         return redemptionEpochRequests[msg.sender][epoch];
     }
+
+
 }

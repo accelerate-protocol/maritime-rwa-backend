@@ -8,9 +8,9 @@ contract MockUSDT is ERC20 {
     event Burn(address indexed account, uint256 amount);
 
     constructor(
-        string memory name,
-        string memory symbol
-    ) ERC20(name, symbol) {}
+        string memory tokenName,
+        string memory tokenSymbol
+    ) ERC20(tokenName, tokenSymbol) {}
 
     function mint(address to, uint256 amount) external {
         _mint(to, amount);

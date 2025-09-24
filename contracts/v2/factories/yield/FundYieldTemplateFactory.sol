@@ -20,7 +20,7 @@ contract FundYieldTemplateFactory is IYieldTemplateFactory {
     ) public override returns (address,address,address) { 
         require(guardian != address(0), "FundYieldTemplateFactory: guardian can not be zero address");
         FundYield yieldImpl = new FundYield();
-        ProxyAdmin proxyAdmin = new ProxyAdmin();
+        ProxyAdmin proxyAdmin = new ProxyAdmin(guardian);
         TransparentUpgradeableProxy vaultProxy = new TransparentUpgradeableProxy(
                 address(yieldImpl),
                 address(proxyAdmin),
@@ -28,7 +28,6 @@ contract FundYieldTemplateFactory is IYieldTemplateFactory {
         );
         FundYield yieldProxied = FundYield(address(vaultProxy));
         yieldProxied.initiate(vault,vaultToken,initData);
-        proxyAdmin.transferOwnership(guardian);
         emit YieldDeployed(address(yieldProxied),address(proxyAdmin),address(yieldImpl),guardian);
         return (address(yieldProxied),address(proxyAdmin),address(yieldImpl));
     }

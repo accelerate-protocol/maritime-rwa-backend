@@ -14,7 +14,8 @@ contract ValidatorRegistry is IValidatorRegistry,Ownable,AccessControl{
 
     address private validator;
 
-    constructor(address _validator,address _manager) {
+    constructor(address _validator,address _manager) Ownable(msg.sender) {
+        require(_validator != address(0), "ValidatorRegistry: invalid validator address");
         validator = _validator;
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MANAGER_ROLE, msg.sender);
