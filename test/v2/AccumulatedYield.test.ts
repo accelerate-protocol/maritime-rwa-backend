@@ -217,7 +217,7 @@ describe("AccumulatedYield", function () {
       // Attempt to distribute dividend, should fail
       await expect(
         accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature)
-      ).to.be.revertedWith("Pausable: paused");
+      ).to.be.revertedWithCustomError(accumulatedYield, "EnforcedPause");
     });
 
   });
@@ -305,7 +305,7 @@ describe("AccumulatedYield", function () {
       // Try to claim rewards, should fail
       await expect(
         accumulatedYield.connect(user1).claimReward()
-      ).to.be.revertedWith("Pausable: paused");
+      ).to.be.revertedWithCustomError(accumulatedYield, "EnforcedPause");
     });
     
     it("Can correctly accumulate and claim rewards after multiple dividends", async function () {
@@ -544,55 +544,37 @@ describe("AccumulatedYield", function () {
       const transferAmount = ethers.parseUnits("300", SHARE_TOKEN_DECIMALS);
       await expect(
         shareToken.connect(user1).transfer(user2.address, transferAmount)
-      ).to.be.revertedWith("Pausable: paused");
+      ).to.be.revertedWithCustomError(shareToken, "EnforcedPause");
     });
   });
   
   describe("Admin Management Tests", function () {
-    it("Only owner can set manager", async function () {
-      // Non-owner tries to set manager, should fail
+    it("Only manager can perform admin operations", async function () {
+      // Non-manager tries to pause, should fail
+      const MANAGER_ROLE = await accumulatedYield.MANAGER_ROLE();
       await expect(
-        accumulatedYield.connect(user1).setManager(user2.address)
-      ).to.be.revertedWith("AccumulatedYield: only manager");
+        accumulatedYield.connect(user1).pause()
+      ).to.be.revertedWithCustomError(accumulatedYield, "AccessControlUnauthorizedAccount")
+        .withArgs(user1.address, MANAGER_ROLE);
       
-      // Owner sets manager, should succeed
-      await accumulatedYield.connect(manager).setManager(user2.address);
-      
-      // Verify manager has been updated
-      expect(await accumulatedYield.manager()).to.equal(user2.address);
-    });
-    
-    it("New manager can perform admin operations", async function () {
-      // Set new manager
-      await accumulatedYield.connect(owner).setManager(user2.address);
-      
-      // New manager should be able to pause the contract
-      await accumulatedYield.connect(user2).pause();
+      // Manager should be able to pause the contract
+      await accumulatedYield.connect(manager).pause();
       expect(await accumulatedYield.paused()).to.be.true;
       
-      // New manager should be able to unpause the contract
-      await accumulatedYield.connect(user2).unpause();
+      // Manager should be able to unpause the contract
+      await accumulatedYield.connect(manager).unpause();
       expect(await accumulatedYield.paused()).to.be.false;
-    });
-    
-    it("Former manager cannot perform admin operations anymore", async function () {
-      // Set new manager
-      await accumulatedYield.connect(owner).setManager(user2.address);
-      
-      // Former manager tries to pause the contract, should fail
-      await expect(
-        accumulatedYield.connect(manager).pause()
-      ).to.be.revertedWith("AccumulatedYield: only manager");
-      
     });
   });
   
   describe("Pause and Unpause Functionality Tests", function () {
     it("Only manager can pause the contract", async function () {
       // Non-manager tries to pause the contract, should fail
+      const MANAGER_ROLE = await accumulatedYield.MANAGER_ROLE();
       await expect(
         accumulatedYield.connect(user1).pause()
-      ).to.be.revertedWith("AccumulatedYield: only manager");
+      ).to.be.revertedWithCustomError(accumulatedYield, "AccessControlUnauthorizedAccount")
+        .withArgs(user1.address, MANAGER_ROLE);
       
       // Manager pauses the contract, should succeed
       await accumulatedYield.connect(manager).pause();
@@ -604,9 +586,11 @@ describe("AccumulatedYield", function () {
       await accumulatedYield.connect(manager).pause();
       
       // Non-manager tries to unpause the contract, should fail
+      const MANAGER_ROLE = await accumulatedYield.MANAGER_ROLE();
       await expect(
         accumulatedYield.connect(user1).unpause()
-      ).to.be.revertedWith("AccumulatedYield: only manager");
+      ).to.be.revertedWithCustomError(accumulatedYield, "AccessControlUnauthorizedAccount")
+        .withArgs(user1.address, MANAGER_ROLE);
       
       // Manager unpauses the contract, should succeed
       await accumulatedYield.connect(manager).unpause();
@@ -632,14 +616,14 @@ describe("AccumulatedYield", function () {
       // Try to claim rewards, should fail
       await expect(
         accumulatedYield.connect(user1).claimReward()
-      ).to.be.revertedWith("Pausable: paused");
+      ).to.be.revertedWithCustomError(accumulatedYield, "EnforcedPause");
       
       // Try to distribute dividends, should fail
       const newDividendAmount = ethers.parseUnits("500", 6);
       const newSignature = await generateDividendSignature(newDividendAmount);
       await expect(
         accumulatedYield.connect(dividendTreasury).distributeDividend(newDividendAmount, newSignature)
-      ).to.be.revertedWith("Pausable: paused");
+      ).to.be.revertedWithCustomError(accumulatedYield, "EnforcedPause");
     });
     
     it("Can perform operations normally after unpausing", async function () {

@@ -639,9 +639,11 @@ describe("Crowdsale", function () {
     let depositAmount = parseUSDT("1000");
     it("不是管理员发起的offChainDeposit应该失败", async function () {
       // 尝试offChainDeposit，应该失败
+      const OFFCHAIN_MANAGER_ROLE = await crowdsale.OFFCHAIN_MANAGER_ROLE();
       await expect(
         crowdsale.connect(user1).offChainDeposit(depositAmount, user1.address)
-      ).to.be.revertedWith("Crowdsale: only offchain manager");
+      ).to.be.revertedWithCustomError(crowdsale, "AccessControlUnauthorizedAccount")
+        .withArgs(user1.address, OFFCHAIN_MANAGER_ROLE);
     });
     
     it("使用正确管理员的offChainDeposit应该成功", async function () {
@@ -691,9 +693,11 @@ describe("Crowdsale", function () {
     
     it("不通过管理员的offChainRedeem应该失败", async function () {
       // 尝试offChainRedeem，应该失败
+      const OFFCHAIN_MANAGER_ROLE = await crowdsale.OFFCHAIN_MANAGER_ROLE();
       await expect(
         crowdsale.connect(user1).offChainRedeem(user1.address)
-      ).to.be.revertedWith("Crowdsale: only offchain manager");
+      ).to.be.revertedWithCustomError(crowdsale, "AccessControlUnauthorizedAccount")
+        .withArgs(user1.address, OFFCHAIN_MANAGER_ROLE);
     });
     
     it("使用管理员发起的offChainRedeem应该成功", async function () {
@@ -837,8 +841,10 @@ describe("Crowdsale", function () {
   describe("setManager功能测试", function () {
     it("只有当前manager可以设置新的manager", async function () {
       // 普通用户尝试设置新的manager，应该失败
+      const MANAGER_ROLE = await crowdsale.MANAGER_ROLE();
       await expect(crowdsale.connect(user1).setManager(user2.address))
-        .to.be.revertedWith("Crowdsale: only manager");
+        .to.be.revertedWithCustomError(crowdsale, "AccessControlUnauthorizedAccount")
+        .withArgs(user1.address, MANAGER_ROLE);
     });
     
     it("manager可以成功设置新的manager", async function () {
@@ -1028,9 +1034,11 @@ describe("Crowdsale", function () {
     let depositAmount = parseUSDT("100")
     it("非offchainManager调用offChainDeposit应该失败", async function () {
       // 普通用户尝试调用offChainDeposit，应该失败
+      const OFFCHAIN_MANAGER_ROLE = await crowdsale.OFFCHAIN_MANAGER_ROLE();
       await expect(
         crowdsale.connect(user1).offChainDeposit(depositAmount, user1.address)
-      ).to.be.revertedWith("Crowdsale: only offchain manager");
+      ).to.be.revertedWithCustomError(crowdsale, "AccessControlUnauthorizedAccount")
+        .withArgs(user1.address, OFFCHAIN_MANAGER_ROLE);
 
     });
     
@@ -1042,9 +1050,11 @@ describe("Crowdsale", function () {
       await network.provider.send("evm_mine");
       
       // 普通用户尝试调用offChainRedeem，应该失败
+      const OFFCHAIN_MANAGER_ROLE = await crowdsale.OFFCHAIN_MANAGER_ROLE();
       await expect(
         crowdsale.connect(user1).offChainRedeem(user1.address)
-      ).to.be.revertedWith("Crowdsale: only offchain manager");
+      ).to.be.revertedWithCustomError(crowdsale, "AccessControlUnauthorizedAccount")
+        .withArgs(user1.address, OFFCHAIN_MANAGER_ROLE);
 
     });
     

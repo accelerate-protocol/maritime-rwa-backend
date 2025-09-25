@@ -9,7 +9,6 @@ interface IVault {
     // ============ Event Definitions ============
     event TokenPaused();
     event TokenUnpaused();
-    event ManagerChanged(address indexed oldManager, address indexed newManager);
 
     // ============ Token Control Interface ============
     function pauseToken() external;

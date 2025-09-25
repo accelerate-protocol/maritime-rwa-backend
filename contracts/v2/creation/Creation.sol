@@ -1,20 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/proxy/Clones.sol";
 import "../interfaces/core/ICreation.sol";
 import "../interfaces/templates/IVault.sol";
 import "../interfaces/registry/IRegistry.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
  * @title Creation
  * @dev One-click deployment contract for creating complete projects including Vault, Token, Fund, and Yield modules
  * @notice This contract allows whitelisted users to deploy complete project components in a single transaction
 x */
-contract Creation is ICreation, OwnableUpgradeable, AccessControlUpgradeable {
+contract Creation is ICreation, Ownable, AccessControl {
     /**
      * @notice Vault template registry instance
      */
@@ -55,15 +53,14 @@ contract Creation is ICreation, OwnableUpgradeable, AccessControlUpgradeable {
         address _fundRegistry,
         address _yieldRegistry,
         address[] memory initialManagers
-    ) {
+    ) Ownable(msg.sender) {
+
         vaultRegistry = IVaultRegistry(_vaultRegistry);
         tokenRegistry = ITokenRegistry(_tokenRegistry);
         fundRegistry = IFundRegistry(_fundRegistry);
         yieldRegistry = IYieldRegistry(_yieldRegistry);
-        
-        // Ensure owner is set correctly
-        _transferOwnership(msg.sender);
-        
+
+
         // Initialize roles
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MANAGER_ROLE, msg.sender);
@@ -133,33 +130,6 @@ contract Creation is ICreation, OwnableUpgradeable, AccessControlUpgradeable {
 
         // 6. Emit event with project name
         emit ProjectCreated(vaultResult, tokenResult, fundResult, yieldResult, msg.sender);
-    }
-
-    /**
-     * @notice this function is deprecated in favor of {grantRole}. Use {grantRole} instead.
-     * @dev Only managers can call this function
-     * @param user Address of the user to add
-     */
-    function addToWhitelist(address user) external override {
-        grantRole(VAULT_LAUNCH_ROLE, user);
-    }
-    
-    /**
-     * @notice this function is deprecated in favor of {revokeRole}. Use {revokeRole} instead.
-     * @dev Only managers can call this function
-     * @param user Address of the user to remove
-     */
-    function removeFromWhitelist(address user) external override {
-        revokeRole(VAULT_LAUNCH_ROLE, user);
-    }
-    
-    /**
-     * @notice Check if a user is whitelisted
-     * @param user The address to check
-     * @return True if the user is whitelisted
-     */
-    function whitelist(address user) external view override returns (bool) {
-        return hasRole(VAULT_LAUNCH_ROLE, user);
     }
 
     // ============ Query Methods ============

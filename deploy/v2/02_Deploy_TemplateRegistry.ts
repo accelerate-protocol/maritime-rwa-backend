@@ -142,6 +142,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("Adding FundYieldTemplateFactory to YieldTemplateRegistry...");
   await yieldRegistryContract.addTemplate(2, fundYieldFactory.address);
   console.log(`✓ FundYieldTemplateFactory added to YieldTemplateRegistry\n`);
+  await sleep(sleepTime);
 
 };
 

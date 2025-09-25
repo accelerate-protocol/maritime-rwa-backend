@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import "./Vault.sol";
+import "./BaseVault.sol";
 import "../../interfaces/templates/IFundVault.sol";
 import "../../interfaces/templates/ICrowdsale.sol";
 
-contract FundVault is Vault,IFundVault { 
+contract FundVault is BaseVault,IFundVault {
 
     bytes32 public constant FEEDER_ROLE = keccak256("FEEDER_ROLE");
     // Mapping to store round data, where the key is the round ID and the value is a RoundData struct
@@ -49,7 +49,7 @@ contract FundVault is Vault,IFundVault {
         return round.price;
     }
 
-    function configureModules(address _vaultToken, address _funding, address _yield) external virtual override(IVault,Vault) onlyInitialized {
+    function configureModules(address _vaultToken, address _funding, address _yield) external virtual override(IVault, BaseVault) onlyInitialized {
         _setVaultToken(_vaultToken);
         _setFundingModule(_funding);
         _setYieldModule(_yield);

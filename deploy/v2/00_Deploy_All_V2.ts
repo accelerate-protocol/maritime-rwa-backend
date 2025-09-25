@@ -6,19 +6,23 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("V2 architecture adopts a modular design, mainly including the following components:");
   
   console.log("1. Template Contracts (Templates):");
-console.log("   - CoreVault: Vault template contract");
-console.log("   - ShareToken: Token template contract");
+console.log("   - CoreVault: CoreVault.sol template contract");
+  console.log("   - FundVault: FunVault.sol template contract");
+  console.log("   - ShareToken: Token template contract");
 console.log("   - Crowdsale: Crowdfunding template contract");
-console.log("   - AccumulatedYield: Yield template contract");
+console.log("   - AccumulatedYield: AccumulatedYield template contract");
+console.log("   - FundYield: FundYield template contract");
 
 console.log("2. Template Factories (TemplateFactories):");
-console.log("   - CoreVaultTemplateFactory: Vault template factory, responsible for creating vault instances");
+console.log("   - CoreVaultTemplateFactory: CoreVault template factory, responsible for creating vault instances");
+console.log("   - FundVaultTemplateFactory: FundVault template factory, responsible for creating vault instances");
 console.log("   - ShareTokenTemplateFactory: Token template factory, responsible for creating token instances");
 console.log("   - CrowdsaleTemplateFactory: Crowdfunding template factory, responsible for creating crowdfunding instances");
 console.log("   - AccumulatedYieldTemplateFactory: Yield template factory, responsible for creating yield instances");
-  
+console.log("   - FundYieldTemplateFactory: FundYield template factory, responsible for creating yield instances");
+
   console.log("3. Template Registries (TemplateRegistry):");
-  console.log("   - VaultTemplateRegistry: Vault template registry, manages vault templates");
+  console.log("   - VaultTemplateRegistry: CoreVault.sol template registry, manages vault templates");
   console.log("   - TokenTemplateRegistry: Token template registry, manages token templates");
   console.log("   - FundTemplateRegistry: Crowdfunding template registry, manages crowdfunding templates");
   console.log("   - YieldTemplateRegistry: Yield template registry, manages yield templates");

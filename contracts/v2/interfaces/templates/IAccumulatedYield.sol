@@ -162,7 +162,5 @@ interface IAccumulatedYield {
 
     // ============ Unified Initialization Interface ============
     function initiate(address _vault, address _vaultToken, bytes memory _initData) external;
-    
-    // ============ Manager Management Interface ============
-    function setManager(address newManager) external;
+
 }

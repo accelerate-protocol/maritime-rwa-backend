@@ -79,8 +79,4 @@ interface ICrowdsale {
     
     // ============ Signature Query Interface ============
     function getCallerNonce(address caller) external view returns (uint256);
-    
-    // ============ Manager Management Interface ============
-    function setManager(address newManager) external;
-    function setOffchainManager(address newOffchainManager) external;
 }

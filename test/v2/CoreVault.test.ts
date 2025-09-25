@@ -51,13 +51,16 @@ describe("CoreVault", function () {
     });
     
     it("Non-funding modules calling burnToken should fail", async function () {
+      const BURN_ROLE = await coreVault.BURN_ROLE();
       await expect(
         coreVault.connect(manager).burnToken(user1.address, ethers.parseUnits("50", 18))
-      ).to.be.revertedWith("CoreVault: only funding");
+      ).to.be.revertedWithCustomError(coreVault, "AccessControlUnauthorizedAccount")
+        .withArgs(manager.address, BURN_ROLE);
       
       await expect(
         coreVault.connect(user1).burnToken(user1.address, ethers.parseUnits("50", 18))
-      ).to.be.revertedWith("CoreVault: only funding");
+      ).to.be.revertedWithCustomError(coreVault, "AccessControlUnauthorizedAccount")
+        .withArgs(user1.address, BURN_ROLE);
     });
     
     it("Funding module should be able to burn user tokens", async function () {
@@ -202,13 +205,16 @@ describe("CoreVault", function () {
   
   describe("mintToken permission control tests", function () {
     it("Non-funding modules calling mintToken should fail", async function () {
+      const MINT_ROLE = await coreVault.MINT_ROLE();
       await expect(
         coreVault.connect(manager).mintToken(user1.address, ethers.parseUnits("100", 18))
-      ).to.be.revertedWith("CoreVault: only funding");
+      ).to.be.revertedWithCustomError(coreVault, "AccessControlUnauthorizedAccount")
+        .withArgs(manager.address, MINT_ROLE);
       
       await expect(
         coreVault.connect(user1).mintToken(user1.address, ethers.parseUnits("100", 18))
-      ).to.be.revertedWith("CoreVault: only funding");
+      ).to.be.revertedWithCustomError(coreVault, "AccessControlUnauthorizedAccount")
+        .withArgs(user1.address, MINT_ROLE);
     });
     
     it("Users not added to whitelist should not be able to receive tokens", async function () {
@@ -348,9 +354,11 @@ describe("Administrator functionality tests", function () {
 
   
   it("Non-administrators cannot change manager address", async function () {
+    const MANAGER_ROLE = await coreVault.MANAGER_ROLE();
     await expect(
       coreVault.connect(user1).setManager(user2.address)
-    ).to.be.revertedWith("CoreVault: only manager");
+    ).to.be.revertedWithCustomError(coreVault, "AccessControlUnauthorizedAccount")
+      .withArgs(user1.address, MANAGER_ROLE);
   });
   
   it("Cannot set manager to zero address", async function () {
@@ -368,16 +376,19 @@ describe("Administrator functionality tests", function () {
   });
   
   it("Non-administrators cannot pause and unpause the contract", async function () {
+    const PAUSE_ROLE = await coreVault.PAUSE_ROLE();
     await expect(
       coreVault.connect(user1).pause()
-    ).to.be.revertedWith("CoreVault: only manager");
+    ).to.be.revertedWithCustomError(coreVault, "AccessControlUnauthorizedAccount")
+      .withArgs(user1.address, PAUSE_ROLE);
     
     // First pause the contract
     await coreVault.connect(manager).pause();
     
     await expect(
       coreVault.connect(user1).unpause()
-    ).to.be.revertedWith("CoreVault: only manager");
+    ).to.be.revertedWithCustomError(coreVault, "AccessControlUnauthorizedAccount")
+      .withArgs(user1.address, PAUSE_ROLE);
   });
   
   it("Should allow administrators to pause and unpause tokens", async function () {
@@ -390,10 +401,12 @@ describe("Administrator functionality tests", function () {
   });
   
   it("Non-administrators cannot pause and unpause tokens", async function () {
+    const MANAGER_ROLE = await coreVault.MANAGER_ROLE();
     // Test that non-administrators cannot unlock tokens
     await expect(
       coreVault.connect(user1).unpauseToken()
-    ).to.be.revertedWith("CoreVault: only manager");
+    ).to.be.revertedWithCustomError(coreVault, "AccessControlUnauthorizedAccount")
+      .withArgs(user1.address, MANAGER_ROLE);
     
     // First unlock tokens
     await coreVault.connect(manager).unpauseToken();
@@ -401,7 +414,8 @@ describe("Administrator functionality tests", function () {
     // Test that non-administrators cannot pause tokens
     await expect(
       coreVault.connect(user1).pauseToken()
-    ).to.be.revertedWith("CoreVault: only manager");
+    ).to.be.revertedWithCustomError(coreVault, "AccessControlUnauthorizedAccount")
+      .withArgs(user1.address, MANAGER_ROLE);
   });
 });
 

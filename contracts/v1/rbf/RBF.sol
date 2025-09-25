@@ -14,8 +14,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "../vault/Vault.sol";
 import "../interface/AggregatorV3Interface.sol";
 import "../interface/IRBF.sol";
@@ -86,7 +85,7 @@ contract RBF is
     function initialize(RBFInitializeData memory data) public initializer {
         __ReentrancyGuard_init();
         __ERC20_init(data.name, data.symbol);
-        __Ownable_init();
+        __Ownable_init(data.manager);
 
         require(
             data.assetToken != address(0),

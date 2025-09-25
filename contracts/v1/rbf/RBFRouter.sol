@@ -75,7 +75,7 @@ contract RBFRouter is IRBFRouter, Ownable {
         address _rbfFactory,
         address _escrowFactory,
         address _priceFeedFactory
-    ) Ownable() {
+    ) Ownable(msg.sender) {
         require(_whiteLists.length > 0, "whiteLists must not be empty");
         whiteLists = _whiteLists;
         for (uint256 i = 0; i < _whiteLists.length; i++) {

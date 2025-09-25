@@ -27,14 +27,14 @@ contract Escrow is Auth, IEscrow {
     /// @inheritdoc IEscrow
     function approveMax(address token, address spender) external override auth {
         if (IERC20(token).allowance(address(this), spender) == 0) {
-            SafeERC20.safeApprove(IERC20(token), spender, type(uint256).max);
+            SafeERC20.safeIncreaseAllowance(IERC20(token), spender, type(uint256).max);
             emit Approve(token, spender, type(uint256).max);
         }
     }
     
     /// @inheritdoc IEscrow
     function unapprove(address token, address spender) external override auth {
-        SafeERC20.safeApprove(IERC20(token), spender, 0);
+        SafeERC20.safeDecreaseAllowance(IERC20(token), spender, 0);
         emit Approve(token, spender, 0);
     }
 
