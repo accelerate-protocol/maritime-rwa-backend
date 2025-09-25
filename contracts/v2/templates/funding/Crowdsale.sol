@@ -322,7 +322,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     /**
      * @dev Withdraw funding assets (only when funding is successful)
      */
-    function withdrawFundingAssets() external override onlyInitialized onlyAfterFundingSuccess nonReentrant whenNotPaused onlyRole(WITHDRAW_ASSET_ROLE) {
+    function withdrawFundingAssets() external override onlyInitialized onlyAfterFundingSuccess nonReentrant whenNotPaused {
+        require(msg.sender == fundingReceiver || hasRole(WITHDRAW_ASSET_ROLE, msg.sender), "Crowdsale: unauthorized");
         require(fundingAssets > 0, "Crowdsale: no funding assets");
         
         uint256 amount = fundingAssets;
@@ -336,7 +337,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     /**
      * @dev Withdraw management fee (only when funding is successful)
      */
-    function withdrawManageFee() external override onlyInitialized onlyAfterFundingSuccess nonReentrant whenNotPaused onlyRole(WITHDRAW_MANAGE_FEE_ROLE) {
+    function withdrawManageFee() external override onlyInitialized onlyAfterFundingSuccess nonReentrant whenNotPaused {
+        require(msg.sender == manageFeeReceiver || hasRole(WITHDRAW_MANAGE_FEE_ROLE, msg.sender), "Crowdsale: unauthorized");
         require(manageFee > 0, "Crowdsale: no manage fee");
         
         uint256 amount = manageFee;
@@ -462,6 +464,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         _grantRole(WITHDRAW_ASSET_ROLE, data.fundingReceiver);
         _grantRole(WITHDRAW_MANAGE_FEE_ROLE, data.manageFeeReceiver);
 
+        // Set on-chain signature validator
         onChainSignValidator = data.manager;
         initialized = true;
     }
@@ -572,19 +575,14 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     }
 
     /**
-     * @dev Override grantRole to update onChainSignValidator when MANAGER_ROLE is granted
+     * @dev Update on-chain signature validator address
+     * @param _validator New validator address
      */
-    function grantRole(bytes32 role, address account) public override onlyRole(getRoleAdmin(role)) {
-        super.grantRole(role, account);
-        if(role == MANAGER_ROLE){
-            onChainSignValidator = account;
-        }
-        if(role == WITHDRAW_ASSET_ROLE){
-            fundingReceiver = account;
-        }
-        if(role == WITHDRAW_MANAGE_FEE_ROLE){
-            manageFeeReceiver = account;
-        }
+    function setOnChainSignValidator(address _validator) external override onlyInitialized onlyRole(MANAGER_ROLE) {
+        require(_validator != address(0), "Crowdsale: invalid validator");
+        address oldValidator = onChainSignValidator;
+        onChainSignValidator = _validator;
+        emit OnChainSignValidatorUpdated(oldValidator, _validator);
     }
     
 }

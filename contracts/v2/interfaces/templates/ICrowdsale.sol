@@ -53,7 +53,7 @@ interface ICrowdsale {
     event TokenUnpausedOnFundingSuccess();
     event ManagerChanged(address indexed oldManager, address indexed newManager);
     event OffchainManagerChanged(address indexed oldOffchainManager, address indexed newOffchainManager);
-
+    event OnChainSignValidatorUpdated(address indexed oldValidator, address indexed newValidator);
     // ============ Funding Operations Interface ============
     // User initiated, requires manager signature
     function deposit(uint256 amount, address receiver, bytes memory signature) external;
@@ -66,6 +66,9 @@ interface ICrowdsale {
     
     // Backend manager initiated - redeems all user shares
     function offChainRedeem(address receiver) external;
+
+    // ============ Management Operations Interface ============
+    function setOnChainSignValidator(address newValidator) external;
 
     // ============ Fund Management Interface ============
     function withdrawFundingAssets() external;
