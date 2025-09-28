@@ -69,21 +69,11 @@ async function main() {
     }
   }
 
-  // Set DRDS address
+  // Set DRDS address(validatorRegistry)
   let drdsAddress;
-  if (network === "hardhat" || network === "localhost") {
-    // Local network defaults to using validatorRegistry as DRDS
-    drdsAddress = "0x68B1D87F95878fE05B998F19b66F4baba5De1aed";
-    console.log("Using default DRDS address (deployer):", drdsAddress);
-  } else {
-    // Other networks use environment variable configuration or default to deployer
-    drdsAddress = ENV_VALIDATOR_ADDRESS || deployer;
-    if (ENV_VALIDATOR_ADDRESS) {
-      console.log("Using VALIDATOR address from environment variable:", drdsAddress);
-    } else {
-      console.log("Using default DRDS address (deployer):", drdsAddress);
-    }
-  }
+  const validatorRegistryDeployment = await get("ValidatorRegistry");
+  drdsAddress = validatorRegistryDeployment.address;
+  console.log("Using ValidatorRegistry address:", drdsAddress);
 
   console.log("📦 Factory contracts and USDT configuration obtained");
 
@@ -142,11 +132,11 @@ async function deployProject(creation, usdtContract, drdsAddress, deployer, proj
   try {
     console.log("🔍 Checking deployer whitelist status...");
     console.log("Creation Address:", await creation.getAddress())
-    const isWhitelisted = await creation.whitelist(deployer);
+    const isWhitelisted = await creation.hasRole(await creation.VAULT_LAUNCH_ROLE(), deployer);
     if (!isWhitelisted) {
       console.log("🔐 Adding deployer to whitelist...");
       const creationWithOwner = creation.connect(await ethers.getSigner(deployer));
-      await (await creationWithOwner.addToWhitelist(deployer)).wait();
+      await (await creationWithOwner.grantRole(await creation.VAULT_LAUNCH_ROLE(), deployer)).wait();
       console.log("✅ Added to whitelist");
     }
   } catch (error) {
@@ -737,20 +727,6 @@ async function distributeDividend(projectDetails, usdtContract, deployer) {
   console.log("Total dividend amount:", formatUSDT(globalPoolInfo.totalDividend));
   console.log("Total accumulated shares:", formatUSDT(globalPoolInfo.totalAccumulatedShares));
   console.log("Last dividend time:", new Date(Number(globalPoolInfo.lastDividendTime) * 1000).toLocaleString());
-  
-  // 检查分红池是否激活
-  if (!globalPoolInfo.isActive) {
-    console.log("⚠️ Dividend pool not activated, activating now...");
-    try {
-      const deployerSigner = await ethers.getSigner(deployer);
-      const accumulatedYieldWithSigner = accumulatedYield.connect(deployerSigner);
-      await (await accumulatedYieldWithSigner.activate()).wait();
-      console.log("✅ Dividend pool activated successfully!");
-    } catch (error) {
-      console.log("❌ Failed to activate dividend pool:", error.message);
-      return;
-    }
-  }
 
   // 模拟分红分配过程
   console.log("💰 Starting dividend simulation...");
@@ -814,13 +790,15 @@ async function distributeDividend(projectDetails, usdtContract, deployer) {
   // 构造签名数据
   const payload = ethers.solidityPackedKeccak256(
     ["address", "uint256", "uint256"],
-    [vault.target, dividendAmount, dividendNonce]
+    [await vault.getAddress(), dividendAmount, dividendNonce]
   );
   
   // 签名
   const signature = await validatorSigner.signMessage(ethers.getBytes(payload));
   
   console.log("🔐 Validator signature construction completed");
+  console.log("vault address:", await vault.getAddress());
+  console.log("amount", dividendAmount)
   console.log("Nonce:", dividendNonce.toString());
   console.log("Signature:", signature);
   

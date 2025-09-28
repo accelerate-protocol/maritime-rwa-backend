@@ -20,7 +20,7 @@ export const manageFeeBps = BigInt(1000); // 10% management fee
 // Role constants
 export const TOKEN_TRANSFER_ROLE = ethers.keccak256(ethers.toUtf8Bytes("TOKEN_TRANSFER_ROLE"));
 export const MANAGER_ROLE = ethers.keccak256(ethers.toUtf8Bytes("MANAGER_ROLE"));
-export const DEFAULT_ADMIN_ROLE = ethers.ZeroHash; // DEFAULT_ADMIN_ROLE 在 AccessControl 中是 0x00
+export const DEFAULT_ADMIN_ROLE = ethers.ZeroHash; // DEFAULT_ADMIN_ROLE in AccessControl is 0x00
 
 // Deploy MockUSDT contract
 export async function deployMockUSDT() {

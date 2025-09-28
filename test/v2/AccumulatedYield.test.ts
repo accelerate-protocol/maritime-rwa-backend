@@ -81,7 +81,7 @@ describe("AccumulatedYield", function () {
     }
     
     // Mint some USDT to dividendTreasury for dividends
-    await mockUSDT.mint(await dividendTreasury.getAddress(), ethers.parseUnits("10000", 6));
+    await mockUSDT.mint(await dividendTreasury.address, ethers.parseUnits("10000", 6));
     
     // Unpause ShareToken
     await coreVault.connect(manager).unpauseToken();
@@ -126,7 +126,7 @@ describe("AccumulatedYield", function () {
 
       await expect(
         accumulatedYield.initiate(await coreVault.getAddress(), await shareToken.getAddress(), initData)
-      ).to.be.revertedWith("Initializable: contract is already initialized");
+      ).to.be.revertedWithCustomError(shareToken, "InvalidInitialization");
     });
   });
   
@@ -227,7 +227,7 @@ describe("AccumulatedYield", function () {
     let signature: string;
     beforeEach(async function() {
       // Fully funded, financing completed
-      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("20000", SHARE_TOKEN_DECIMALS), manager.address);
+      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS), manager.address);
       
       // Transfer some tokens to users
       await shareToken.connect(manager).transfer(user1.address, ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
@@ -341,6 +341,9 @@ describe("AccumulatedYield", function () {
       expect(userInfo.totalClaimed).to.equal(firstPending + secondPending);
     });
 
+  });
+
+  describe("multi dividend and transfer tests", function () {
     it("Can correctly handle accumulated shares when token transfers occur during dividend periods", async function () {
       // Set up three users: Alice(user1), Bob(user2) and Carol(new user)
       const alice = user1;
@@ -362,7 +365,12 @@ describe("AccumulatedYield", function () {
       if (bobBalance > 0) {
         await shareToken.connect(bob).transfer(manager.address, bobBalance);
       }
+
+      // step 1: Admin mints 10000 ShareTokens to the contract
+    
+      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS), manager.address);
       
+      // step 2: Admin allocates 2000 ShareTokens to Alice and 8000 ShareTokens to Bob
       await shareToken.connect(manager).transfer(alice.address, ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
       await shareToken.connect(manager).transfer(bob.address, ethers.parseUnits("8000", SHARE_TOKEN_DECIMALS));
       
@@ -372,11 +380,24 @@ describe("AccumulatedYield", function () {
       expect(await shareToken.balanceOf(carol.address)).to.equal(0);
       
       // Step 3: Admin distributes first dividend of 1500 USDT
-      signature = await generateDividendSignature(dividendAmount);
+      let dividendAmount = ethers.parseUnits("1500", 6);
+      let signature = await generateDividendSignature(dividendAmount);
+      await mockUSDT.connect(dividendTreasury).approve(
+        await accumulatedYield.getAddress(),
+        dividendAmount
+      );
       await accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature);
-      expect(await mockUSDT.balanceOf(await accumulatedYield.getAddress())).to.equal(ethers.parseUnits("1500", 6));
+      expect(await mockUSDT.balanceOf(await accumulatedYield.getAddress())).to.equal(dividendAmount);
       const globalPool = await accumulatedYield.globalPool();
       expect(globalPool.totalDividend).to.equal(ethers.parseUnits("1500", 6));
+      // verify user pool
+      // First dividend: AliceReward = 1500 * 2000 / (2000 + 8000) = 300
+      // First dividend: BobReward = 1500 * 8000 / (2000 + 8000) = 1200
+      // First dividend: CarolReward = 0
+      let actralPendingAlice = await accumulatedYield.pendingReward(alice.address);
+      let actralPendingBob = await accumulatedYield.pendingReward(bob.address);
+      expect(ethers.parseUnits("300", SHARE_TOKEN_DECIMALS)).to.equal(actralPendingAlice);
+      expect(ethers.parseUnits("1200", SHARE_TOKEN_DECIMALS)).to.equal(actralPendingBob);
 
       // Step 4: Alice transfers 500 ShareTokens to Carol
       await shareToken.connect(alice).transfer(carol.address, ethers.parseUnits("500", SHARE_TOKEN_DECIMALS));
@@ -426,9 +447,6 @@ describe("AccumulatedYield", function () {
       
       // Verify reward proportions
       // Assuming first dividend of 1500, with Alice and Bob's ShareToken ratio at 2000:8000, their reward ratio is 1:4
-      // First dividend: AliceReward = 1500 * 2000 / (2000 + 8000) = 300
-      // First dividend: BobReward = 1500 * 8000 / (2000 + 8000) = 1200
-      // First dividend: CarolReward = 0
       // Second dividend: AliceReward = 1000 * 1500 / (1500 + 8000 + 500) = 150
       // Second dividend: BobReward = 1000 * 8000 / (1500 + 8000 + 500) = 800
       // Second dividend: CarolReward = 1000 * 500 / (1500 + 8000 + 500) = 50
@@ -440,7 +458,9 @@ describe("AccumulatedYield", function () {
       expect(carolReward).to.equal(ethers.parseUnits("50", 6));
 
     })
-  });
+
+  })
+
   
   describe("Token Transfer Tests", function () {
     beforeEach(async function() {
@@ -551,11 +571,11 @@ describe("AccumulatedYield", function () {
   describe("Admin Management Tests", function () {
     it("Only manager can perform admin operations", async function () {
       // Non-manager tries to pause, should fail
-      const MANAGER_ROLE = await accumulatedYield.MANAGER_ROLE();
+      const PAUSER_ROLE = await accumulatedYield.PAUSER_ROLE();
       await expect(
         accumulatedYield.connect(user1).pause()
       ).to.be.revertedWithCustomError(accumulatedYield, "AccessControlUnauthorizedAccount")
-        .withArgs(user1.address, MANAGER_ROLE);
+        .withArgs(user1.address, PAUSER_ROLE);
       
       // Manager should be able to pause the contract
       await accumulatedYield.connect(manager).pause();
@@ -570,11 +590,11 @@ describe("AccumulatedYield", function () {
   describe("Pause and Unpause Functionality Tests", function () {
     it("Only manager can pause the contract", async function () {
       // Non-manager tries to pause the contract, should fail
-      const MANAGER_ROLE = await accumulatedYield.MANAGER_ROLE();
+      const PAUSER_ROLE = await accumulatedYield.PAUSER_ROLE();
       await expect(
         accumulatedYield.connect(user1).pause()
       ).to.be.revertedWithCustomError(accumulatedYield, "AccessControlUnauthorizedAccount")
-        .withArgs(user1.address, MANAGER_ROLE);
+        .withArgs(user1.address, PAUSER_ROLE);
       
       // Manager pauses the contract, should succeed
       await accumulatedYield.connect(manager).pause();
@@ -586,11 +606,11 @@ describe("AccumulatedYield", function () {
       await accumulatedYield.connect(manager).pause();
       
       // Non-manager tries to unpause the contract, should fail
-      const MANAGER_ROLE = await accumulatedYield.MANAGER_ROLE();
+      const PAUSER_ROLE = await accumulatedYield.PAUSER_ROLE();
       await expect(
         accumulatedYield.connect(user1).unpause()
       ).to.be.revertedWithCustomError(accumulatedYield, "AccessControlUnauthorizedAccount")
-        .withArgs(user1.address, MANAGER_ROLE);
+        .withArgs(user1.address, PAUSER_ROLE);
       
       // Manager unpauses the contract, should succeed
       await accumulatedYield.connect(manager).unpause();

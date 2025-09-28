@@ -39,14 +39,14 @@ describe("ShareToken", function () {
       params: [],
     });
     
-    // 部署ValidatorRegistry
+    // Deploy ValidatorRegistry
     validatorRegistry = await deployValidatorRegistry(validator, manager);
     
-    // 部署CoreVault，禁用白名单
+    // Deploy CoreVault, disable whitelist
     const { coreVault: coreVaultInstance } = await createVault(manager, validatorRegistry, false, []);
     coreVault = coreVaultInstance;
     
-    // 部署ShareToken
+    // Deploy ShareToken
     const { shareToken: shareTokenInstance } = await createShareToken(coreVault, manager);
     shareToken = shareTokenInstance;
   });
@@ -83,7 +83,7 @@ describe("ShareToken", function () {
 
       await expect(
         shareToken.initiate(await coreVault.getAddress(), tokenInitData)
-      ).to.be.revertedWith("Initializable: contract is already initialized");
+      ).to.be.revertedWithCustomError(shareToken, "InvalidInitialization");
     });
   });
 
