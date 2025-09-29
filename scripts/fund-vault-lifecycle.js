@@ -769,7 +769,7 @@ async function getYieldProject(projectDetails, usdtContract, deployer,investor) 
   console.log("current epoch",currentEpoch)
   var epochData= await fundYieldwithSigner.getEpochData(currentEpoch);
   console.log("epoch data",epochData)
-  var userReq=await fundYieldwithSigner.getRedemptionRequest(currentEpoch);
+  var userReq=await fundYieldwithSigner.getRedemptionRequest(deployer,currentEpoch);
   console.log("user req",userReq)
 
   await fundYieldwithSigner.cancelRedemption();
@@ -777,7 +777,7 @@ async function getYieldProject(projectDetails, usdtContract, deployer,investor) 
 
   var epochData= await fundYieldwithSigner.getEpochData(currentEpoch);
   console.log("epoch data",epochData)
-  var userReq=await fundYieldwithSigner.getRedemptionRequest(currentEpoch);
+  var userReq=await fundYieldwithSigner.getRedemptionRequest(deployer,currentEpoch);
   console.log("user req",userReq)
 
   await fundYieldwithSigner.changeEpoch();
@@ -811,9 +811,9 @@ async function getYieldProject(projectDetails, usdtContract, deployer,investor) 
   var currentEpoch = await fundYield.currentEpochId();
   var epochData= await fundYieldwithSigner.getEpochData(currentEpoch);
   console.log("epoch data",epochData);
-  var userReq=await fundYieldwithSigner.getRedemptionRequest(currentEpoch);
+  var userReq=await fundYieldwithSigner.getRedemptionRequest(deployer,currentEpoch);
   console.log("deployer req",userReq);
-  var investorReq=await fundYieldwithInvestor.getRedemptionRequest(currentEpoch);
+  var investorReq=await fundYieldwithInvestor.getRedemptionRequest(investor,currentEpoch);
   console.log("investor req",investorReq);
 
 
@@ -839,7 +839,7 @@ async function getYieldProject(projectDetails, usdtContract, deployer,investor) 
   await fundYieldwithSigner.claimRedemption(currentEpoch);
   console.log("deployer pendingReward:",await fundYieldwithSigner.pendingReward(deployer,currentEpoch));
 
-  var userReq=await fundYieldwithSigner.getRedemptionRequest(currentEpoch);
+  var userReq=await fundYieldwithSigner.getRedemptionRequest(deployer,currentEpoch);
   console.log("deployer after claim user req",userReq)
   console.log("deployer usdt amount",await usdtContract.balanceOf(deployer));
   console.log("investor usdt amount",await usdtContract.balanceOf(investor));
@@ -849,7 +849,7 @@ async function getYieldProject(projectDetails, usdtContract, deployer,investor) 
   console.log("investor pendingReward:",await fundYieldwithSigner.pendingReward(investor,currentEpoch));
   await fundYieldwithInvestor.claimRedemption(currentEpoch);
   console.log("investor pendingReward:",await fundYieldwithSigner.pendingReward(investor,currentEpoch));
-  var userReq=await fundYieldwithInvestor.getRedemptionRequest(currentEpoch);
+  var userReq=await fundYieldwithInvestor.getRedemptionRequest(deployer,currentEpoch);
   console.log("lockedShareToken:",await fundYieldwithSigner.lockedShareToken());
   console.log("investor after claim user req",userReq)
   console.log("investor usdt amount",await usdtContract.balanceOf(investor));
