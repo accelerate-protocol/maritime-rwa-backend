@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 
 async function main() {
     // CoreVault contract address - please modify according to actual situation
-    const vaultAddress = process.env.VAULT_ADDRESS || "0x64dd30640B1738985523841eBDc44524f90EB10F"; // Replace with actual CoreVault contract address
+    const vaultAddress = "0x86337dDaF2661A069D0DcB5D160585acC2d15E9a"; // Replace with actual CoreVault contract address
     
     try {
         const vault = await ethers.getContractAt("CoreVault", vaultAddress);
@@ -10,10 +10,6 @@ async function main() {
         // Quick status query
         console.log("🔍 CoreVault Quick Status Query");
         console.log("=".repeat(50));
-        
-        // Query manager
-        const manager = await vault.manager();
-        console.log(`Manager address: ${manager}`);
         
         // Query other key information
         const shareToken = await vault.vaultToken();

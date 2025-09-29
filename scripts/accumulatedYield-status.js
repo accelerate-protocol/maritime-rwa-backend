@@ -11,7 +11,7 @@ async function main() {
         yieldAddress = addressArg.split("=")[1];
     } else {
         // Default yield contract address - please modify according to actual situation
-        yieldAddress = "0x6599D8915721950358E0781567C74f38333538C7"; // Replace with actual yield contract address
+        yieldAddress = "0x3dE2Da43d4c1B137E385F36b400507c1A24401f8"; // Replace with actual yield contract address
         console.log("No contract address provided, using default address.");
         console.log("Usage: npx hardhat run scripts/yield-status.js --address=0xContractAddress");
         console.log("Note: Please ensure the provided address is a deployed AccumulatedYield contract address.");
@@ -40,7 +40,7 @@ async function main() {
         // Get global pool information
         let globalPoolInfo;
         try {
-            globalPoolInfo = await accumulatedYield.getGlobalPoolInfo();
+            globalPoolInfo = await accumulatedYield.globalPool();
         } catch (error) {
             throw new Error(`Failed to get global pool information: ${error.message}`);
         }
@@ -130,13 +130,11 @@ async function main() {
         // Get management information
         let dividendTreasury, manager, dividendNonce;
         try {
-            dividendTreasury = await accumulatedYield.getDividendTreasury();
-            manager = await accumulatedYield.getManager();
+            dividendTreasury = await accumulatedYield.dividendTreasury();
             dividendNonce = await accumulatedYield.getDividendNonce();
             
             console.log(`\n🏛️ Management Information:`);
             console.log(`Dividend treasury: ${dividendTreasury}`);
-            console.log(`Manager: ${manager}`);
             console.log(`Dividend nonce: ${dividendNonce}`);
         } catch (error) {
             console.error(`Failed to get management information: ${error.message}`);

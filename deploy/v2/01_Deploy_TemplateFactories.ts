@@ -16,14 +16,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts, network } = hre;
   const { deploy, get } = deployments;
   const { deployer } = await getNamedAccounts();
+  // Add delay to avoid nonce errors
+  const sleepTime = getSleepTime(network.name);
 
   console.log("=== Deploying V2 Template Factories ===\n");
 
-  // Get deployed template contracts
-  const coreVault = await get("CoreVault");
-  const shareToken = await get("ShareToken");
-  const crowdsale = await get("Crowdsale");
-  const accumulatedYield = await get("AccumulatedYield");
 
   // 1. Deploy CoreVaultTemplateFactory
   console.log("Deploying CoreVaultTemplateFactory...");
@@ -36,9 +33,23 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     skipIfAlreadyDeployed: false,
   });
   console.log(`✓ CoreVaultTemplateFactory deployed to: ${coreVaultFactory.address}\n`);
+  console.log(`Waiting ${sleepTime/1000} seconds...`);
+  await sleep(sleepTime);
+
+  console.log("Deploying FundVaultTemplateFactory...");
+
+  const fundVaultFactory = await deploy("FundVaultTemplateFactory", {
+    contract: "contracts/v2/factories/vault/FundVaultTemplateFactory.sol:FundVaultTemplateFactory",
+    from: deployer,
+    args: [],
+    log: true,
+    waitConfirmations: 1,
+    skipIfAlreadyDeployed: false,
+  });
+  console.log(`✓ FundVaultTemplateFactory deployed to: ${fundVaultFactory.address}\n`);
+
+
   
-  // Add delay to avoid nonce errors
-  const sleepTime = getSleepTime(network.name);
   console.log(`Waiting ${sleepTime/1000} seconds...`);
   await sleep(sleepTime);
 
@@ -88,6 +99,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   console.log(`Waiting ${sleepTime/1000} seconds...`);
   await sleep(sleepTime);
+
+
+  console.log("Deploying FundYieldTemplateFactory...");
+  const fundYieldFactory=await deploy("FundYieldTemplateFactory", {
+    contract: "contracts/v2/factories/yield/FundYieldTemplateFactory.sol:FundYieldTemplateFactory",
+    from: deployer,
+    args: [],
+    log: true,
+    waitConfirmations: 1,
+    skipIfAlreadyDeployed: false,
+  });
+  console.log("✓ FundYieldTemplateFactory deployed to:", fundYieldFactory.address);
+
+
 };
 
 export default func;

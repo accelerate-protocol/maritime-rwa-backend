@@ -1,31 +1,13 @@
 const { ethers } = require("hardhat");
 const { parseUSDT, formatUSDT } = require("../test/utils/usdt");
 
-/**
- * Vault Lifecycle Management Script
- * 
- * Usage:
- * 1. Deploy new project:
- *    npx hardhat vault-lifecycle --stage deploy --project-name "MyProject"
- * 
- * 2. Investment stage:
- *    npx hardhat vault-lifecycle --stage invest --vault-address 0x... --token-address 0x... --fund-address 0x... --yield-address 0x...
- * 
- * 3. Dividend stage:
- *    npx hardhat vault-lifecycle --stage dividend --vault-address 0x... --token-address 0x... --fund-address 0x... --yield-address 0x...
- * 
- * You can also use environment variables:
- *    PROJECT_NAME="MyProject" npx hardhat vault-lifecycle --stage deploy
- *    VAULT_ADDRESS=0x... TOKEN_ADDRESS=0x... FUND_ADDRESS=0x... YIELD_ADDRESS=0x... npx hardhat vault-lifecycle --stage invest
- */
 async function main() {
+
   const { deployments, getNamedAccounts } = require("hardhat");
-  const { get } = deployments;
-  const { deployer } = await getNamedAccounts();
+  const { get,deploy } = deployments;
+  const { deployer,investor1} = await getNamedAccounts();
   const network = require("hardhat").network.name;
 
-  // Get command line parameters
-  // Get task parameters from environment variables
   const stage = process.env.VAULT_LIFECYCLE_STAGE || "deploy"; // Default to deployment stage
   console.log(`🚀 Starting vault lifecycle at stage: ${stage}`);
 
@@ -35,7 +17,6 @@ async function main() {
   const MAINNET_USDT_ADDRESS = process.env.MAINNET_USDT_ADDRESS || "";
   const ENV_PROJECT_NAME = process.env.PROJECT_NAME || "";
 
-
   // Dynamically select USDT address
   let usdtAddress;
   let usdtContract;
@@ -43,8 +24,15 @@ async function main() {
   // Select USDT address based on network type
   if (network === "hardhat" || network === "localhost") {
     // Local network uses MockUSDT
-    const mockUSDTDeployment = await get("MockUSDT");
+    const mockUSDTDeployment = await deploy("MockUSDT", {
+        contract: "contracts/v2/mocks/MockUSDT.sol:MockUSDT",
+        from: deployer,
+        args: ["USDT", "UDST"],
+    });
+
+
     usdtAddress = mockUSDTDeployment.address;
+    
     usdtContract = await ethers.getContractAt("contracts/v2/mocks/MockUSDT.sol:MockUSDT", usdtAddress);
     console.log("Using MockUSDT address:", usdtAddress);
   } else if (network === "bsc" || network === "mainnet" || network === "bscmainnet") {
@@ -69,28 +57,25 @@ async function main() {
     }
   }
 
-  // Set DRDS address(validatorRegistry)
-  let drdsAddress;
-  const validatorRegistryDeployment = await get("ValidatorRegistry");
-  drdsAddress = validatorRegistryDeployment.address;
-  console.log("Using ValidatorRegistry address:", drdsAddress);
+  // Set DRDS address
+  const drdsDeployment = await get("ValidatorRegistry");
+  const drdsAddress = drdsDeployment.address;
 
   console.log("📦 Factory contracts and USDT configuration obtained");
 
-  // Get deployed Creation contract
-  const creationDeployment = await get("Creation");
-  const creation = await ethers.getContractAt("contracts/v2/creation/Creation.sol:Creation", creationDeployment.address);
-
-  // Project deployment stage
-  if (stage === "deploy" || stage === "all") {
-    const projectName = process.env.PROJECT_NAME || "DefaultProject";
-    await deployProject(creation, usdtContract, drdsAddress, deployer, projectName);
-  }
-
-  // Get project information - redeploy each time
-  let projectDetails;
+   // Get deployed Creation contract
+    const creationDeployment = await get("Creation");
+    const creation = await ethers.getContractAt("contracts/v2/creation/Creation.sol:Creation", creationDeployment.address);
   
-  // If in deployment stage, projectDetails will be set after deployment
+    // Project deployment stage
+    if (stage === "deploy" || stage === "all") {
+      const projectName = process.env.PROJECT_NAME || "DefaultProject";
+      await deployProject(creation, usdtContract, drdsAddress, deployer, projectName);
+    }
+  
+    // Get project information - redeploy each time
+    let projectDetails;
+    // If in deployment stage, projectDetails will be set after deployment
   // If in other stages, directly execute deployment
   if (stage !== "deploy") {
     console.log("🔄 Redeploying project each time...");
@@ -118,10 +103,9 @@ async function main() {
     console.log("💰 Starting investment process...")
     console.log("🔍 Project Details:", projectDetails);
     await investProject(projectDetails, usdtContract, deployer);
-    await distributeDividend(projectDetails, usdtContract, deployer);
+    await getYieldProject(projectDetails, usdtContract, deployer,investor1);
   }
 
-  console.log(`🎯 Vault lifecycle at stage '${stage}' completed!`);
 }
 
 // Project deployment function
@@ -132,11 +116,11 @@ async function deployProject(creation, usdtContract, drdsAddress, deployer, proj
   try {
     console.log("🔍 Checking deployer whitelist status...");
     console.log("Creation Address:", await creation.getAddress())
-    const isWhitelisted = await creation.hasRole(await creation.VAULT_LAUNCH_ROLE(), deployer);
+    const isWhitelisted = await creation.whitelist(deployer);
     if (!isWhitelisted) {
       console.log("🔐 Adding deployer to whitelist...");
       const creationWithOwner = creation.connect(await ethers.getSigner(deployer));
-      await (await creationWithOwner.grantRole(await creation.VAULT_LAUNCH_ROLE(), deployer)).wait();
+      await (await creationWithOwner.addToWhitelist(deployer)).wait();
       console.log("✅ Added to whitelist");
     }
   } catch (error) {
@@ -179,7 +163,7 @@ async function deployProject(creation, usdtContract, drdsAddress, deployer, proj
   // 1. Vault initialization data
   const vaultInitData = ethers.AbiCoder.defaultAbiCoder().encode(
     ["address", "address", "bool", "address[]"],
-    [deployer, drdsAddress, true, [deployer]] // manager, validator, whitelistEnabled, initialWhitelist
+    [deployer, drdsAddress, false, [deployer]] // manager, validator, whitelistEnabled, initialWhitelist
   );
 
   // 2. Token initialization data
@@ -210,11 +194,13 @@ async function deployProject(creation, usdtContract, drdsAddress, deployer, proj
     ]
   );
 
-  // 4. AccumulatedYield initialization data
-  const accumulatedYieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
-    ["address", "address", "address"],
-    [usdtContract.target, deployer, deployer]  // rewardToken, rewardManager, dividendTreasury
+  // 4. FundYield initialization data
+  const fundYieldInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+    ["address", "address", "address","uint256","uint256"],
+    [usdtContract.target, deployer, deployer,0,0]  // rewardToken, rewardManager, settleCaller,minRedemptionAmount,startTime
   );
+
+
 
   console.log("📝 Initialization data preparation completed");
 
@@ -224,14 +210,14 @@ async function deployProject(creation, usdtContract, drdsAddress, deployer, proj
   try {
     // Create DeployParams structure
     const deployParams = {
-      vaultTemplateId: 1,
+      vaultTemplateId: 2,
       vaultInitData: vaultInitData,
       tokenTemplateId: 1,
       tokenInitData: tokenInitData,
       fundTemplateId: 1,
       fundInitData: fundInitData,
-      yieldTemplateId: 1,
-      yieldInitData: accumulatedYieldInitData,
+      yieldTemplateId: 2,
+      yieldInitData: fundYieldInitData,
       guardian: deployer
     };
     
@@ -298,7 +284,6 @@ async function deployProject(creation, usdtContract, drdsAddress, deployer, proj
 async function investProject(projectDetails, usdtContract, deployer) {
   console.log("🚀 Starting investment process...");
 
-  
   let token, fund, vault;
   try {
     token = await ethers.getContractAt("ShareToken", projectDetails.token.template);
@@ -675,17 +660,14 @@ async function investProject(projectDetails, usdtContract, deployer) {
   console.log("🎯 Investment process completed!");
 }
 
+
 // 分红函数
-async function distributeDividend(projectDetails, usdtContract, deployer) {
-  console.log("🚀 Starting dividend distribution process...");
+async function getYieldProject(projectDetails, usdtContract, deployer,investor) {
+  const fundYield = await ethers.getContractAt("FundYield", projectDetails.yield.template);
+  const vault = await ethers.getContractAt("FundVault", projectDetails.vault.template);
+  const share = await ethers.getContractAt("ShareToken", projectDetails.token.template);
 
-  // 获取合约实例
-  const accumulatedYield = await ethers.getContractAt("AccumulatedYield", projectDetails.yield.template);
-  const vault = await ethers.getContractAt("CoreVault", projectDetails.vault.template);
-  
-  // 使用部署者账户进行测试
   const testAccounts = [deployer];
-
   const network = require("hardhat").network.name;
   if (network === "hardhat" || network === "localhost") {
     console.log("🪙 Minting USDT for test accounts...");
@@ -717,22 +699,39 @@ async function distributeDividend(projectDetails, usdtContract, deployer) {
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
-  // 检查分红池状态
-  console.log("📈 Dividend pool information:");
-  const globalPoolInfo = await accumulatedYield.globalPool();
-  
-  console.log("Dividend pool active:", globalPoolInfo.isActive);
-  console.log("Reward token address:", globalPoolInfo.rewardToken);
-  console.log("Share token address:", globalPoolInfo.shareToken);
-  console.log("Total dividend amount:", formatUSDT(globalPoolInfo.totalDividend));
-  console.log("Total accumulated shares:", formatUSDT(globalPoolInfo.totalAccumulatedShares));
-  console.log("Last dividend time:", new Date(Number(globalPoolInfo.lastDividendTime) * 1000).toLocaleString());
 
-  // 模拟分红分配过程
-  console.log("💰 Starting dividend simulation...");
+  var lastId=await vault.latestRoundId();
+  console.log("lastId:",lastId)
+  console.log("last price:",await vault.lastestPrice())
+  console.log("latestRoundData:",await vault.lastestRoundData());
+  console.log("get RoundData:",await vault.getRoundData(lastId));
+
+  await vault.addPrice(200000000n);
+
+  lastId=await vault.latestRoundId();
+  console.log("lastId:",lastId)
+  console.log("last price:",await vault.lastestPrice())
+  console.log("latestRoundData:",await vault.lastestRoundData());
+  console.log("get RoundData:",await vault.getRoundData(lastId));
+
+
   
-  // 分红金额
-  const dividendAmount = parseUSDT("1000"); // 分配1000 USDT
+  console.log("✅ Is fund successful:", await vault.isFundSuccessful());
+  console.log("fund yield vault:",await fundYield.vault());
+  console.log("fund yield shareToken:",await fundYield.shareToken());
+  console.log("fund yield rewardToken:",await fundYield.rewardToken());
+  console.log("fund yield minRedemptionAmount:",await fundYield.minRedemptionAmount());
+  console.log("fund yield startTime:",await fundYield.startTime());
+  console.log("fund yield currentEpochId:",await fundYield.currentEpochId());
+
+  console.log("first epoch redemption");
+
+  var epochId=await fundYield.currentEpochId();
+
+  const validator = await vault.getValidator();
+  console.log("Validator address:", validator);
+
+  const dividendAmount = parseUSDT("10000"); // 分配1000 USDT
   
   // 检查USDT余额
   const balance = await usdtContract.balanceOf(deployer);
@@ -743,139 +742,184 @@ async function distributeDividend(projectDetails, usdtContract, deployer) {
     return;
   }
 
-  // 批准USDT给分红合约
-  console.log("🔐 Approving USDT for dividend contract...");
-  
-  try {
-    const signer = await ethers.getSigner(deployer);
-    const usdtWithSigner = usdtContract.connect(signer);
-    await (await usdtWithSigner.approve(accumulatedYield.target, dividendAmount)).wait();
-    console.log("✅ USDT approval successful");
-  } catch (error) {
-    console.log(`⚠️ USDT approval failed: ${error.message}`);
-    if (error.message.includes("nonce")) {
-      console.log("🔄 Nonce error detected, waiting 5 seconds...");
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      // 重试一次
-      try {
-        const signer = await ethers.getSigner(deployer);
-        const usdtWithSigner = usdtContract.connect(signer);
-        await (await usdtWithSigner.approve(accumulatedYield.target, dividendAmount)).wait();
-        console.log("✅ Retry approval successful");
-      } catch (retryError) {
-        console.log(`❌ Retry approval failed: ${retryError.message}`);
-        return;
-      }
-    } else {
-      return;
-    }
-  }
-  
-  // 等待2秒以避免nonce冲突
-  await new Promise(resolve => setTimeout(resolve, 2000));
 
-  // 执行分红分配
-  console.log(`💸 Distributing ${formatUSDT(dividendAmount)} USDT...`);
-  
-  // 构造验证者签名
   const validatorSigner = await ethers.getSigner(deployer);
-  
-  // 获取当前nonce
-  const dividendNonce = await accumulatedYield.getDividendNonce();
-  
-  // 获取验证者地址
-  const validator = await vault.getValidator();
-  console.log("Validator address:", validator);
-  
-  // 构造签名数据
   const payload = ethers.solidityPackedKeccak256(
     ["address", "uint256", "uint256"],
-    [await vault.getAddress(), dividendAmount, dividendNonce]
+    [vault.target, epochId, dividendAmount]
   );
-  
-  // 签名
   const signature = await validatorSigner.signMessage(ethers.getBytes(payload));
-  
-  console.log("🔐 Validator signature construction completed");
-  console.log("vault address:", await vault.getAddress());
-  console.log("amount", dividendAmount)
-  console.log("Nonce:", dividendNonce.toString());
-  console.log("Signature:", signature);
-  
-  // 执行分红分配
-  try {
-    const deployerSigner = await ethers.getSigner(deployer);
-    const accumulatedYieldWithSigner = accumulatedYield.connect(deployerSigner);
-    const tx = await accumulatedYieldWithSigner.distributeDividend(dividendAmount, signature);
-    const receipt = await tx.wait();
-    
-    if (receipt && receipt.status === 1) {
-      console.log("✅ Dividend distribution successful!");
-      
-      // 获取更新后的分红信息
-      const updatedGlobalPoolInfo = await accumulatedYield.globalPool();
-      console.log(`💰 Total dividend amount: ${formatUSDT(updatedGlobalPoolInfo.totalDividend)} USDT`);
-      console.log(`📈 Total accumulated shares: ${formatUSDT(updatedGlobalPoolInfo.totalAccumulatedShares)}`);
-      
-      // 检查用户的待领取奖励
-      const testUser = testAccounts[0];
-      const pendingReward = await accumulatedYield.pendingReward(testUser);
-      console.log(`🪙 User ${testUser} pending rewards: ${formatUSDT(pendingReward)} USDT`);
-      
-      // 领取奖励
-      if (pendingReward > 0) {
-        console.log("🎁 Starting to claim rewards...");
-        try {
-          const userSigner = await ethers.getSigner(testUser);
-          const accumulatedYieldWithUserSigner = accumulatedYield.connect(userSigner);
-          const claimTx = await accumulatedYieldWithUserSigner.claimReward();
-          const claimReceipt = await claimTx.wait();
-          
-          if (claimReceipt && claimReceipt.status === 1) {
-            console.log("✅ Rewards claimed successfully!");
-            
-            // 检查用户的USDT余额
-            const userUsdtBalance = await usdtContract.balanceOf(testUser);
-            console.log(`💰 User USDT balance: ${formatUSDT(userUsdtBalance)} USDT`);
-          } else {
-            console.log("❌ Failed to claim rewards");
-          }
-        } catch (claimError) {
-          console.log("❌ Failed to claim rewards:", claimError.message);
-        }
-      }
-    } else {
-      console.log("❌ Dividend distribution failed");
-    }
-  } catch (error) {
-    console.log("❌ Dividend distribution failed:", error.message);
-    
-    // 如果是nonce错误，等待更长时间
-    if (error.message.includes("nonce")) {
-      console.log("🔄 Nonce error detected, waiting 5 seconds before retry...");
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      
-      try {
-        const deployerSigner = await ethers.getSigner(deployer);
-        const accumulatedYieldWithSigner = accumulatedYield.connect(deployerSigner);
-        const tx = await accumulatedYieldWithSigner.distributeDividend(dividendAmount, signature);
-        const receipt = await tx.wait();
-        
-        if (receipt && receipt.status === 1) {
-          console.log("✅ Retry dividend distribution successful!");
-          
-          const updatedGlobalPoolInfo = await accumulatedYield.globalPool();
-          console.log(`💰 Total dividend amount: ${formatUSDT(updatedGlobalPoolInfo.totalDividend)} USDT`);
-        } else {
-          console.log("❌ Retry dividend distribution failed");
-        }
-      } catch (retryError) {
-        console.log("❌ Retry dividend distribution failed:", retryError.message);
-      }
-    }
-  }
 
-  console.log("🎯 Dividend distribution process completed!");
+  const deployerSigner = await ethers.getSigner(deployer);
+  const investorSigner = await ethers.getSigner(investor);
+  
+  const fundYieldwithSigner= fundYield.connect(deployerSigner);
+  const fundYieldwithInvestor= fundYield.connect(investorSigner);
+
+  var beforeBalance=await share.balanceOf(deployer);
+  console.log("req redeem before",beforeBalance)
+
+  await share.connect(deployerSigner).approve(fundYield.target,beforeBalance);
+  await fundYieldwithSigner.requestRedemption(beforeBalance);
+
+  console.log("req redeem after",await share.balanceOf(deployer))
+
+
+  var currentEpoch=await fundYieldwithSigner.currentEpochId();
+  console.log("current epoch",currentEpoch)
+  var epochData= await fundYieldwithSigner.getEpochData(currentEpoch);
+  console.log("epoch data",epochData)
+  var userReq=await fundYieldwithSigner.getRedemptionRequest(deployer,currentEpoch);
+  console.log("user req",userReq)
+
+  await fundYieldwithSigner.cancelRedemption();
+  console.log("req redeem cancel",await share.balanceOf(deployer))
+
+  var epochData= await fundYieldwithSigner.getEpochData(currentEpoch);
+  console.log("epoch data",epochData)
+  var userReq=await fundYieldwithSigner.getRedemptionRequest(deployer,currentEpoch);
+  console.log("user req",userReq)
+
+  await fundYieldwithSigner.changeEpoch();
+  console.log("current epoch",await fundYieldwithSigner.currentEpochId())
+  var epochData= await fundYieldwithSigner.getEpochData(currentEpoch);
+  console.log("epoch data",epochData);
+
+
+  console.log("second epoch redemption");
+
+
+  var beforeBalance=await share.balanceOf(deployer);
+  
+
+  var investorBalance = beforeBalance / 3n;
+  beforeBalance = beforeBalance - investorBalance;
+  
+  console.log("req redeem before",beforeBalance)
+  await share.connect(deployerSigner).transfer(investor,investorBalance);
+  await share.connect(deployerSigner).approve(fundYield.target,beforeBalance);
+  await fundYieldwithSigner.requestRedemption(beforeBalance);
+
+  console.log("req redeem after",await share.balanceOf(deployer))
+
+  console.log("investor req redeem before",await share.balanceOf(investor))
+
+  await share.connect(investorSigner).approve(fundYield.target,investorBalance);
+  await fundYieldwithInvestor.requestRedemption(investorBalance);
+  console.log("investor req redeem after",await share.balanceOf(investor))
+
+  var currentEpoch = await fundYield.currentEpochId();
+  var epochData= await fundYieldwithSigner.getEpochData(currentEpoch);
+  console.log("epoch data",epochData);
+  var userReq=await fundYieldwithSigner.getRedemptionRequest(deployer,currentEpoch);
+  console.log("deployer req",userReq);
+  var investorReq=await fundYieldwithInvestor.getRedemptionRequest(investor,currentEpoch);
+  console.log("investor req",investorReq);
+
+
+  await fundYieldwithSigner.changeEpoch();
+  console.log("current epoch",await fundYieldwithSigner.currentEpochId());
+
+
+  console.log("before finishRedemptionEpoch usdt amount",await usdtContract.balanceOf(deployer))
+  var dividendAmount2 = parseUSDT("50000");
+  await usdtContract.connect(deployerSigner).approve(projectDetails.yield.template,dividendAmount2)
+  var payload2 = ethers.solidityPackedKeccak256(
+    ["address", "uint256", "uint256"],
+    [vault.target, currentEpoch, dividendAmount2]
+  );
+  var signature2 = await validatorSigner.signMessage(ethers.getBytes(payload2));
+  await fundYieldwithSigner.finishRedemptionEpoch(currentEpoch,dividendAmount2,signature2);
+
+  console.log("deployer usdt amount",await usdtContract.balanceOf(deployer))
+  var epochData= await fundYieldwithSigner.getEpochData(currentEpoch);
+  console.log("epoch data",epochData)
+  console.log("lockedShareToken:",await fundYieldwithSigner.lockedShareToken());
+  console.log("deployer pendingReward:",await fundYieldwithSigner.pendingReward(deployer,currentEpoch));
+  await fundYieldwithSigner.claimRedemption(currentEpoch);
+  console.log("deployer pendingReward:",await fundYieldwithSigner.pendingReward(deployer,currentEpoch));
+
+  var userReq=await fundYieldwithSigner.getRedemptionRequest(deployer,currentEpoch);
+  console.log("deployer after claim user req",userReq)
+  console.log("deployer usdt amount",await usdtContract.balanceOf(deployer));
+  console.log("investor usdt amount",await usdtContract.balanceOf(investor));
+  var epochData= await fundYieldwithInvestor.getEpochData(currentEpoch);
+  console.log("epoch data",epochData)
+  console.log("lockedShareToken:",await fundYieldwithSigner.lockedShareToken());
+  console.log("investor pendingReward:",await fundYieldwithSigner.pendingReward(investor,currentEpoch));
+  await fundYieldwithInvestor.claimRedemption(currentEpoch);
+  console.log("investor pendingReward:",await fundYieldwithSigner.pendingReward(investor,currentEpoch));
+  var userReq=await fundYieldwithInvestor.getRedemptionRequest(deployer,currentEpoch);
+  console.log("lockedShareToken:",await fundYieldwithSigner.lockedShareToken());
+  console.log("investor after claim user req",userReq)
+  console.log("investor usdt amount",await usdtContract.balanceOf(investor));
+
+
+  console.log("share token supply",await share.totalSupply())
+
+  console.log("epoch data",await fundYieldwithInvestor.getEpochData(currentEpoch));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  console.log("🎯 getYieldProject process completed!");
 }
 
 // 执行脚本

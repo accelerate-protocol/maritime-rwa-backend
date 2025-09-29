@@ -3,7 +3,7 @@ pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract MockUSDT is ERC20 {
+contract MockUSDC is ERC20 {
     event Mint(address indexed account, uint256 amount);
     event Burn(address indexed account, uint256 amount);
 
@@ -21,10 +21,6 @@ contract MockUSDT is ERC20 {
         _spendAllowance(from, msg.sender, amount);
         _burn(from, amount);
         emit Burn(from, amount);
-    }
-
-    function decimals() public view virtual override returns (uint8) {
-        return 6;
     }
 
 }

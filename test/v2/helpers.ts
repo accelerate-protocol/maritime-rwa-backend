@@ -20,6 +20,9 @@ export const manageFeeBps = BigInt(1000); // 10% management fee
 // Role constants
 export const TOKEN_TRANSFER_ROLE = ethers.keccak256(ethers.toUtf8Bytes("TOKEN_TRANSFER_ROLE"));
 export const MANAGER_ROLE = ethers.keccak256(ethers.toUtf8Bytes("MANAGER_ROLE"));
+export const PAUSE_ROLE = ethers.keccak256(ethers.toUtf8Bytes("PAUSE_ROLE"));
+export const FEEDER_ROLE = ethers.keccak256(ethers.toUtf8Bytes("FEEDER_ROLE"));
+export const SETTLE_ROLE = ethers.keccak256(ethers.toUtf8Bytes("SETTLE_ROLE"));
 export const DEFAULT_ADMIN_ROLE = ethers.ZeroHash; // DEFAULT_ADMIN_ROLE 在 AccessControl 中是 0x00
 
 // Deploy MockUSDT contract
@@ -86,6 +89,60 @@ export async function createVault(manager: any, validatorRegistry: any, whitelis
   
   return { coreVault, proxyAdmin, vaultImpl, coreVaultTemplateFactory };
 }
+
+
+export async function createFundVault(manager: any, validatorRegistry: any, whitelistEnabled: boolean = true, initialWhitelist: string[] = []) {
+  // Deploy FundVaultTemplateFactory
+  const FundVaultTemplateFactoryFactory = await ethers.getContractFactory("FundVaultTemplateFactory");
+  const fundVaultTemplateFactory = await FundVaultTemplateFactoryFactory.deploy();
+  await fundVaultTemplateFactory.waitForDeployment();
+  
+  // Initialize CoreVault, enable whitelist
+  const vaultInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+    ["address", "address", "bool", "address[]"],
+    [manager.address, await validatorRegistry.getAddress(), whitelistEnabled, initialWhitelist]
+  );
+  
+  // Deploy vault using factory, set guardian as manager
+  const deployTx = await fundVaultTemplateFactory.newVault(vaultInitData, manager.address);
+  const receipt = await deployTx.wait();
+  
+  if (!receipt) {
+    throw new Error("Failed to get transaction receipt");
+  }
+  
+  // Get deployed contract address from event
+  const deployEvent = receipt.logs.find((log: any) => {
+    try {
+      const parsedLog = fundVaultTemplateFactory.interface.parseLog(log);
+      return parsedLog && parsedLog.name === "VaultDeployed";
+    } catch (e) {
+      return false;
+    }
+  });
+  
+  if (!deployEvent) {
+    throw new Error("Failed to deploy CoreVault through factory");
+  }
+  
+  const parsedLog = fundVaultTemplateFactory.interface.parseLog(deployEvent);
+  if (!parsedLog) {
+    throw new Error("Failed to parse VaultDeployed event");
+  }
+  
+  const [vaultAddress, proxyAdminAddress, vaultImplAddress] = parsedLog.args;
+  
+  // Get contract instance
+  const fundVault = await ethers.getContractAt("FundVault", vaultAddress);
+  const proxyAdmin = await ethers.getContractAt("ProxyAdmin", proxyAdminAddress);
+  const vaultImpl = await ethers.getContractAt("FundVault", vaultImplAddress);
+  
+  return { fundVault: fundVault, proxyAdmin, vaultImpl, fundVaultTemplateFactory: fundVaultTemplateFactory };
+}
+
+
+
+
 
 // Deploy ShareToken contract
 export async function deployShareToken(vault: any) {
@@ -228,6 +285,87 @@ export async function createVaultEnvironment(deployer: any, manager: any, valida
   };
 }
 
+export async function createFundVaultEnvironment(deployer: any, manager: any, validator: any, funding: any, yieldModel:any , whitelistEnabled: boolean = true, initialWhitelist: string[] = []) {
+  // Deploy ValidatorRegistry
+  const validatorRegistry = await deployValidatorRegistry(validator, manager);
+  
+  // Deploy CoreVault and related contracts
+  const { fundVault, proxyAdmin, vaultImpl, fundVaultTemplateFactory } = await createFundVault(manager, validatorRegistry, whitelistEnabled, initialWhitelist);
+  
+  // Deploy ShareToken
+  const { shareToken, shareTokenTemplateFactory } = await createShareToken(fundVault, manager);
+  
+  // Configure modules
+  await fundVault.connect(manager).configureModules(
+    await shareToken.getAddress(),
+    funding.address,
+    yieldModel.address
+  );
+  
+  return {
+    validatorRegistry,
+    fundVault,
+    proxyAdmin,
+    vaultImpl,
+    shareToken,
+    fundVaultTemplateFactory,
+    shareTokenTemplateFactory
+  };
+}
+
+export async function deployFundYield(vault: string, vaultToken: string, manager: any, rewardToken: string, settleCaller: any,minRedeem:bigint,startTime:bigint) {
+  // Deploy AccumulatedYieldTemplateFactory
+  const FundYieldTemplateFactory = await ethers.getContractFactory("FundYieldTemplateFactory");
+  const fundYieldTemplateFactory = await FundYieldTemplateFactory.deploy();
+  
+  // Encode initialization data
+  const initData = ethers.AbiCoder.defaultAbiCoder().encode(
+    ["address", "address", "address","uint256","uint256"],
+    [rewardToken, await manager.getAddress(), settleCaller,minRedeem,startTime]
+  );
+  
+  // Deploy AccumulatedYield through factory contract
+  const tx = await fundYieldTemplateFactory.newYield(
+    vault,
+    vaultToken,
+    initData,
+    await manager.getAddress()
+  );
+  
+  const receipt = await tx.wait();
+  
+  if (!receipt) {
+    throw new Error("Transaction receipt is null");
+  }
+  
+  const event = receipt.logs.find((log: any) => {
+    try {
+      const parsedLog = fundYieldTemplateFactory.interface.parseLog(log);
+      return parsedLog && parsedLog.name === "YieldDeployed";
+    } catch (e) {
+      return false;
+    }
+  });
+  
+  if (!event) {
+    throw new Error("Failed to deploy AccumulatedYield");
+  }
+  
+  const parsedEvent = fundYieldTemplateFactory.interface.parseLog(event);
+  if (!parsedEvent || !parsedEvent.args) {
+    throw new Error("Failed to parse YieldDeployed event");
+  }
+  
+  const fundYieldAddress = parsedEvent.args[0];
+  
+  // Get FundYield contract instance
+  const FundYield = await ethers.getContractFactory("FundYield");
+  const fundYield = FundYield.attach(fundYieldAddress);
+  
+  return { fundYield: fundYield, fundTemplateFactory: fundYieldTemplateFactory };
+}
+
+
 export async function deployAccumulatedYield(vault: string, vaultToken: string, manager: any, rewardToken: string, dividendTreasury: any) {
   // Deploy AccumulatedYieldTemplateFactory
   const AccumulatedYieldTemplateFactory = await ethers.getContractFactory("AccumulatedYieldTemplateFactory");
@@ -278,6 +416,44 @@ export async function deployAccumulatedYield(vault: string, vaultToken: string, 
   const accumulatedYield = AccumulatedYield.attach(accumulatedYieldAddress);
   
   return { accumulatedYield, accumulatedYieldTemplateFactory };
+}
+
+export async function createFundYield(manager: any, validator: any, settleCaler: any, mockUSDT: any) {
+   // Deploy ValidatorRegistry
+  const validatorRegistry = await deployValidatorRegistry(validator, manager);
+  // Deploy CoreVault and related contracts
+  const { fundVault, proxyAdmin, vaultImpl, fundVaultTemplateFactory } = await createFundVault(manager, validatorRegistry, false, []);
+  const { shareToken, shareTokenTemplateFactory } = await createShareToken(fundVault, manager);
+  const crowdsaleInitData = ethers.AbiCoder.defaultAbiCoder().encode(
+      ["uint256", "uint256", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "address", "address", "address", "address"],
+      [startTime, endTime, await mockUSDT.getAddress(), maxFundingAmount, softCap, sharePrice, minDepositAmount, manageFeeBps, manager.address, manager.address, manager.address, manager.address]
+    );
+    const { crowdsale, crowdsaleTemplateFactory } = await createCrowdsale(fundVault, shareToken, manager, crowdsaleInitData);
+
+ const { fundYield, fundTemplateFactory }= await deployFundYield(
+    await fundVault.getAddress(),
+    await shareToken.getAddress(),
+    manager,
+    await mockUSDT.getAddress(),
+    await settleCaler.getAddress(),
+    ethers.parseUnits("100", SHARE_TOKEN_DECIMALS),
+    0n
+  );
+
+  await fundVault.connect(manager).configureModules(
+    await shareToken.getAddress(),
+    await crowdsale.getAddress(),
+    await fundYield.getAddress()
+  );
+
+  return {
+    validatorRegistry,
+    fundVault,
+    shareToken,
+    crowdsale,
+    fundYield,
+  };
+
 }
 
 export async function createAccumulatedYield(manager: any, validator: any, dividendTreasury: any, mockUSDT: any) {

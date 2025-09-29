@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /**
  * @title IToken
  * @dev Token basic templates interface, inheriting ERC20 standard
  */
-interface IToken is IERC20Upgradeable {
+interface IToken is IERC20 {
     
     // ============ Basic Field Query Interface ============
     function paused() external view returns (bool);

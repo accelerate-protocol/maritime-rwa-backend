@@ -3,50 +3,56 @@ pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "../../interfaces/templates/IAccumulatedYield.sol";
 import "../../interfaces/templates/IVault.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 /**
  * @title AccumulatedYield
  * @dev Accumulated yield template implementation, providing yield distribution based on token holdings
  * @notice Supports accumulated yield and real-time claiming, similar to MasterChef design
  */
-contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,PausableUpgradeable,OwnableUpgradeable  {
+contract AccumulatedYield is
+    IAccumulatedYield,
+    ReentrancyGuardUpgradeable,
+    PausableUpgradeable,
+    OwnableUpgradeable,
+    AccessControlUpgradeable
+{
 
     using SafeERC20 for IERC20;
-    
+
+    bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+
     // ============ State Variables ============
     GlobalPoolInfo public globalPool;
     mapping(address => UserInfo) public users;
-    
     address public vault;
-    address public manager;
     address public dividendTreasury;
     // Add nonce for replay protection
     uint256 public dividendNonce;
     
     // Initialization state
-    bool private _initialized;
+    bool private initialized;
     
     
     // ============ Modifiers ============
-    modifier onlyManager() {
-        require(msg.sender == manager, "AccumulatedYield: only manager");
-        _;
-    }
-
     modifier onlyDividendTreasury() {
         require(msg.sender == dividendTreasury, "AccumulatedYield: only dividend treasury");
         _;
     }
     
     modifier onlyInitialized() {
-        require(_initialized, "AccumulatedYield: not initialized");
+        require(initialized, "AccumulatedYield: not initialized");
         _;
     }
     
@@ -67,7 +73,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
      * @param _initData Encoded initialization data (contains token and original initData)
      */
     function initiate(address _vault, address _vaultToken, bytes memory _initData) external initializer override {
-        require(_initialized == false, "AccumulatedYield: already initialized");
+        require(initialized == false, "AccumulatedYield: already initialized");
         (address rewardToken, address rewardManager, address dividendTreasuryAddr) = abi.decode(_initData, (address, address, address));
         _initGlobalPool(_vault, rewardManager, dividendTreasuryAddr, _vaultToken, rewardToken);
     }
@@ -130,6 +136,7 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
         
         // Get validator for event emission
         address validator = IVault(vault).getValidator();
+        
         emit DividendDistributed(dividendAmount, block.timestamp, validator, signature);
     }
     
@@ -233,17 +240,13 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
         require(shareToken != address(0), "AccumulatedYield: invalid share token");
         require(rewardToken != address(0), "AccumulatedYield: invalid reward token");
 
-        __Ownable_init();
+        __Ownable_init(_manager);
         __ReentrancyGuard_init();
         __Pausable_init();
 
         // Set vault, manager and dividendTreasury
         vault = _vault;
-        manager = _manager;
         dividendTreasury = _dividendTreasury;
-        
-        // Set owner as manager
-        _transferOwnership(_manager);
         
         globalPool = GlobalPoolInfo({
             totalAccumulatedShares: 0,
@@ -252,8 +255,13 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
             shareToken: shareToken,
             rewardToken: rewardToken
         });
+
+        // Initialize roles
+        _grantRole(DEFAULT_ADMIN_ROLE, _manager);
+        _grantRole(MANAGER_ROLE, _manager);
+        _grantRole(PAUSER_ROLE, _manager);
     
-        _initialized = true;
+        initialized = true;
         
         emit GlobalPoolInitialized(shareToken, rewardToken, block.timestamp);
     }
@@ -330,14 +338,14 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
      /**
      * @dev Pause 
      */
-    function pause() external onlyInitialized onlyManager {
+    function pause() external onlyInitialized onlyRole(PAUSER_ROLE) {
         _pause();
     }
     
     /**
      * @dev Resume 
      */
-    function unpause() external onlyInitialized onlyManager  {
+    function unpause() external onlyInitialized onlyRole(PAUSER_ROLE)  {
         _unpause();
     }
 
@@ -353,23 +361,10 @@ contract AccumulatedYield is IAccumulatedYield, ReentrancyGuardUpgradeable,Pausa
         
         // Verify signature with nonce to prevent replay attacks
         bytes32 payload = keccak256(abi.encodePacked(vault, dividendAmount, dividendNonce));
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(payload);
+        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(payload);
         
         address signer = ECDSA.recover(ethSignedMessageHash, signature);
         require(signer == validator, "AccumulatedYield: invalid signature");
-    }
-
-    // ============ Manager Management Interface ============
-    /**
-     * @dev Set a new manager address
-     * @param newManager The new manager address
-     */
-    function setManager(address newManager) external override onlyManager {
-        require(newManager != address(0), "AccumulatedYield: invalid manager address");
-        address oldManager = manager;
-        manager = newManager;
-        _transferOwnership(newManager);
-        emit ManagerChanged(oldManager, newManager);
     }
 
 }

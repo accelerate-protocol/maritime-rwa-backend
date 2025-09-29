@@ -63,7 +63,7 @@ contract RBFFactory is Auth, IRBFFactory {
         address guardian
     ) public override auth returns (address, address, address) {
         RBF rbfImplementation = new RBF();
-        ProxyAdmin rbfProxyAdmin = new ProxyAdmin();
+        ProxyAdmin rbfProxyAdmin = new ProxyAdmin(guardian);
         TransparentUpgradeableProxy rbfProxy = new TransparentUpgradeableProxy(
             address(rbfImplementation),
             address(rbfProxyAdmin),
@@ -71,7 +71,6 @@ contract RBFFactory is Auth, IRBFFactory {
         );
         RBF rbfProxied = RBF(address(rbfProxy));
         rbfProxied.initialize(data);
-        rbfProxyAdmin.transferOwnership(guardian);
         rbfProxied.transferOwnership(msg.sender);
         assert(rbfProxyAdmin.owner() == guardian);
         assert(rbfProxied.owner() == msg.sender);

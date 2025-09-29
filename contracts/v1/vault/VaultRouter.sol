@@ -48,7 +48,7 @@ contract VaultRouter is Ownable,IVaultRouter {
      * @param _escrowFactory Address of the escrow factories contract.
      * @param _vaultFactory Address of the vault factories contract.
      */
-    constructor(address _escrowFactory, address _vaultFactory) Ownable() {
+    constructor(address _escrowFactory, address _vaultFactory) Ownable(msg.sender) {
         escrowFactory = IEscrowFactory(_escrowFactory);
         vaultFactory = IVaultFactory(_vaultFactory);
     }

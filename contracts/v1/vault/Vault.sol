@@ -13,8 +13,8 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "../interface/AggregatorV3Interface.sol";
 import "../interface/IVault.sol";
 import "../rbf/RBF.sol";
@@ -117,7 +117,7 @@ contract Vault is
      */
     function initialize(VaultInitializeData memory data) public initializer {
         __ERC20_init(data.name, data.symbol);
-        __Ownable_init();
+        __Ownable_init(data.manager);
 
         require(
             data.assetToken != address(0),
@@ -170,7 +170,7 @@ contract Vault is
         decimalsMultiplier =
             10 **
                 (decimals() -
-                    IERC20MetadataUpgradeable(data.assetToken).decimals());
+                    IERC20Metadata(data.assetToken).decimals());
 
         _grantRole(DEFAULT_ADMIN_ROLE, data.manager);
         _grantRole(MANAGER_ROLE, data.manager);

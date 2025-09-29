@@ -3,26 +3,37 @@ pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "../../interfaces/templates/ICrowdsale.sol";
 import "../../interfaces/templates/IVault.sol";
 import "../../interfaces/templates/IToken.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 /**
  * @title Crowdsale
  * @dev Crowdsale template implementation, providing fair fundraising functionality
  * @notice Supports on-chain and off-chain deposits, refundable if funding fails
  */
-contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable,PausableUpgradeable {
+contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable,PausableUpgradeable, AccessControlUpgradeable {
     using SafeERC20 for IERC20;
     using ECDSA for bytes32;
 
-     // Constants
+    // ============ Role ============
+    bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    bytes32 public constant OFFCHAIN_MANAGER_ROLE = keccak256("OFFCHAIN_MANAGER_ROLE");
+    bytes32 public constant WITHDRAW_ASSET_ROLE = keccak256("WITHDRAW_ASSET_ROLE");
+    bytes32 public constant WITHDRAW_MANAGE_FEE_ROLE = keccak256("WITHDRAW_MANAGE_FEE_ROLE");
+
+    // Constants
     uint256 public constant BPS_DENOMINATOR = 10_000;
     uint256 public constant SHARE_PRICE_DENOMINATOR = 10**8;
 
@@ -40,8 +51,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     address public fundingReceiver;
     address public manageFeeReceiver;
     uint256 public decimalsMultiplier;
-    address public manager;
-    address public offchainManager;
 
     uint256 public fundingAssets;
     uint256 public manageFee;
@@ -50,19 +59,16 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     mapping(address => uint256) public callerNonce;
 
     // Initialization state
-    bool private _initialized;
+    bool private initialized;
+
+    // ============ on-chain sign validator ============
+    address public onChainSignValidator;
+
+    // Total raised share amount
+    uint256 public totalRaisedShareAmount;
 
     
     // ============ Modifiers ============
-    modifier onlyManager() {
-        require(msg.sender == manager, "Crowdsale: only manager");
-        _;
-    }
-
-    modifier onlyOffChainManager() {
-        require(msg.sender == offchainManager, "Crowdsale: only offchain manager");
-        _;
-    }
     
     modifier onlyDuringFunding() {
         require(block.timestamp >= startTime && block.timestamp <= endTime, "Crowdsale: not in funding period");
@@ -82,7 +88,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     }
 
     modifier onlyInitialized() {
-        require(_initialized, "Crowdsale: not initialized");
+        require(initialized, "Crowdsale: not initialized");
         _;
     }
     
@@ -101,7 +107,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
      * @param _initData Encoded initialization data
      */
     function initiate(address _vault, address _token, bytes memory _initData) external initializer {
-        require(!_initialized, "Crowdsale: already initialized");
+        require(!initialized, "Crowdsale: already initialized");
         
         // Decode initialization data
         CrowdsaleInitializeData memory data = abi.decode(_initData, (CrowdsaleInitializeData));
@@ -186,6 +192,9 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         
         // Mint tokens through vault
         IVault(vault).mintToken(receiver, actualShares);
+
+        // Update total raised shares
+        totalRaisedShareAmount += actualShares;
         
         emit Deposit(msg.sender, receiver, actualAmount, manageFeeAmount, actualShares);
     }
@@ -232,6 +241,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         
         // Burn the specified amount of tokens through vault
         IVault(vault).burnToken(msg.sender, amount);
+
+        totalRaisedShareAmount -= amount;
         
         // Update state
         fundingAssets -= netAssetAmount;
@@ -252,7 +263,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         external 
         override 
         onlyInitialized
-        onlyOffChainManager
+        onlyRole(OFFCHAIN_MANAGER_ROLE)
         onlyDuringFunding 
         nonReentrant
         whenNotPaused
@@ -283,6 +294,9 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         
         // Mint tokens through vault
         IVault(vault).mintToken(receiver, actualShares);
+
+        // Update state
+        totalRaisedShareAmount += actualShares;
         
         emit OffChainDeposit(msg.sender, receiver, actualShares, actualAmount);
     }
@@ -295,7 +309,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         external 
         override 
         onlyInitialized
-        onlyOffChainManager
+        onlyRole(OFFCHAIN_MANAGER_ROLE)
         onlyAfterFundingFailed 
         nonReentrant
         whenNotPaused
@@ -311,6 +325,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         
         // Burn all tokens through vault
         IVault(vault).burnToken(receiver, userShares);
+
+        totalRaisedShareAmount -= userShares;
                 
         emit OffChainRedeem(msg.sender, receiver, userShares, assetAmount);
     }
@@ -321,7 +337,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
      * @dev Withdraw funding assets (only when funding is successful)
      */
     function withdrawFundingAssets() external override onlyInitialized onlyAfterFundingSuccess nonReentrant whenNotPaused {
-        require(msg.sender == fundingReceiver || msg.sender == manager, "Crowdsale: only funding receiver or manager");
+        require(msg.sender == fundingReceiver || hasRole(WITHDRAW_ASSET_ROLE, msg.sender), "Crowdsale: unauthorized");
         require(fundingAssets > 0, "Crowdsale: no funding assets");
         
         uint256 amount = fundingAssets;
@@ -336,7 +352,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
      * @dev Withdraw management fee (only when funding is successful)
      */
     function withdrawManageFee() external override onlyInitialized onlyAfterFundingSuccess nonReentrant whenNotPaused {
-        require(msg.sender == manageFeeReceiver || msg.sender == manager, "Crowdsale: only manage fee receiver or manager");
+        require(msg.sender == manageFeeReceiver || hasRole(WITHDRAW_MANAGE_FEE_ROLE, msg.sender), "Crowdsale: unauthorized");
         require(manageFee > 0, "Crowdsale: no manage fee");
         
         uint256 amount = manageFee;
@@ -358,15 +374,13 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
      * 2. Time ended AND softCap reached
      */
     function isFundingSuccessful() public view override returns (bool) {
-        uint256 currentSupply = IToken(shareToken).totalSupply();
-
         // Condition 1: MaxSupply reached (immediate success)
-        if (currentSupply >= maxSupply) {
+        if (totalRaisedShareAmount >= maxSupply) {
             return true;
         }
         
         // Condition 2: Time ended AND softCap reached
-        if (block.timestamp > endTime && currentSupply >= softCap) {
+        if (block.timestamp > endTime && totalRaisedShareAmount >= softCap) {
             return true;
         }
 
@@ -407,28 +421,6 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     function getCallerNonce(address caller) external view returns (uint256) {
         return callerNonce[caller];
     }
-    
-    /**
-     * @dev Set a new manager address
-     * @param newManager The new manager address
-     */
-    function setManager(address newManager) external override onlyManager {
-        require(newManager != address(0), "Crowdsale: invalid manager address");
-        address oldManager = manager;
-        manager = newManager;
-        emit ManagerChanged(oldManager, newManager);
-    }
-    
-    /**
-     * @dev Set a new offchain manager address
-     * @param newOffchainManager The new offchain manager address
-     */
-    function setOffchainManager(address newOffchainManager) external override onlyOffChainManager {
-        require(newOffchainManager != address(0), "Crowdsale: invalid offchain manager address");
-        address oldOffchainManager = offchainManager;
-        offchainManager = newOffchainManager;
-        emit OffchainManagerChanged(oldOffchainManager, newOffchainManager);
-    }
 
     // ============ Internal Functions ============
 
@@ -443,7 +435,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         require(data.endTime > block.timestamp, "Crowdsale: end time in past");
         require(data.assetToken != address(0), "Crowdsale: invalid asset token");
         require(data.maxSupply > 0, "Crowdsale: invalid max supply");
-        require(data.softCap >= 0 && data.softCap <= data.maxSupply, "Crowdsale: invalid soft cap");
+        require(data.softCap <= data.maxSupply, "Crowdsale: invalid soft cap");
         require(data.sharePrice > 0, "Crowdsale: invalid share price");
         require(data.minDepositAmount > 0, "Crowdsale: invalid min deposit");
         require(data.manageFeeBps <= BPS_DENOMINATOR, "Crowdsale: invalid manage fee");
@@ -451,7 +443,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         require(data.manageFeeReceiver != address(0), "Crowdsale: invalid fee receiver");
         require(data.manager != address(0), "Crowdsale: invalid manager");
 
-        __Ownable_init();
+        __Ownable_init(data.manager);
         __ReentrancyGuard_init();
         __Pausable_init();
         
@@ -466,15 +458,28 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         manageFeeBps = data.manageFeeBps;
         fundingReceiver = data.fundingReceiver;
         manageFeeReceiver = data.manageFeeReceiver;
-        manager = data.manager;
-        offchainManager = data.offchainManager;
 
         decimalsMultiplier = 10 **
                 (IERC20Metadata(shareToken).decimals() -
                     IERC20Metadata(data.assetToken).decimals());
         
-        _transferOwnership(data.manager);
-        _initialized = true;
+        // Set up roles
+        _grantRole(DEFAULT_ADMIN_ROLE, data.manager);
+        _grantRole(MANAGER_ROLE, data.manager);
+        _grantRole(PAUSER_ROLE, data.manager);
+        _grantRole(WITHDRAW_ASSET_ROLE, data.manager);
+        _grantRole(WITHDRAW_MANAGE_FEE_ROLE, data.manager);
+        _setRoleAdmin(OFFCHAIN_MANAGER_ROLE, MANAGER_ROLE);
+        _setRoleAdmin(WITHDRAW_ASSET_ROLE, MANAGER_ROLE);
+        _setRoleAdmin(WITHDRAW_MANAGE_FEE_ROLE, MANAGER_ROLE);
+
+        _grantRole(OFFCHAIN_MANAGER_ROLE, data.offchainManager);
+        _grantRole(WITHDRAW_ASSET_ROLE, data.fundingReceiver);
+        _grantRole(WITHDRAW_MANAGE_FEE_ROLE, data.manageFeeReceiver);
+
+        // Set on-chain signature validator
+        onChainSignValidator = data.manager;
+        initialized = true;
     }
     
     /**
@@ -562,24 +567,35 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
             sigData.chainId,
             sigData.contractAddress
         ));
-        bytes32 ethSignedMessageHash = messageHash.toEthSignedMessageHash();
+        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(messageHash);
         address signer = ethSignedMessageHash.recover(signature);
-        require(signer == manager, "Crowdsale: invalid signature");
+        require(signer == onChainSignValidator, "Crowdsale: invalid signature");
     }
 
 
      /**
      * @dev Pause 
      */
-    function pause() external onlyInitialized onlyManager {
+    function pause() external onlyInitialized onlyRole(PAUSER_ROLE) {
         _pause();
     }
     
     /**
      * @dev Resume 
      */
-    function unpause() external onlyInitialized onlyManager  {
+    function unpause() external onlyInitialized onlyRole(PAUSER_ROLE)  {
         _unpause();
+    }
+
+    /**
+     * @dev Update on-chain signature validator address
+     * @param _validator New validator address
+     */
+    function setOnChainSignValidator(address _validator) external override onlyInitialized onlyRole(MANAGER_ROLE) {
+        require(_validator != address(0), "Crowdsale: invalid validator");
+        address oldValidator = onChainSignValidator;
+        onChainSignValidator = _validator;
+        emit OnChainSignValidatorUpdated(oldValidator, _validator);
     }
     
 }

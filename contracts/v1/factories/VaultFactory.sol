@@ -61,7 +61,7 @@ contract VaultFactory is Auth, IVaultFactory {
         address guardian
     ) public override auth returns (address, address, address) {
         Vault vaultImplementation = new Vault();
-        ProxyAdmin vaultProxyAdmin = new ProxyAdmin();
+        ProxyAdmin vaultProxyAdmin = new ProxyAdmin(guardian);
         TransparentUpgradeableProxy vaultProxy = new TransparentUpgradeableProxy(
                 address(vaultImplementation),
                 address(vaultProxyAdmin),
@@ -69,7 +69,6 @@ contract VaultFactory is Auth, IVaultFactory {
             );
         Vault vaultProxied = Vault(address(vaultProxy));
         vaultProxied.initialize(data);
-        vaultProxyAdmin.transferOwnership(guardian);
         vaultProxied.transferOwnership(msg.sender);
         emit VaultDeployed(
             address(vaultProxy),

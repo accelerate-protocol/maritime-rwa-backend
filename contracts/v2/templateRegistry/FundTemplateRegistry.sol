@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/factories/IFundTemplateFactory.sol";
 import "../interfaces/registry/IRegistry.sol";
 
 contract FundTemplateRegistry is IFundRegistry, Ownable {
-    using Clones for address;
     
     mapping(uint256 => address) public templates;
     uint256 public templateCount;
+
+    constructor() Ownable(msg.sender)  {}
     
     function addTemplate(uint256 templateId, address template) external override onlyOwner {
         require(templateId != 0, "FundTemplateRegistry: invalid templateId");

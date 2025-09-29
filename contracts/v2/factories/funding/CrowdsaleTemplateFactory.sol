@@ -20,7 +20,7 @@ contract CrowdsaleTemplateFactory is IFundTemplateFactory {
     ) public override returns (address,address,address) { 
         require(guardian != address(0), "CrowdsaleTemplateFactory: guardian can not be zero address");
         Crowdsale fundImpl = new Crowdsale();
-        ProxyAdmin proxyAdmin = new ProxyAdmin();
+        ProxyAdmin proxyAdmin = new ProxyAdmin(guardian);
         TransparentUpgradeableProxy tokenProxy = new TransparentUpgradeableProxy(
                 address(fundImpl),
                 address(proxyAdmin),
@@ -28,7 +28,6 @@ contract CrowdsaleTemplateFactory is IFundTemplateFactory {
         );
         Crowdsale fundProxied = Crowdsale(address(tokenProxy));
         fundProxied.initiate(vault,token,initData);
-        proxyAdmin.transferOwnership(guardian);
         emit FundDeployed(address(fundProxied),address(proxyAdmin),address(fundImpl),guardian);
         return (address(fundProxied),address(proxyAdmin),address(fundImpl));
     }

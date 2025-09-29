@@ -55,24 +55,6 @@ interface ICreation {
         DeployParams memory params
     ) external;
 
-    // ============ Management Interfaces ============
-    /**
-     * @notice Add a user to the vault launch whitelist.
-     * @param user The address to add.
-     */
-    function addToWhitelist(address user) external;
-    /**
-     * @notice Remove a user from the the vault launch whitelist.
-     * @param user The address to remove.
-     */
-    function removeFromWhitelist(address user) external;
-
-    /**
-     * @notice Check if a user is whitelisted.
-     * @param user The address to check.
-     * @return True if the user is whitelisted.
-     */
-    function whitelist(address user) external view returns (bool);
     
     // ============ Query Interfaces ============
     /**

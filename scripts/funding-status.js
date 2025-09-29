@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 
 async function main() {
     // Crowdfunding contract address - please modify according to actual situation
-    const fundAddress = "0xbA75BD6E851DEE41aFCfD7376a29aE459299dcF8"; // Replace with actual crowdfunding contract address
+    const fundAddress = "0x2ACDe8bc8567D49CF2Fe54999d4d4A1cd1a9fFEA"; // Replace with actual crowdfunding contract address
     
     try {
         const fund = await ethers.getContractAt("Crowdsale", fundAddress);
@@ -19,7 +19,6 @@ async function main() {
         console.log(`Crowdfunding result: ${isFundingSuccessful ? '🎉 Successful' : '⏳ In progress/Failed'}`);
         
         // Key data
-        const manager = await fund.manager();
         const totalRaised = await fund.getTotalRaised();
         const softCap = await fund.softCap();
         const maxSupply = await fund.maxSupply();
@@ -30,13 +29,12 @@ async function main() {
         const sharePrice = await fund.sharePrice();
 
         console.log(`\n💰 Funding Status:`);
-        console.log(`Manager: ${manager}`);
         console.log(`Total raised: ${ethers.formatUnits(totalRaised, 6)} asset`);
         console.log(`Soft cap: ${ethers.formatUnits(softCap, 6)} asset`);
         console.log(`Maximum supply: ${ethers.formatUnits(maxSupply, 6)} asset`);
         console.log(`Remaining supply: ${ethers.formatUnits(remainingSupply, 6)} asset`);
         console.log(`Management fee: ${ethers.formatUnits(manageFee, 6)} asset`);
-        console.log(`Management fee percentage: ${manageFeeBps}%`);
+        console.log(`Management fee percentage: ${(Number(manageFeeBps) / 100).toFixed(2)}%`);
         console.log(`Funding assets: ${ethers.formatUnits(fundingAssets, 6)} asset`);
         console.log(`Share token price: ${ethers.formatUnits(sharePrice, 8)} asset`);
         
@@ -45,8 +43,8 @@ async function main() {
         const maxProgress = (Number(totalRaised) / Number(maxSupply)) * 100;
         
         console.log(`\n📊 Progress:`);
-        console.log(`Soft cap achievement: ${softCapProgress.toFixed(1)}% ${'█'.repeat(Math.floor(softCapProgress/5))}${'░'.repeat(20-Math.floor(softCapProgress/5))}`);
-        console.log(`Maximum supply: ${maxProgress.toFixed(1)}% ${'█'.repeat(Math.floor(maxProgress/5))}${'░'.repeat(20-Math.floor(maxProgress/5))}`);
+        console.log(`Soft cap achievement: ${softCapProgress.toFixed(1)}% ${'█'.repeat(Math.max(0, Math.floor(softCapProgress/5)))}${'░'.repeat(Math.max(0, 20-Math.floor(softCapProgress/5)))}`);
+        console.log(`Maximum supply: ${maxProgress.toFixed(1)}% ${'█'.repeat(Math.max(0, Math.floor(maxProgress/5)))}${'░'.repeat(Math.max(0, 20-Math.floor(maxProgress/5)))}`);
         
         // Time information
         const startTime = await fund.startTime();
