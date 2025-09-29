@@ -246,6 +246,11 @@ contract FundYield is
         emit StartTimeSet(_startTime);
     }
 
+    function setMinRedemptionAmount(uint256 _minRedemptionAmount) external whenNotPaused onlyInitialized onlyRole(MANAGER_ROLE) {
+        minRedemptionAmount = _minRedemptionAmount;
+        emit MinRedemptionAmountSet(_minRedemptionAmount);
+    }
+
      /**
      * @dev Pause 
      */

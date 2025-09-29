@@ -40,6 +40,7 @@ interface  IFundYield {
     event RedemptionClaim(address requester,uint256 epochId,uint256 shareAmount,uint256 assetAmount);
     event Initialized(address vault,address vaultToken,address rewardToken,address manager,address settleCaller,uint256 minRedemptionAmount,uint256 startTime);
     event StartTimeSet(uint256 startTime);
+    event MinRedemptionAmountSet(uint256 minRedemptionAmount);
 
 
 }
