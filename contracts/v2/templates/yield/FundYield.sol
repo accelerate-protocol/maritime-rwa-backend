@@ -25,7 +25,7 @@ contract FundYield is
 
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     bytes32 public constant SETTLE_ROLE = keccak256("SETTLE_ROLE");
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    bytes32 public constant PAUSE_ROLE = keccak256("PAUSE_ROLE");
 
 
     address public vault;
@@ -44,7 +44,8 @@ contract FundYield is
 
 
     modifier active() {
-        require(block.timestamp >= startTime, "FundYield not started");
+        require(IFundVault(vault).isFundSuccessful(), "FundYield: fund not successful");
+        require(block.timestamp >= startTime, "FundYield: not started");
         _;
     }
     
@@ -96,7 +97,7 @@ contract FundYield is
 
     function requestRedemption(
         uint256 shareAmount
-    ) external active onlyInitialized nonReentrant whenNotPaused {
+    ) external whenNotPaused active onlyInitialized nonReentrant  {
         require(
             shareAmount >= minRedemptionAmount,
             "FundYield:Below minimum redemption amount"
@@ -127,10 +128,10 @@ contract FundYield is
 
     function changeEpoch()
         external
+        whenNotPaused
         active
         onlyInitialized
         nonReentrant
-        whenNotPaused
         onlyRole(MANAGER_ROLE)
     {
         RedemptionEpoch storage epoch = redemptionEpochs[currentEpochId];
@@ -151,7 +152,7 @@ contract FundYield is
         emit RedemptionEpochChanged(currentEpochId);
     }
 
-    function cancelRedemption() external active onlyInitialized nonReentrant whenNotPaused {
+    function cancelRedemption() external whenNotPaused active onlyInitialized nonReentrant {
         RedemptionEpoch storage epoch = redemptionEpochs[currentEpochId];
         require(
             epoch.epochStatus == EpochStatus.Active,
@@ -178,10 +179,10 @@ contract FundYield is
         bytes memory signature
     )
         external
+        whenNotPaused
         active
         onlyInitialized
         nonReentrant
-        whenNotPaused
         onlyRole(SETTLE_ROLE)
     {
         _verifySignature(epochId, assetAmount, signature);
@@ -208,7 +209,7 @@ contract FundYield is
 
     function claimRedemption(
         uint256 epochId
-    ) external active onlyInitialized nonReentrant whenNotPaused {
+    ) external whenNotPaused active onlyInitialized nonReentrant {
         RedemptionEpoch storage epoch = redemptionEpochs[epochId];
         RedemptionRequest storage request = redemptionEpochRequests[msg.sender][
             epochId
@@ -240,7 +241,7 @@ contract FundYield is
         );
     }
 
-    function setStartTime(uint256 _startTime) external onlyInitialized onlyRole(MANAGER_ROLE) {
+    function setStartTime(uint256 _startTime) external whenNotPaused onlyInitialized onlyRole(MANAGER_ROLE) {
         startTime = _startTime;
         emit StartTimeSet(_startTime);
     }
@@ -248,14 +249,14 @@ contract FundYield is
      /**
      * @dev Pause 
      */
-    function pause() external onlyInitialized onlyRole(PAUSER_ROLE) {
+    function pause() external onlyInitialized onlyRole(PAUSE_ROLE) {
         _pause();
     }
     
     /**
      * @dev Resume 
      */
-    function unpause() external onlyInitialized onlyRole(PAUSER_ROLE)  {
+    function unpause() external onlyInitialized onlyRole(PAUSE_ROLE)  {
         _unpause();
     }
 
@@ -291,7 +292,7 @@ contract FundYield is
 
         _grantRole(DEFAULT_ADMIN_ROLE, _manager);
         _grantRole(MANAGER_ROLE, _manager);
-        _grantRole(PAUSER_ROLE, _manager);
+        _grantRole(PAUSE_ROLE, _manager);
         _grantRole(SETTLE_ROLE, _settleCaller);
         _setRoleAdmin(SETTLE_ROLE, MANAGER_ROLE);
 

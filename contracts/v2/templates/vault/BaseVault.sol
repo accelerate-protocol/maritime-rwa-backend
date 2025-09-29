@@ -283,7 +283,9 @@ abstract contract BaseVault is
 
         _grantRole(DEFAULT_ADMIN_ROLE, _manager);
         _grantRole(MANAGER_ROLE, _manager);
+        _grantRole(PAUSE_ROLE, _manager);
         _setRoleAdmin(TOKEN_TRANSFER_ROLE, MANAGER_ROLE);
+        _setRoleAdmin(PAUSE_ROLE, DEFAULT_ADMIN_ROLE);
         // set Mint/Burn role admin to self , avoid mint/burn role granted by default admin
         _setRoleAdmin(MINT_ROLE, MINT_ROLE);
         _setRoleAdmin(BURN_ROLE, BURN_ROLE);
