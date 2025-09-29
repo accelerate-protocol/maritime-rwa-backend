@@ -64,6 +64,9 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     // ============ on-chain sign validator ============
     address public onChainSignValidator;
 
+    // Total raised share amount
+    uint256 public totalRaisedShareAmount;
+
     
     // ============ Modifiers ============
     
@@ -189,6 +192,9 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         
         // Mint tokens through vault
         IVault(vault).mintToken(receiver, actualShares);
+
+        // Update total raised shares
+        totalRaisedShareAmount += actualShares;
         
         emit Deposit(msg.sender, receiver, actualAmount, manageFeeAmount, actualShares);
     }
@@ -235,6 +241,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         
         // Burn the specified amount of tokens through vault
         IVault(vault).burnToken(msg.sender, amount);
+
+        totalRaisedShareAmount -= amount;
         
         // Update state
         fundingAssets -= netAssetAmount;
@@ -286,6 +294,9 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         
         // Mint tokens through vault
         IVault(vault).mintToken(receiver, actualShares);
+
+        // Update state
+        totalRaisedShareAmount += actualShares;
         
         emit OffChainDeposit(msg.sender, receiver, actualShares, actualAmount);
     }
@@ -314,6 +325,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         
         // Burn all tokens through vault
         IVault(vault).burnToken(receiver, userShares);
+
+        totalRaisedShareAmount -= userShares;
                 
         emit OffChainRedeem(msg.sender, receiver, userShares, assetAmount);
     }
@@ -361,15 +374,13 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
      * 2. Time ended AND softCap reached
      */
     function isFundingSuccessful() public view override returns (bool) {
-        uint256 currentSupply = IToken(shareToken).totalSupply();
-
         // Condition 1: MaxSupply reached (immediate success)
-        if (currentSupply >= maxSupply) {
+        if (totalRaisedShareAmount >= maxSupply) {
             return true;
         }
         
         // Condition 2: Time ended AND softCap reached
-        if (block.timestamp > endTime && currentSupply >= softCap) {
+        if (block.timestamp > endTime && totalRaisedShareAmount >= softCap) {
             return true;
         }
 
