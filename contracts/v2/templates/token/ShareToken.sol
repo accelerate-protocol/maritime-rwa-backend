@@ -187,8 +187,7 @@ contract ShareToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
     //     }
     // }
 
-    function _update(address from, address to, uint256 value) internal virtual override {
-        super._update(from, to, value);
+    function _update(address from, address to, uint256 value) internal virtual override {   
         // Call vault hook on token transfer
         // This condition ensures the logic only runs for transfers between two valid addresses
         if (from != address(0) && to != address(0)) {
@@ -197,6 +196,7 @@ contract ShareToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
                 IVault(vault).onTokenTransfer(from, to, value);
             }
         }
+        super._update(from, to, value);
     }
 
 }

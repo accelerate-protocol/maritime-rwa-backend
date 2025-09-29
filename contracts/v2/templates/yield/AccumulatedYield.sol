@@ -31,7 +31,7 @@ contract AccumulatedYield is
     using SafeERC20 for IERC20;
 
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
-
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
     // ============ State Variables ============
     GlobalPoolInfo public globalPool;
@@ -259,6 +259,7 @@ contract AccumulatedYield is
         // Initialize roles
         _grantRole(DEFAULT_ADMIN_ROLE, _manager);
         _grantRole(MANAGER_ROLE, _manager);
+        _grantRole(PAUSER_ROLE, _manager);
     
         initialized = true;
         
@@ -337,14 +338,14 @@ contract AccumulatedYield is
      /**
      * @dev Pause 
      */
-    function pause() external onlyInitialized onlyRole(MANAGER_ROLE) {
+    function pause() external onlyInitialized onlyRole(PAUSER_ROLE) {
         _pause();
     }
     
     /**
      * @dev Resume 
      */
-    function unpause() external onlyInitialized onlyRole(MANAGER_ROLE)  {
+    function unpause() external onlyInitialized onlyRole(PAUSER_ROLE)  {
         _unpause();
     }
 

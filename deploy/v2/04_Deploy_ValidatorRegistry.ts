@@ -22,7 +22,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("=== Deploying ValidatorRegistry Contract ===\n");
 
 
-  const  validator = process.env.DRDS_ADDRESS || deployer;
+  // Set validator based on network type
+  let validator: string;
+  if (network.name === 'localhost' || network.name === 'hardhat') {
+    validator = deployer;
+  } else {
+    validator = process.env.VALIDATOR_ADDRESS || deployer;
+  }
+  
   const manager = process.env.MANAGER_ADDRESS || deployer;
 
   console.log(`Deploying ValidatorRegistry with validator: ${validator} and manager: ${manager}`);

@@ -346,9 +346,10 @@ contract FundYield is
     }
 
     function getRedemptionRequest(
+        address user,
         uint256 epoch
     ) public view returns (RedemptionRequest memory) {
-        return redemptionEpochRequests[msg.sender][epoch];
+        return redemptionEpochRequests[user][epoch];
     }
 
 

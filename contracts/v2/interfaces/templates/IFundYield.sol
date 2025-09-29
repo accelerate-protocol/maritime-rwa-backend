@@ -30,7 +30,7 @@ interface  IFundYield {
     function finishRedemptionEpoch(uint256 epochId,uint256 assetAmount,bytes memory signature) external;
     function claimRedemption(uint256 epochId) external;
     function getEpochData(uint256 epoch) external view returns (RedemptionEpoch memory);
-    function getRedemptionRequest(uint256 epoch) external view returns (RedemptionRequest memory);
+    function getRedemptionRequest(address user,uint256 epoch) external view returns (RedemptionRequest memory);
     function pendingReward(address user,uint256 epochId) external view returns (uint256);
 
     event RedemptionRequested(address requester,uint256 epoch,uint256 shareAmount);

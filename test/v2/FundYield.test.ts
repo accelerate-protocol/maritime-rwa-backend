@@ -17,6 +17,7 @@ import {
   PAUSE_ROLE,
   endTime
 } from "./helpers";
+import exp from "constants";
 
 describe("FundYield", function () {
   let deployer: any;
@@ -109,7 +110,7 @@ describe("FundYield", function () {
       var startTime = await fundYield.startTime();
 
       expect(currentEpoch).to.equal(0);
-      expect(minRedemptionAmount).to.equal(0);
+      expect(minRedemptionAmount).to.equal(ethers.parseUnits("100", SHARE_TOKEN_DECIMALS));
       expect(startTime).to.equal(0);
 
       expect(await fundYield.owner()).to.equal(manager.address);
@@ -272,7 +273,6 @@ describe("FundYield", function () {
 
   describe("Reward Claiming Tests", function () {
 
-    var dividendAmount;
     beforeEach(async function() {
       // Fully funded, financing completed
       await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("20000", SHARE_TOKEN_DECIMALS), manager.address);
@@ -281,12 +281,15 @@ describe("FundYield", function () {
       await shareToken.connect(manager).transfer(user1.address, ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
       await shareToken.connect(manager).transfer(user2.address, ethers.parseUnits("1000", SHARE_TOKEN_DECIMALS));
       
-      // Distribute some dividends
-      dividendAmount = ethers.parseUnits("1500", 6);
-      await mockUSDT.connect(settleCaller).approve(
-        await fundYield.getAddress(),
-        dividendAmount
-      );
+    });
+
+    it("should change empty epoch", async function () { 
+        var epochId = await fundYield.currentEpochId();
+        await expect(fundYield.connect(manager).changeEpoch()).to.be.not.reverted;
+        var epochIdNew = await fundYield.currentEpochId();
+        expect(epochIdNew).to.be.equal(epochId+1n);
+         var epochData=await fundYield.getEpochData(epochId);
+        expect(epochData.epochStatus).to.equal(0);
     });
 
     it("should set start time", async function () {
@@ -319,54 +322,311 @@ describe("FundYield", function () {
 
     });
 
-    
-
-    it("should start redeem", async function () { 
+    it("should requestRedemption", async function () {
         var epochId = await fundYield.currentEpochId();
-        console.log("epochId",epochId);
-
         var epochData=await fundYield.getEpochData(epochId);
-        console.log("epochData",epochData);
-        var redeemReq=await fundYield.getRedemptionRequest(epochId);
-        console.log("redeemReq",redeemReq);
+   
+        expect(epochData.totalShares).to.equal(0);
+        expect(epochData.totalRedemptionAssets).to.equal(0);
+        expect(epochData.totalClaimedAssets).to.equal(0);
+        expect(epochData.epochStatus).to.equal(0);
+        var redeemReq=await fundYield.getRedemptionRequest(user1.address,epochId);
+        expect(redeemReq.requestShares).to.equal(0);
+        expect(redeemReq.claimShares).to.equal(0);
+        expect(redeemReq.claimAssets).to.equal(0);
+        expect(redeemReq.lastRequestTimeStamp).to.equal(0);
+        expect(redeemReq.lastClaimTimeStamp).to.equal(0);
 
         var pendingRedeem=await fundYield.pendingReward(user1.address,epochId);
-        console.log("pendingRedeem",pendingRedeem);
-
-        fundYield.connect(user1).requestRedemption(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS))
+        expect(pendingRedeem).to.equal(0);
+       
+        await shareToken.connect(user1).approve(fundYield.getAddress(), ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        await expect(
+            fundYield.connect(user1).requestRedemption(ethers.parseUnits("10", SHARE_TOKEN_DECIMALS))
+        ).to.be.rejectedWith("FundYield:Below minimum redemption amount");
         await expect(
             fundYield.connect(user1).requestRedemption(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS))
         ).to.be.not.reverted;
         var epochData=await fundYield.getEpochData(epochId);
-        console.log("epochData",epochData);
-        var redeemReq=await fundYield.getRedemptionRequest(epochId);
-        console.log("redeemReq",redeemReq);
+        expect(epochData.totalShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(epochData.totalRedemptionAssets).to.equal(0);
+        expect(epochData.totalClaimedAssets).to.equal(0);
+        expect(epochData.epochStatus).to.equal(1);
 
-        var pendingRedeem=await fundYield.pendingReward(user1.address);
-        console.log("pendingRedeem",pendingRedeem);
+        var redeemReq=await fundYield.getRedemptionRequest(user1.address,epochId);
+        expect(redeemReq.requestShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(redeemReq.claimShares).to.equal(0);
+        expect(redeemReq.claimAssets).to.equal(0);
+        expect(redeemReq.lastRequestTimeStamp).to.greaterThan(0);
+        expect(redeemReq.lastClaimTimeStamp).to.equal(0);
+        var pendingRedeem=await fundYield.pendingReward(user1.address,epochId);
+        expect(pendingRedeem).to.equal(0);
+
+    });
+
+    it("should cancel requestRedemption", async function () { 
+        var epochId = await fundYield.currentEpochId();
+        await shareToken.connect(user1).approve(fundYield.getAddress(), ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        await expect(
+            fundYield.connect(user1).requestRedemption(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS))
+        ).to.be.not.reverted;
+        var epochData=await fundYield.getEpochData(epochId);
+        expect(epochData.totalShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(epochData.totalRedemptionAssets).to.equal(0);
+        expect(epochData.totalClaimedAssets).to.equal(0);
+        expect(epochData.epochStatus).to.equal(1);
+
+        var redeemReq=await fundYield.getRedemptionRequest(user1.address,epochId);
+        expect(redeemReq.requestShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(redeemReq.claimShares).to.equal(0);
+        expect(redeemReq.claimAssets).to.equal(0);
+        expect(redeemReq.lastRequestTimeStamp).to.greaterThan(0);
+        expect(redeemReq.lastClaimTimeStamp).to.equal(0);
+        var pendingRedeem=await fundYield.pendingReward(user1.address,epochId);
+        expect(pendingRedeem).to.equal(0);
+
+
+        var balanceBefore=await shareToken.balanceOf(user1.address);
+        await expect(
+            fundYield.connect(user1).cancelRedemption()
+        ).to.be.not.reverted;
+        var balanceAfter=await shareToken.balanceOf(user1.address);
+        expect(balanceAfter-balanceBefore).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+
+
+        var epochData=await fundYield.getEpochData(epochId);
+        expect(epochData.totalShares).to.equal(0);
+        var redeemReq=await fundYield.getRedemptionRequest(user1.address,epochId);
+        expect(redeemReq.requestShares).to.equal(0);
+
+
+    });
+
+    it("should change epoch after cancel redeem", async function () {
+        var epochId = await fundYield.currentEpochId();
+        await shareToken.connect(user1).approve(fundYield.getAddress(), ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        await expect(
+            fundYield.connect(user1).requestRedemption(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS))
+        ).to.be.not.reverted;
+        var epochData=await fundYield.getEpochData(epochId);
+        expect(epochData.totalShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(epochData.totalRedemptionAssets).to.equal(0);
+        expect(epochData.totalClaimedAssets).to.equal(0);
+        expect(epochData.epochStatus).to.equal(1);
+        var redeemReq=await fundYield.getRedemptionRequest(user1.address,epochId);
+        expect(redeemReq.requestShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(redeemReq.claimShares).to.equal(0);
+        expect(redeemReq.claimAssets).to.equal(0);
+        expect(redeemReq.lastRequestTimeStamp).to.greaterThan(0);
+        expect(redeemReq.lastClaimTimeStamp).to.equal(0);
+        var pendingRedeem=await fundYield.pendingReward(user1.address,epochId);
+        expect(pendingRedeem).to.equal(0);
+
+
+        var balanceBefore=await shareToken.balanceOf(user1.address);
+        await expect(
+            fundYield.connect(user1).cancelRedemption()
+        ).to.be.not.reverted;
+        var balanceAfter=await shareToken.balanceOf(user1.address);
+        expect(balanceAfter-balanceBefore).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+
+
+        var epochData=await fundYield.getEpochData(epochId);
+        expect(epochData.totalShares).to.equal(0);
+        var redeemReq=await fundYield.getRedemptionRequest(user1.address,epochId);
+        expect(redeemReq.requestShares).to.equal(0);
 
 
 
 
+        await expect(fundYield.connect(manager).changeEpoch()).to.be.not.reverted;
+        var epochIdNew = await fundYield.currentEpochId();
+        expect(epochIdNew).to.be.equal(epochId+1n);
+         var epochData=await fundYield.getEpochData(epochId);
+        expect(epochData.epochStatus).to.equal(0);
+
+    });
+
+    it("should change epoch after redeem", async function () {
+        var epochId = await fundYield.currentEpochId();
+        var epochData=await fundYield.getEpochData(epochId);
+        await expect(fundYield.connect(user1).claimRedemption(epochId)).to.be.rejectedWith("FundYield:Epoch not liquidated or no redemption request");
+   
+        expect(epochData.totalShares).to.equal(0);
+        expect(epochData.totalRedemptionAssets).to.equal(0);
+        expect(epochData.totalClaimedAssets).to.equal(0);
+        expect(epochData.epochStatus).to.equal(0);
+        var redeemReq=await fundYield.getRedemptionRequest(user1.address,epochId);
+        expect(redeemReq.requestShares).to.equal(0);
+        expect(redeemReq.claimShares).to.equal(0);
+        expect(redeemReq.claimAssets).to.equal(0);
+        expect(redeemReq.lastRequestTimeStamp).to.equal(0);
+        expect(redeemReq.lastClaimTimeStamp).to.equal(0);
+
+        var pendingRedeem=await fundYield.pendingReward(user1.address,epochId);
+        expect(pendingRedeem).to.equal(0);
+       
+        await shareToken.connect(user1).approve(fundYield.getAddress(), ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        await expect(
+            fundYield.connect(user1).requestRedemption(ethers.parseUnits("10", SHARE_TOKEN_DECIMALS))
+        ).to.be.rejectedWith("FundYield:Below minimum redemption amount");
+        await expect(
+            fundYield.connect(user1).requestRedemption(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS))
+        ).to.be.not.reverted;
+        var epochData=await fundYield.getEpochData(epochId);
+        expect(epochData.totalShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(epochData.totalRedemptionAssets).to.equal(0);
+        expect(epochData.totalClaimedAssets).to.equal(0);
+        expect(epochData.epochStatus).to.equal(1);
+
+        var redeemReq=await fundYield.getRedemptionRequest(user1.address,epochId);
+        expect(redeemReq.requestShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(redeemReq.claimShares).to.equal(0);
+        expect(redeemReq.claimAssets).to.equal(0);
+        expect(redeemReq.lastRequestTimeStamp).to.greaterThan(0);
+        expect(redeemReq.lastClaimTimeStamp).to.equal(0);
+        var pendingRedeem=await fundYield.pendingReward(user1.address,epochId);
+        expect(pendingRedeem).to.equal(0);
+
+        await expect(fundYield.connect(manager).changeEpoch()).to.be.not.reverted;
+        var epochIdNew = await fundYield.currentEpochId();
+        expect(epochIdNew).to.be.equal(epochId+1n);
+         var epochData=await fundYield.getEpochData(epochId);
+        expect(epochData.epochStatus).to.equal(2);
+
+        await expect(fundYield.connect(user1).claimRedemption(epochId)).to.be.rejectedWith("FundYield:Epoch not liquidated or no redemption request");
 
 
+    });
 
+    it("should finishRedemptionEpoch", async function () { 
 
         
+        var epochId = await fundYield.currentEpochId();
+       
+        await shareToken.connect(user1).approve(fundYield.getAddress(), ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        await expect(
+            fundYield.connect(user1).requestRedemption(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS))
+        ).to.be.not.reverted;
+        var epochData=await fundYield.getEpochData(epochId);
+        expect(epochData.totalShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(epochData.totalRedemptionAssets).to.equal(0);
+        expect(epochData.totalClaimedAssets).to.equal(0);
+        expect(epochData.epochStatus).to.equal(1);
+
+        var redeemReq=await fundYield.getRedemptionRequest(user1.address,epochId);
+        expect(redeemReq.requestShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(redeemReq.claimShares).to.equal(0);
+        expect(redeemReq.claimAssets).to.equal(0);
+        expect(redeemReq.lastRequestTimeStamp).to.greaterThan(0);
+        expect(redeemReq.lastClaimTimeStamp).to.equal(0);
+        var pendingRedeem=await fundYield.pendingReward(user1.address,epochId);
+        expect(pendingRedeem).to.equal(0);
 
 
-
-
-
-
-
-
-
-
-
+        var dividendAmount = ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS)
         
+        await expect(fundYield.connect(manager).finishRedemptionEpoch(epochId,dividendAmount,await generateFinishEpochSignature(epochId, dividendAmount))).to.be.revertedWithCustomError(fundYield, "AccessControlUnauthorizedAccount").withArgs(manager.address, SETTLE_ROLE);
+        await expect(fundYield.connect(settleCaller).finishRedemptionEpoch(epochId,dividendAmount,await generateFinishEpochSignature(epochId, dividendAmount))).to.be.rejectedWith("FundYield:Epoch must be locked");
+        await expect(fundYield.connect(manager).changeEpoch()).to.be.not.reverted;
+        var epochIdNew = await fundYield.currentEpochId();
+        expect(epochIdNew).to.be.equal(epochId+1n);
+         var epochData=await fundYield.getEpochData(epochId);
+        expect(epochData.epochStatus).to.equal(2);
+
+        await mockUSDT.mint(settleCaller.address,dividendAmount);
+        await mockUSDT.connect(settleCaller).approve(
+            await fundYield.getAddress(),
+            dividendAmount
+        );
+        await expect(fundYield.connect(settleCaller).finishRedemptionEpoch(epochId,dividendAmount,await generateFinishEpochSignature(epochId, 0n))).to.be.rejectedWith("FundYield: invalid signature");
+        await expect(fundYield.connect(settleCaller).finishRedemptionEpoch(epochId,dividendAmount,await generateFinishEpochSignature(epochId, dividendAmount))).to.be.not.reverted;
+
+        var epochData=await fundYield.getEpochData(epochId);
+        epochData=await fundYield.getEpochData(epochId);
+
+        expect(epochData.totalShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(epochData.totalRedemptionAssets).to.equal(dividendAmount);
+        expect(epochData.epochStatus).to.equal(3);
+        var pendingRedeem=await fundYield.pendingReward(user1.address,epochId);
+        expect(pendingRedeem).to.equal(dividendAmount);
+    });
 
 
+    it("should claimReward", async function () { 
+        var epochId = await fundYield.currentEpochId();
+        await shareToken.connect(user1).approve(fundYield.getAddress(), ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        await expect(
+            fundYield.connect(user1).requestRedemption(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS))
+        ).to.be.not.reverted;
+        var epochData=await fundYield.getEpochData(epochId);
+        expect(epochData.totalShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(epochData.totalRedemptionAssets).to.equal(0);
+        expect(epochData.totalClaimedAssets).to.equal(0);
+        expect(epochData.epochStatus).to.equal(1);
+
+        var redeemReq=await fundYield.getRedemptionRequest(user1.address,epochId);
+        expect(redeemReq.requestShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(redeemReq.claimShares).to.equal(0);
+        expect(redeemReq.claimAssets).to.equal(0);
+        expect(redeemReq.lastRequestTimeStamp).to.greaterThan(0);
+        expect(redeemReq.lastClaimTimeStamp).to.equal(0);
+        var pendingRedeem=await fundYield.pendingReward(user1.address,epochId);
+        expect(pendingRedeem).to.equal(0);
+
+
+        var dividendAmount = ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS)
+        
+        await expect(fundYield.connect(manager).finishRedemptionEpoch(epochId,dividendAmount,await generateFinishEpochSignature(epochId, dividendAmount))).to.be.revertedWithCustomError(fundYield, "AccessControlUnauthorizedAccount").withArgs(manager.address, SETTLE_ROLE);
+        await expect(fundYield.connect(settleCaller).finishRedemptionEpoch(epochId,dividendAmount,await generateFinishEpochSignature(epochId, dividendAmount))).to.be.rejectedWith("FundYield:Epoch must be locked");
+        await expect(fundYield.connect(manager).changeEpoch()).to.be.not.reverted;
+        var epochIdNew = await fundYield.currentEpochId();
+        expect(epochIdNew).to.be.equal(epochId+1n);
+         var epochData=await fundYield.getEpochData(epochId);
+        expect(epochData.epochStatus).to.equal(2);
+
+        await mockUSDT.mint(settleCaller.address,dividendAmount);
+        await mockUSDT.connect(settleCaller).approve(
+            await fundYield.getAddress(),
+            dividendAmount
+        );
+        await expect(fundYield.connect(settleCaller).finishRedemptionEpoch(epochId,dividendAmount,await generateFinishEpochSignature(epochId, 0n))).to.be.rejectedWith("FundYield: invalid signature");
+        await expect(fundYield.connect(settleCaller).finishRedemptionEpoch(epochId,dividendAmount,await generateFinishEpochSignature(epochId, dividendAmount))).to.be.not.reverted;
+
+        var epochData=await fundYield.getEpochData(epochId);
+        epochData=await fundYield.getEpochData(epochId);
+
+        expect(epochData.totalShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(epochData.totalRedemptionAssets).to.equal(dividendAmount);
+        expect(epochData.epochStatus).to.equal(3);
+        var pendingRedeem=await fundYield.pendingReward(user1.address,epochId);
+        expect(pendingRedeem).to.equal(dividendAmount);
+
+
+        var balanceBefore=await mockUSDT.balanceOf(user1.address);
+        console.log(await fundVault.isFundSuccessful());
+        await expect(fundYield.connect(user1).claimRedemption(epochId)).to.be.not.reverted;
+        console.log(await fundVault.isFundSuccessful());
+        //await expect(fundYield.connect(user1).claimRedemption(epochId)).to.be.rejectedWith("FundYield:request share already claimed");
+        var balanceAfter=await mockUSDT.balanceOf(user1.address);
+        expect(balanceAfter-balanceBefore).to.equal(dividendAmount);
+        
+        var epochData=await fundYield.getEpochData(epochId);
+        expect(epochData.totalShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(epochData.totalRedemptionAssets).to.equal(dividendAmount);
+        expect(epochData.totalClaimedAssets).to.equal(dividendAmount);
+        expect(epochData.epochStatus).to.equal(3);
+        var redeemReq=await fundYield.getRedemptionRequest(user1.address,epochId);
+        expect(redeemReq.requestShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(redeemReq.claimShares).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+        expect(redeemReq.claimAssets).to.equal(dividendAmount);
+        expect(redeemReq.lastRequestTimeStamp).to.greaterThan(0);
+        expect(redeemReq.lastClaimTimeStamp).to.greaterThan(0);
+        
+    });
+
+
+    it("should claim", async function () { 
     });
 
 
@@ -376,5 +636,11 @@ describe("FundYield", function () {
 
 
 
+
   })
+
+  
+
+
+
 });

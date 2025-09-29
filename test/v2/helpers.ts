@@ -436,7 +436,7 @@ export async function createFundYield(manager: any, validator: any, settleCaler:
     manager,
     await mockUSDT.getAddress(),
     await settleCaler.getAddress(),
-    0n,
+    ethers.parseUnits("100", SHARE_TOKEN_DECIMALS),
     0n
   );
 

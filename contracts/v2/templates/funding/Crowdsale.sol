@@ -28,6 +28,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
 
     // ============ Role ============
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant OFFCHAIN_MANAGER_ROLE = keccak256("OFFCHAIN_MANAGER_ROLE");
     bytes32 public constant WITHDRAW_ASSET_ROLE = keccak256("WITHDRAW_ASSET_ROLE");
     bytes32 public constant WITHDRAW_MANAGE_FEE_ROLE = keccak256("WITHDRAW_MANAGE_FEE_ROLE");
@@ -454,6 +455,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         // Set up roles
         _grantRole(DEFAULT_ADMIN_ROLE, data.manager);
         _grantRole(MANAGER_ROLE, data.manager);
+        _grantRole(PAUSER_ROLE, data.manager);
         _grantRole(WITHDRAW_ASSET_ROLE, data.manager);
         _grantRole(WITHDRAW_MANAGE_FEE_ROLE, data.manager);
         _setRoleAdmin(OFFCHAIN_MANAGER_ROLE, MANAGER_ROLE);
@@ -563,14 +565,14 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
      /**
      * @dev Pause 
      */
-    function pause() external onlyInitialized onlyRole(MANAGER_ROLE) {
+    function pause() external onlyInitialized onlyRole(PAUSER_ROLE) {
         _pause();
     }
     
     /**
      * @dev Resume 
      */
-    function unpause() external onlyInitialized onlyRole(MANAGER_ROLE)  {
+    function unpause() external onlyInitialized onlyRole(PAUSER_ROLE)  {
         _unpause();
     }
 
