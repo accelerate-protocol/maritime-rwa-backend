@@ -526,3 +526,30 @@ export async function generateDepositSignature(signer: any, operation: string, a
   
   return signature;
 }
+
+// Generate off-chain deposit signature
+export async function generateOffChainDepositSignature(signer: any, amount: bigint, receiver: string, nonce: number, chainId: bigint, contractAddress: string) {
+  // Create signature data matching OffChainSignatureData structure
+  const sigData = {
+    amount,
+    receiver,
+    nonce,
+    chainId,
+    contractAddress
+  };
+  
+  // Encode signature data - use encodePacked method to match contract
+  // This matches the contract's keccak256(abi.encodePacked(...)) pattern
+  const encodedData = ethers.solidityPacked(
+    ["uint256", "address", "uint256", "uint256", "address"],
+    [sigData.amount, sigData.receiver, sigData.nonce, sigData.chainId, sigData.contractAddress]
+  );
+  
+  // Calculate hash
+  const messageHash = ethers.keccak256(encodedData);
+  
+  // Sign using EIP-191 format (this will be converted to EthSignedMessageHash in the contract)
+  const signature = await signer.signMessage(ethers.getBytes(messageHash));
+  
+  return signature;
+}

@@ -41,6 +41,9 @@ interface ICrowdsale {
     struct OffChainSignatureData {
         uint256 amount;          // amount
         address receiver;        // Receiver address
+        uint256 nonce;          // Nonce to prevent replay attacks
+        uint256 chainId;        // Chain ID to prevent cross-chain replay
+        address contractAddress; // Contract address to prevent replay
     }
     
     // ============ Events ============
@@ -54,6 +57,8 @@ interface ICrowdsale {
     event ManagerChanged(address indexed oldManager, address indexed newManager);
     event OffchainManagerChanged(address indexed oldOffchainManager, address indexed newOffchainManager);
     event OnChainSignValidatorUpdated(address indexed oldValidator, address indexed newValidator);
+    event OffChainSignValidatorUpdated(address indexed oldValidator, address indexed newValidator);
+
     // ============ Funding Operations Interface ============
     // User initiated, requires manager signature
     function deposit(uint256 amount, address receiver, bytes memory signature) external;
@@ -62,7 +67,7 @@ interface ICrowdsale {
     function redeem(uint256 amount, address receiver, bytes memory signature) external;
     
     // Backend manager operate
-    function offChainDeposit(uint256 amount, address receiver) external;
+    function offChainDeposit(uint256 amount, address receiver, bytes memory signature) external;
     
     // Backend manager initiated - redeems all user shares
     function offChainRedeem(address receiver) external;
@@ -79,7 +84,8 @@ interface ICrowdsale {
     function isFundingPeriodActive() external view returns (bool);
     function getTotalRaised() external view returns (uint256);
     function getRemainingSupply() external view returns (uint256);
-    
+    function getOffchainNonce() external view returns (uint256);
+
     // ============ Signature Query Interface ============
     function getCallerNonce(address caller) external view returns (uint256);
 }

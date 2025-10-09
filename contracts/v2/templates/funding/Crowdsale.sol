@@ -58,10 +58,12 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     // Nonce tracking for users (to prevent replay attacks)
     mapping(address => uint256) public callerNonce;
 
+    uint256 public offChainSignNonce;
+
     // Initialization state
     bool private initialized;
 
-    // ============ on-chain sign validator ============
+    // ============ sign validator ============
     address public onChainSignValidator;
 
     // Total raised share amount
@@ -258,8 +260,9 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
      * @dev Off-chain deposit (only manager can call)
      * @param amount Deposit amount
      * @param receiver Receiver address
+    * @param signature validator's signature
      */
-    function offChainDeposit(uint256 amount, address receiver) 
+    function offChainDeposit(uint256 amount, address receiver, bytes memory signature)
         external 
         override 
         onlyInitialized
@@ -270,6 +273,19 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
     {
         require(amount >= minDepositAmount, "Crowdsale: amount less than minimum");
         require(receiver != address(0), "Crowdsale: invalid receiver");
+        
+        // Verify signature using OffChainSignatureData structure
+        uint256 nonce = offChainSignNonce++;
+
+        ICrowdsale.OffChainSignatureData memory sigData = ICrowdsale.OffChainSignatureData({
+            amount: amount,
+            receiver: receiver,
+            nonce: nonce,
+            chainId: block.chainid,
+            contractAddress: address(this)
+        });
+        
+        _verifyOffChainSignature(sigData, signature);
         
         // Calculate shares for the requested amount (no fee deduction for off-chain)
         uint256 requestedShares = _getSharesForAssets(amount);
@@ -479,6 +495,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
 
         // Set on-chain signature validator
         onChainSignValidator = data.manager;
+
         initialized = true;
     }
     
@@ -572,6 +589,32 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         require(signer == onChainSignValidator, "Crowdsale: invalid signature");
     }
 
+    /**
+        * @dev Internal function to verify signature for off-chain operations
+        * @param sigData The signature data structure containing amount, receiver, nonce, etc.
+        * @param signature The signature to verify
+    */
+    function _verifyOffChainSignature(
+        OffChainSignatureData memory sigData,
+        bytes memory signature
+    ) internal view {
+        // Get validator address from Vault
+        address validator = IVault(vault).getValidator();
+        require(validator != address(0), "Crowdsale: validator not set");
+
+        bytes32 messageHash = keccak256(abi.encodePacked(
+            sigData.amount,
+            sigData.receiver,
+            sigData.nonce,
+            sigData.chainId,
+            sigData.contractAddress
+        ));
+        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(messageHash);
+        address signer = ethSignedMessageHash.recover(signature);
+
+        require(signer == validator, "Crowdsale: invalid offchain signature");
+    }
+
 
      /**
      * @dev Pause 
@@ -597,5 +640,15 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         onChainSignValidator = _validator;
         emit OnChainSignValidatorUpdated(oldValidator, _validator);
     }
+
+
+    /**
+     * @dev Get current off-chain signature nonce
+     * @return Current off-chain signature nonce
+     */
+    function getOffchainNonce() external override view returns (uint256) {
+        return offChainSignNonce;
+    }
+
     
 }
