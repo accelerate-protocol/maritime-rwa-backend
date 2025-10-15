@@ -44,12 +44,13 @@ interface ICrowdsale {
         uint256 nonce;          // Nonce to prevent replay attacks
         uint256 chainId;        // Chain ID to prevent cross-chain replay
         address contractAddress; // Contract address to prevent replay
+        bytes32 proofHash;          // Off-chain proof hash
     }
     
     // ============ Events ============
     event Deposit(address indexed operator, address indexed receiver, uint256 assetAmount, uint256 manageFee, uint256 shares);
     event FundFailedRedeem(address indexed operator, address indexed redeemReceiver,uint256 shares,uint256 assetAmount,uint256 feeAmount);
-    event OffChainDeposit(address indexed operator, address indexed receiver,uint256 shares, uint256 assetAmount);
+    event OffChainDeposit(address indexed operator, address indexed receiver,uint256 shares, uint256 assetAmount, bytes signature, bytes32 proofHash);
     event OffChainRedeem(address indexed operator, address indexed redeemReceiver,uint256 shares,uint256 assetAmount);
     event FundingAssetsWithdrawn(address indexed operator, address indexed receiver, uint256 amount);
     event ManageFeeWithdrawn(address indexed operator, address indexed receiver, uint256 amount);
@@ -67,7 +68,7 @@ interface ICrowdsale {
     function redeem(uint256 amount, address receiver, bytes memory signature) external;
     
     // Backend manager operate
-    function offChainDeposit(uint256 amount, address receiver, bytes memory signature) external;
+    function offChainDeposit(uint256 amount, address receiver, bytes memory signature, bytes32 proofHash) external;
     
     // Backend manager initiated - redeems all user shares
     function offChainRedeem(address receiver) external;

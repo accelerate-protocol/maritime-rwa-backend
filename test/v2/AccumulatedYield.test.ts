@@ -11,7 +11,9 @@ import {
   TOKEN_TRANSFER_ROLE,
   MANAGER_ROLE,
   DEFAULT_ADMIN_ROLE,
-  createAccumulatedYield
+  createAccumulatedYield,
+  TEST_PROOF_HASH,
+  generateOffChainDepositSignature
 } from "./helpers";
 
 describe("AccumulatedYield", function () {
@@ -227,7 +229,10 @@ describe("AccumulatedYield", function () {
     let signature: string;
     beforeEach(async function() {
       // Fully funded, financing completed
-      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS), manager.address);
+      const nonce = await crowdsale.getOffchainNonce();
+      const chainId = await ethers.provider.getNetwork().then(n => n.chainId);
+      const sign = await generateOffChainDepositSignature(validator, ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS), manager.address, nonce, chainId, await crowdsale.getAddress(), TEST_PROOF_HASH);
+      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS), manager.address, sign, TEST_PROOF_HASH);
       
       // Transfer some tokens to users
       await shareToken.connect(manager).transfer(user1.address, ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
@@ -367,8 +372,10 @@ describe("AccumulatedYield", function () {
       }
 
       // step 1: Admin mints 10000 ShareTokens to the contract
-    
-      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS), manager.address);
+      const nonce = await crowdsale.getOffchainNonce();
+      const chainId = await ethers.provider.getNetwork().then(n => n.chainId);
+      const sign = await generateOffChainDepositSignature(validator, ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS), manager.address, nonce, chainId, await crowdsale.getAddress(), TEST_PROOF_HASH);
+      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS), manager.address, sign, TEST_PROOF_HASH);
       
       // step 2: Admin allocates 2000 ShareTokens to Alice and 8000 ShareTokens to Bob
       await shareToken.connect(manager).transfer(alice.address, ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
@@ -465,7 +472,10 @@ describe("AccumulatedYield", function () {
   describe("Token Transfer Tests", function () {
     beforeEach(async function() {
       // Mint some tokens for users
-      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("20000", SHARE_TOKEN_DECIMALS), manager.address);
+      const nonce = await crowdsale.getOffchainNonce();
+      const chainId = await ethers.provider.getNetwork().then(n => n.chainId);
+      const sign = await generateOffChainDepositSignature(validator, ethers.parseUnits("20000", SHARE_TOKEN_DECIMALS), manager.address, nonce, chainId, await crowdsale.getAddress(), TEST_PROOF_HASH);
+      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("20000", SHARE_TOKEN_DECIMALS), manager.address, sign, TEST_PROOF_HASH);
       await shareToken.connect(manager).transfer(user1.address, ethers.parseUnits("1000", SHARE_TOKEN_DECIMALS));
       await shareToken.connect(manager).transfer(user2.address, ethers.parseUnits("500", SHARE_TOKEN_DECIMALS));
       // Distribute some dividends
@@ -619,7 +629,10 @@ describe("AccumulatedYield", function () {
     
     it("Cannot perform key operations when paused", async function () {
       // Allocate some tokens to users
-      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("20000", SHARE_TOKEN_DECIMALS), manager.address);
+      const nonce1 = await crowdsale.getOffchainNonce();
+      const chainId1 = await ethers.provider.getNetwork().then(n => n.chainId);
+      const sign1 = await generateOffChainDepositSignature(validator, ethers.parseUnits("20000", SHARE_TOKEN_DECIMALS), manager.address, nonce1, chainId1, await crowdsale.getAddress(), TEST_PROOF_HASH);
+      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("20000", SHARE_TOKEN_DECIMALS), manager.address, sign1, TEST_PROOF_HASH);
       await shareToken.connect(manager).transfer(user1.address, ethers.parseUnits("1000", SHARE_TOKEN_DECIMALS));
       const dividendAmount = ethers.parseUnits("1000", 6);
       await mockUSDT.connect(dividendTreasury).approve(
@@ -648,7 +661,10 @@ describe("AccumulatedYield", function () {
     
     it("Can perform operations normally after unpausing", async function () {
       // Mint some tokens for users
-      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("20000", SHARE_TOKEN_DECIMALS), manager.address);
+      const nonce2 = await crowdsale.getOffchainNonce();
+      const chainId2 = await ethers.provider.getNetwork().then(n => n.chainId);
+      const sign2 = await generateOffChainDepositSignature(validator, ethers.parseUnits("20000", SHARE_TOKEN_DECIMALS), manager.address, nonce2, chainId2, await crowdsale.getAddress(), TEST_PROOF_HASH);
+      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("20000", SHARE_TOKEN_DECIMALS), manager.address, sign2, TEST_PROOF_HASH);
       await shareToken.connect(manager).transfer(user1.address, ethers.parseUnits("1000", SHARE_TOKEN_DECIMALS));
       // Pause the contract
       await accumulatedYield.connect(manager).pause();

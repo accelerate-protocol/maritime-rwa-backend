@@ -312,4 +312,13 @@ abstract contract BaseVault is
     function unpause() external virtual onlyInitialized onlyRole(PAUSE_ROLE) {
         _unpause();
     }
+
+    function revokeRole(bytes32 role, address account) public override onlyRole(getRoleAdmin(role)) {
+        // Prevent admin from revoking their own admin role
+        if (role == TOKEN_TRANSFER_ROLE) {
+            require(IToken(vaultToken).balanceOf(account) == 0, "Vault: cannot revoke TOKEN_TRANSFER_ROLE role with remaining balance");
+        }
+
+        super.revokeRole(role, account);
+    }
 }

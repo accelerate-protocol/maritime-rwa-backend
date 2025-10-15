@@ -15,7 +15,9 @@ import {
   createFundYield,
   SETTLE_ROLE,
   PAUSE_ROLE,
-  endTime
+  endTime,
+  generateOffChainDepositSignature,
+  TEST_PROOF_HASH
 } from "./helpers";
 import exp from "constants";
 
@@ -274,8 +276,21 @@ describe("FundYield", function () {
   describe("Reward Claiming Tests", function () {
 
     beforeEach(async function() {
-      // Fully funded, financing completed
-      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("20000", SHARE_TOKEN_DECIMALS), manager.address);
+      // Generate proper signature for offChainDeposit
+      const nonce = await crowdsale.getCallerNonce(manager.address);
+      const chainId = await ethers.provider.getNetwork().then(n => n.chainId);
+      const signature = await generateOffChainDepositSignature(
+         validator,
+         ethers.parseUnits("20000", SHARE_TOKEN_DECIMALS),
+         manager.address,
+         nonce,
+         chainId,
+         await crowdsale.getAddress(),
+         TEST_PROOF_HASH
+       );
+       
+       // Fully funded, financing completed
+       await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("20000", SHARE_TOKEN_DECIMALS), manager.address, signature, TEST_PROOF_HASH);
       
       // Transfer some tokens to users
       await shareToken.connect(manager).transfer(user1.address, ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));

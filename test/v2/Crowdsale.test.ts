@@ -16,7 +16,8 @@ import {
   maxFundingAmount,
   softCap,
   manageFeeBps,
-  MANAGER_ROLE
+  MANAGER_ROLE,
+  TEST_PROOF_HASH
 } from "./helpers";
 import { parseUSDT } from "../utils/usdt";
 
@@ -647,7 +648,7 @@ describe("Crowdsale", function () {
       // Try offChainDeposit, should fail
       const OFFCHAIN_MANAGER_ROLE = await crowdsale.OFFCHAIN_MANAGER_ROLE();
       await expect(
-        crowdsale.connect(user1).offChainDeposit(depositAmount, user1.address,"0x")
+        crowdsale.connect(user1).offChainDeposit(depositAmount, user1.address,"0x", "0x0000000000000000000000000000000000000000000000000000000000000000")
       ).to.be.revertedWithCustomError(crowdsale, "AccessControlUnauthorizedAccount")
         .withArgs(user1.address, OFFCHAIN_MANAGER_ROLE);
     });
@@ -658,7 +659,7 @@ describe("Crowdsale", function () {
 
       // Try offChainDeposit, should fail
       await expect(
-        crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, emptySignature)
+        crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, emptySignature, "0x0000000000000000000000000000000000000000000000000000000000000000")
       ).to.be.revertedWithCustomError(crowdsale, "ECDSAInvalidSignatureLength")
         .withArgs(0);
     });
@@ -674,12 +675,13 @@ describe("Crowdsale", function () {
         user1.address,
         Number(currentNonce),
         BigInt(await ethers.provider.getNetwork().then(n => n.chainId)),
-        await crowdsale.getAddress()
+        await crowdsale.getAddress(),
+        TEST_PROOF_HASH
       );
 
       // Try offChainDeposit with invalid signature, should fail
       await expect(
-        crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, invalidSignature)
+        crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, invalidSignature, TEST_PROOF_HASH)
       ).to.be.revertedWith("Crowdsale: invalid offchain signature");
     });
     
@@ -698,11 +700,12 @@ describe("Crowdsale", function () {
         user1.address,
         Number(currentNonce),
         BigInt(await ethers.provider.getNetwork().then(n => n.chainId)),
-        await crowdsale.getAddress()
+        await crowdsale.getAddress(),
+        TEST_PROOF_HASH
       );
       
       // Execute offChainDeposit
-      await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, validSignature);
+      await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, validSignature, TEST_PROOF_HASH);
       
       // Verify USDT balance unchanged (no actual USDT transfer for off-chain deposits)
       expect(await mockUSDT.balanceOf(offchainManager.address)).to.equal(initialUSDTBalance);
@@ -729,15 +732,16 @@ describe("Crowdsale", function () {
         user1.address,
         Number(currentNonce),
         BigInt(await ethers.provider.getNetwork().then(n => n.chainId)),
-        await crowdsale.getAddress()
+        await crowdsale.getAddress(),
+        TEST_PROOF_HASH
       );
       
       // First deposit should succeed
-      await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, signature);
+      await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, signature, TEST_PROOF_HASH);
       
       // Try to reuse the same signature, should fail
       await expect(
-        crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, signature)
+        crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, signature, TEST_PROOF_HASH)
       ).to.be.revertedWith("Crowdsale: invalid offchain signature");
     });
     
@@ -755,12 +759,13 @@ describe("Crowdsale", function () {
         user1.address,
         Number(currentNonce),
         BigInt(await ethers.provider.getNetwork().then(n => n.chainId)),
-        await crowdsale.getAddress()
+        await crowdsale.getAddress(),
+        TEST_PROOF_HASH
       );
 
       // Try offChainDeposit, should fail due to pause
       await expect(
-        crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, validSignature)
+        crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, validSignature, TEST_PROOF_HASH)
       ).to.be.revertedWithCustomError(crowdsale, "EnforcedPause");
     });
 
@@ -769,7 +774,21 @@ describe("Crowdsale", function () {
   describe("offChainRedeem function test", function () {
     let depositAmount = parseUSDT("1000");
     beforeEach(async function () {
-      await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address);
+      // Get current nonce
+      const currentNonce = await crowdsale.getOffchainNonce();
+      
+      // Generate valid signature for offChainDeposit
+      const validSignature = await generateOffChainDepositSignature(
+        validator,
+        depositAmount,
+        user1.address,
+        Number(currentNonce),
+        BigInt(await ethers.provider.getNetwork().then(n => n.chainId)),
+        await crowdsale.getAddress(),
+        TEST_PROOF_HASH
+      );
+      
+      await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, validSignature, TEST_PROOF_HASH);
       // Verify shareToken increased
       expect(await shareToken.balanceOf(user1.address)).to.equal(depositAmount);
       await shareToken.connect(user1).approve(await coreVault.getAddress(), depositAmount);
@@ -1130,13 +1149,14 @@ describe("Crowdsale", function () {
         user1.address,
         Number(currentNonce),
         BigInt(await ethers.provider.getNetwork().then(n => n.chainId)),
-        await crowdsale.getAddress()
+        await crowdsale.getAddress(),
+        TEST_PROOF_HASH
       );
       
       // Regular user tries to call offChainDeposit, should fail
       const OFFCHAIN_MANAGER_ROLE = await crowdsale.OFFCHAIN_MANAGER_ROLE();
       await expect(
-        crowdsale.connect(user1).offChainDeposit(depositAmount, user1.address, validSignature)
+        crowdsale.connect(user1).offChainDeposit(depositAmount, user1.address, validSignature, TEST_PROOF_HASH)
       ).to.be.revertedWithCustomError(crowdsale, "AccessControlUnauthorizedAccount")
         .withArgs(user1.address, OFFCHAIN_MANAGER_ROLE);
 
@@ -1153,11 +1173,12 @@ describe("Crowdsale", function () {
         user1.address,
         Number(currentNonce),
         BigInt(await ethers.provider.getNetwork().then(n => n.chainId)),
-        await crowdsale.getAddress()
+        await crowdsale.getAddress(),
+        TEST_PROOF_HASH
       );
       
       // First ensure there is a deposit
-      await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, validSignature)
+      await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, validSignature, TEST_PROOF_HASH)
       // Increase time beyond end time to make crowdsale fail
       await network.provider.send("evm_increaseTime", [86401]); 
       await network.provider.send("evm_mine");
@@ -1185,11 +1206,12 @@ describe("Crowdsale", function () {
         user1.address,
         Number(currentNonce),
         BigInt(await ethers.provider.getNetwork().then(n => n.chainId)),
-        await crowdsale.getAddress()
+        await crowdsale.getAddress(),
+        TEST_PROOF_HASH
       );
       
       // offchainManager calls offChainDeposit
-      await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, validSignature);
+      await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, validSignature, TEST_PROOF_HASH);
       
       // Verify share token balance increased
       expect(await shareToken.balanceOf(user1.address)).to.equal(initialShareBalance + depositAmount);
@@ -1206,11 +1228,12 @@ describe("Crowdsale", function () {
         user1.address,
         Number(currentNonce),
         BigInt(await ethers.provider.getNetwork().then(n => n.chainId)),
-        await crowdsale.getAddress()
+        await crowdsale.getAddress(),
+        TEST_PROOF_HASH
       );
       
       // First make a deposit
-      await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, validSignature);
+      await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, validSignature, TEST_PROOF_HASH);
       
       // Increase time beyond end time to make crowdsale fail
       await network.provider.send("evm_increaseTime", [86401]); 
@@ -1241,11 +1264,12 @@ describe("Crowdsale", function () {
         user2.address,
         Number(currentNonce),
         BigInt(await ethers.provider.getNetwork().then(n => n.chainId)),
-        await crowdsale.getAddress()
+        await crowdsale.getAddress(),
+        TEST_PROOF_HASH
       );
       
       // First make a deposit
-      await crowdsale.connect(user1).offChainDeposit(depositAmount, user2.address, validSignature);
+      await crowdsale.connect(user1).offChainDeposit(depositAmount, user2.address, validSignature, TEST_PROOF_HASH);
       
       // Get current nonce for second deposit
       currentNonce = await crowdsale.getOffchainNonce();
@@ -1257,11 +1281,12 @@ describe("Crowdsale", function () {
         user2.address,
         Number(currentNonce),
         BigInt(await ethers.provider.getNetwork().then(n => n.chainId)),
-        await crowdsale.getAddress()
+        await crowdsale.getAddress(),
+        TEST_PROOF_HASH
       );
       
       // Old offchainManager should also be able to handle (because role was not revoked)
-      await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user2.address, validSignature);
+      await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user2.address, validSignature, TEST_PROOF_HASH);
       
       // Increase time beyond end time to make crowdsale fail
       await network.provider.send("evm_increaseTime", [86401]); 

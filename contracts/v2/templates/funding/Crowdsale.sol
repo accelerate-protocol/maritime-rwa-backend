@@ -261,8 +261,9 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
      * @param amount Deposit amount
      * @param receiver Receiver address
     * @param signature validator's signature
+    * @param proofHash Off-chain proof hash
      */
-    function offChainDeposit(uint256 amount, address receiver, bytes memory signature)
+    function offChainDeposit(uint256 amount, address receiver, bytes memory signature, bytes32 proofHash)
         external 
         override 
         onlyInitialized
@@ -282,7 +283,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
             receiver: receiver,
             nonce: nonce,
             chainId: block.chainid,
-            contractAddress: address(this)
+            contractAddress: address(this),
+            proofHash: proofHash
         });
         
         _verifyOffChainSignature(sigData, signature);
@@ -314,7 +316,7 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
         // Update state
         totalRaisedShareAmount += actualShares;
         
-        emit OffChainDeposit(msg.sender, receiver, actualShares, actualAmount);
+        emit OffChainDeposit(msg.sender, receiver, actualShares, actualAmount, signature, proofHash);
     }
     
     /**
@@ -607,7 +609,8 @@ contract Crowdsale is ICrowdsale, ReentrancyGuardUpgradeable, OwnableUpgradeable
             sigData.receiver,
             sigData.nonce,
             sigData.chainId,
-            sigData.contractAddress
+            sigData.contractAddress,
+            sigData.proofHash
         ));
         bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(messageHash);
         address signer = ethSignedMessageHash.recover(signature);

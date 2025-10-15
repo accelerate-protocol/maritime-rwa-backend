@@ -5,6 +5,9 @@ import { parseUSDT } from "../utils/usdt";
 export const SHARE_TOKEN_DECIMALS = 6;
 export const BPS_DENOMINATOR = 10000;
 
+// Test proof hash constant for off-chain operations
+export const TEST_PROOF_HASH = "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+
 // Crowdsale parameters
 export const sharePrice = ethers.parseUnits("1", 8); // 1 USDT per share
 export const minDepositAmount = parseUSDT("10"); // 10 USDT
@@ -528,21 +531,22 @@ export async function generateDepositSignature(signer: any, operation: string, a
 }
 
 // Generate off-chain deposit signature
-export async function generateOffChainDepositSignature(signer: any, amount: bigint, receiver: string, nonce: number, chainId: bigint, contractAddress: string) {
+export async function generateOffChainDepositSignature(signer: any, amount: bigint, receiver: string, nonce: number, chainId: bigint, contractAddress: string, proofHash: string = TEST_PROOF_HASH) {
   // Create signature data matching OffChainSignatureData structure
   const sigData = {
     amount,
     receiver,
     nonce,
     chainId,
-    contractAddress
+    contractAddress,
+    proofHash
   };
   
   // Encode signature data - use encodePacked method to match contract
   // This matches the contract's keccak256(abi.encodePacked(...)) pattern
   const encodedData = ethers.solidityPacked(
-    ["uint256", "address", "uint256", "uint256", "address"],
-    [sigData.amount, sigData.receiver, sigData.nonce, sigData.chainId, sigData.contractAddress]
+    ["uint256", "address", "uint256", "uint256", "address", "bytes32"],
+    [sigData.amount, sigData.receiver, sigData.nonce, sigData.chainId, sigData.contractAddress, sigData.proofHash]
   );
   
   // Calculate hash

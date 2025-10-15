@@ -443,4 +443,148 @@ describe("Administrator functionality tests", function () {
   });
 });
 
+  describe("TOKEN_TRANSFER_ROLE revoke functionality", function () {
+    beforeEach(async function() {
+      // Grant TOKEN_TRANSFER_ROLE to user1
+      await coreVault.connect(manager).grantRole(TOKEN_TRANSFER_ROLE, user1.address);
+      
+      // Verify user1 has the role
+      expect(await coreVault.hasRole(TOKEN_TRANSFER_ROLE, user1.address)).to.equal(true);
+    });
+
+    it("Should be able to revoke TOKEN_TRANSFER_ROLE when user has zero balance", async function () {
+      // Verify user1 has zero token balance
+      expect(await shareToken.balanceOf(user1.address)).to.equal(0);
+      
+      // Revoke TOKEN_TRANSFER_ROLE from user1
+      await coreVault.connect(manager).revokeRole(TOKEN_TRANSFER_ROLE, user1.address);
+      
+      // Verify role was revoked
+      expect(await coreVault.hasRole(TOKEN_TRANSFER_ROLE, user1.address)).to.equal(false);
+    });
+
+    it("Should not be able to revoke TOKEN_TRANSFER_ROLE when user has token balance", async function () {
+      // Mint tokens to user1
+      await coreVault.connect(funding).mintToken(user1.address, ethers.parseUnits("100", 18));
+      
+      // Verify user1 has token balance
+      expect(await shareToken.balanceOf(user1.address)).to.equal(ethers.parseUnits("100", 18));
+      
+      // Try to revoke TOKEN_TRANSFER_ROLE from user1, should fail
+      await expect(
+        coreVault.connect(manager).revokeRole(TOKEN_TRANSFER_ROLE, user1.address)
+      ).to.be.revertedWith("Vault: cannot revoke TOKEN_TRANSFER_ROLE role with remaining balance");
+      
+      // Verify role was not revoked
+      expect(await coreVault.hasRole(TOKEN_TRANSFER_ROLE, user1.address)).to.equal(true);
+    });
+
+    it("Should be able to revoke TOKEN_TRANSFER_ROLE after user burns all tokens", async function () {
+      // Mint tokens to user1
+      await coreVault.connect(funding).mintToken(user1.address, ethers.parseUnits("100", 18));
+      
+      // Verify user1 has token balance
+      expect(await shareToken.balanceOf(user1.address)).to.equal(ethers.parseUnits("100", 18));
+      
+      // Try to revoke role, should fail
+      await expect(
+        coreVault.connect(manager).revokeRole(TOKEN_TRANSFER_ROLE, user1.address)
+      ).to.be.revertedWith("Vault: cannot revoke TOKEN_TRANSFER_ROLE role with remaining balance");
+      
+      // User1 approves vault to burn all tokens
+      await shareToken.connect(user1).approve(await coreVault.getAddress(), ethers.parseUnits("100", 18));
+      
+      // Funding burns all user1's tokens
+      await coreVault.connect(funding).burnToken(user1.address, ethers.parseUnits("100", 18));
+      
+      // Verify user1 now has zero balance
+      expect(await shareToken.balanceOf(user1.address)).to.equal(0);
+      
+      // Now should be able to revoke TOKEN_TRANSFER_ROLE
+      await coreVault.connect(manager).revokeRole(TOKEN_TRANSFER_ROLE, user1.address);
+      
+      // Verify role was revoked
+      expect(await coreVault.hasRole(TOKEN_TRANSFER_ROLE, user1.address)).to.equal(false);
+    });
+
+    it("Should be able to revoke TOKEN_TRANSFER_ROLE after user transfers all tokens", async function () {
+      // Grant TOKEN_TRANSFER_ROLE to user2 as well
+      await coreVault.connect(manager).grantRole(TOKEN_TRANSFER_ROLE, user2.address);
+      
+      // Mint tokens to user1
+      await coreVault.connect(funding).mintToken(user1.address, ethers.parseUnits("100", 18));
+      
+      // Verify user1 has token balance
+      expect(await shareToken.balanceOf(user1.address)).to.equal(ethers.parseUnits("100", 18));
+      
+      // Unpause token transfers
+      await coreVault.connect(manager).unpauseToken();
+      
+      // User1 transfers all tokens to user2
+      await shareToken.connect(user1).transfer(user2.address, ethers.parseUnits("100", 18));
+      
+      // Verify user1 now has zero balance
+      expect(await shareToken.balanceOf(user1.address)).to.equal(0);
+      expect(await shareToken.balanceOf(user2.address)).to.equal(ethers.parseUnits("100", 18));
+      
+      // Now should be able to revoke TOKEN_TRANSFER_ROLE from user1
+      await coreVault.connect(manager).revokeRole(TOKEN_TRANSFER_ROLE, user1.address);
+      
+      // Verify role was revoked from user1
+      expect(await coreVault.hasRole(TOKEN_TRANSFER_ROLE, user1.address)).to.equal(false);
+      
+      // Verify user2 still has the role
+      expect(await coreVault.hasRole(TOKEN_TRANSFER_ROLE, user2.address)).to.equal(true);
+    });
+
+    it("Should be able to revoke other roles even when user has token balance", async function () {
+      // Mint tokens to user1
+      await coreVault.connect(funding).mintToken(user1.address, ethers.parseUnits("100", 18));
+      
+      // Grant MANAGER_ROLE to user1
+      await coreVault.connect(manager).grantRole(MANAGER_ROLE, user1.address);
+      
+      // Verify user1 has both roles and token balance
+      expect(await shareToken.balanceOf(user1.address)).to.equal(ethers.parseUnits("100", 18));
+      expect(await coreVault.hasRole(TOKEN_TRANSFER_ROLE, user1.address)).to.equal(true);
+      expect(await coreVault.hasRole(MANAGER_ROLE, user1.address)).to.equal(true);
+      
+      // Should be able to revoke MANAGER_ROLE even with token balance
+      await coreVault.connect(manager).revokeRole(MANAGER_ROLE, user1.address);
+      
+      // Verify MANAGER_ROLE was revoked but TOKEN_TRANSFER_ROLE remains
+      expect(await coreVault.hasRole(MANAGER_ROLE, user1.address)).to.equal(false);
+      expect(await coreVault.hasRole(TOKEN_TRANSFER_ROLE, user1.address)).to.equal(true);
+      
+      // Still cannot revoke TOKEN_TRANSFER_ROLE due to balance
+      await expect(
+        coreVault.connect(manager).revokeRole(TOKEN_TRANSFER_ROLE, user1.address)
+      ).to.be.revertedWith("Vault: cannot revoke TOKEN_TRANSFER_ROLE role with remaining balance");
+    });
+
+    it("Non-admin should not be able to revoke TOKEN_TRANSFER_ROLE", async function () {
+      // user2 tries to revoke TOKEN_TRANSFER_ROLE from user1, should fail
+      await expect(
+        coreVault.connect(user2).revokeRole(TOKEN_TRANSFER_ROLE, user1.address)
+      ).to.be.reverted; // AccessControl: account is missing role
+      
+      // Verify role was not revoked
+      expect(await coreVault.hasRole(TOKEN_TRANSFER_ROLE, user1.address)).to.equal(true);
+    });
+
+    it("Should emit RoleRevoked event when successfully revoking TOKEN_TRANSFER_ROLE", async function () {
+      // Verify user1 has zero token balance
+      expect(await shareToken.balanceOf(user1.address)).to.equal(0);
+      
+      // Revoke TOKEN_TRANSFER_ROLE from user1 and check for event
+      await expect(
+        coreVault.connect(manager).revokeRole(TOKEN_TRANSFER_ROLE, user1.address)
+      ).to.emit(coreVault, "RoleRevoked")
+        .withArgs(TOKEN_TRANSFER_ROLE, user1.address, manager.address);
+      
+      // Verify role was revoked
+      expect(await coreVault.hasRole(TOKEN_TRANSFER_ROLE, user1.address)).to.equal(false);
+    });
+  });
+
 });
