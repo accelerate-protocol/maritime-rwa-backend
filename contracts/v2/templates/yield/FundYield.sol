@@ -1,4 +1,11 @@
 // SPDX-License-Identifier: MIT
+/**
+    ___                         __                         __
+   /   |  _____  _____  ___    / /  ___    _____  ____ _  / /_  ___
+  / /| | / ___/ / ___/ / _ \  / /  / _ \  / ___/ / __ `/ / __/ / _ \
+ / ___ |/ /__  / /__  /  __/ / /  /  __/ / /    / /_/ / / /_  /  __/
+/_/  |_|\___/  \___/  \___/ /_/   \___/ /_/     \__,_/  \__/  \___/
+*/
 pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -14,6 +21,11 @@ import "../../interfaces/templates/IFundYield.sol";
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
+/**
+ * @title FundYield
+ * @dev FundYield contract
+ * @notice Implements yield management for FundVault, including redemption requests and epoch management
+ */
 contract FundYield is
     IFundYield,
     AccessControlUpgradeable,
@@ -95,6 +107,12 @@ contract FundYield is
         );
     }
 
+    /**
+     * 
+     * @param shareAmount Amount of shares to redeem
+     * @dev Request redemption of shares from the vault token holder
+     * @notice This function can only be called when the vault is successful and the redemption epoch is active
+     */
     function requestRedemption(
         uint256 shareAmount
     ) external whenNotPaused active onlyInitialized nonReentrant  {
@@ -126,6 +144,10 @@ contract FundYield is
         emit RedemptionRequested(msg.sender, currentEpochId, shareAmount);
     }
 
+    /**
+     * @dev Change redemption epoch
+     * @notice This function can only be called by manager
+     */
     function changeEpoch()
         external
         whenNotPaused
@@ -152,6 +174,10 @@ contract FundYield is
         emit RedemptionEpochChanged(currentEpochId);
     }
 
+    /**
+     * @dev Cancel redemption request
+     * @notice This function can only be called when the vault is successful and the redemption epoch is active
+     */
     function cancelRedemption() external whenNotPaused active onlyInitialized nonReentrant {
         RedemptionEpoch storage epoch = redemptionEpochs[currentEpochId];
         require(
@@ -173,6 +199,14 @@ contract FundYield is
         emit RedemptionCancelled(msg.sender, currentEpochId, shareAmount);
     }
 
+    /**
+     * @dev Finish redemption epoch
+     * @param epochId Redemption epoch id
+     * @param assetAmount Redemption asset amount
+     * @param signature Signature of the redemption epoch
+     * @notice This function can only be called by settle caller
+     * @notice This function can only be called when the vault is successful and the redemption epoch is locked
+     */
     function finishRedemptionEpoch(
         uint256 epochId,
         uint256 assetAmount,
@@ -207,6 +241,12 @@ contract FundYield is
         );
     }
 
+    /**
+     * @dev Claim redemption
+     * @param epochId Redemption epoch id
+     * @notice This function can only be called when the vault is successful and the redemption epoch is liquidated
+     * @notice after this function is called, the requested shares will be burned and yield tokens will be transferred to the caller
+     */
     function claimRedemption(
         uint256 epochId
     ) external whenNotPaused active onlyInitialized nonReentrant {
@@ -241,30 +281,50 @@ contract FundYield is
         );
     }
 
+    /**
+     * @dev Set start time
+     * @param _startTime Start time
+     * @notice This function can only be called by manager
+     */
     function setStartTime(uint256 _startTime) external whenNotPaused onlyInitialized onlyRole(MANAGER_ROLE) {
         startTime = _startTime;
         emit StartTimeSet(_startTime);
     }
 
+    /**
+     * @dev Set min redemption amount
+     * @param _minRedemptionAmount Min redemption amount
+     * @notice This function can only be called by manager
+     */
     function setMinRedemptionAmount(uint256 _minRedemptionAmount) external whenNotPaused onlyInitialized onlyRole(MANAGER_ROLE) {
         minRedemptionAmount = _minRedemptionAmount;
         emit MinRedemptionAmountSet(_minRedemptionAmount);
     }
 
-     /**
-     * @dev Pause 
+    /**
+     * @dev Pause the contract
      */
     function pause() external onlyInitialized onlyRole(PAUSE_ROLE) {
         _pause();
     }
     
     /**
-     * @dev Resume 
+     * @dev Unpause the contract
      */
     function unpause() external onlyInitialized onlyRole(PAUSE_ROLE)  {
         _unpause();
     }
 
+    /**
+     * @dev Internal initialization function
+     * @param _vault Vault address
+     * @param _vaultToken Vault token address
+     * @param _rewardToken Reward token address
+     * @param _manager Manager address
+     * @param _settleCaller Settle caller address
+     * @param _minRedemptionAmount Minimum redemption amount
+     * @param _startTime Start time
+     */
     function _init(
         address _vault,
         address _vaultToken,
@@ -328,6 +388,12 @@ contract FundYield is
         require(signer == validator, "FundYield: invalid signature");
     }
 
+     /**
+     * @dev Calculate pending reward for a user in a specific epoch
+     * @param user Address of the user
+     * @param epochId ID of the redemption epoch
+     * @return Pending reward amount
+     */
     function pendingReward(address user,uint256 epochId) external view override returns (uint256) {
         RedemptionEpoch memory epoch = redemptionEpochs[epochId];
         if (epoch.epochStatus != EpochStatus.Liquidate){
@@ -343,13 +409,23 @@ contract FundYield is
             epoch.totalRedemptionAssets) / epoch.totalShares;
     }
 
-
+    /**
+     * @dev Get epoch data
+     * @param epoch Epoch ID
+     * @return Epoch data
+     */
     function getEpochData(
         uint256 epoch
     ) public view returns (RedemptionEpoch memory) {
         return redemptionEpochs[epoch];
     }
 
+    /**
+     * @dev Get redemption request data for a user in a specific epoch
+     * @param user Address of the user
+     * @param epoch Epoch ID
+     * @return Redemption request data
+     */
     function getRedemptionRequest(
         address user,
         uint256 epoch
