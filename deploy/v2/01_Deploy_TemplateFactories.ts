@@ -23,18 +23,18 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
   // 1. Deploy CoreVaultTemplateFactory
-  console.log("Deploying CoreVaultTemplateFactory...");
-  const coreVaultFactory = await deploy("CoreVaultTemplateFactory", {
-    contract: "contracts/v2/factories/vault/CoreVaultTemplateFactory.sol:CoreVaultTemplateFactory",
-    from: deployer,
-    args: [],
-    log: true,
-    waitConfirmations: 1,
-    skipIfAlreadyDeployed: false,
-  });
-  console.log(`✓ CoreVaultTemplateFactory deployed to: ${coreVaultFactory.address}\n`);
-  console.log(`Waiting ${sleepTime/1000} seconds...`);
-  await sleep(sleepTime);
+  // console.log("Deploying CoreVaultTemplateFactory...");
+  // const coreVaultFactory = await deploy("CoreVaultTemplateFactory", {
+  //   contract: "contracts/v2/factories/vault/CoreVaultTemplateFactory.sol:CoreVaultTemplateFactory",
+  //   from: deployer,
+  //   args: [],
+  //   log: true,
+  //   waitConfirmations: 1,
+  //   skipIfAlreadyDeployed: false,
+  // });
+  // console.log(`✓ CoreVaultTemplateFactory deployed to: ${coreVaultFactory.address}\n`);
+  // console.log(`Waiting ${sleepTime/1000} seconds...`);
+  // await sleep(sleepTime);
 
   console.log("Deploying FundVaultTemplateFactory...");
 
@@ -86,19 +86,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await sleep(sleepTime);
 
   // 4. Deploy AccumulatedYieldTemplateFactory
-  console.log("Deploying AccumulatedYieldTemplateFactory...");
-  const accumulatedYieldFactory = await deploy("AccumulatedYieldTemplateFactory", {
-    contract: "contracts/v2/factories/yield/AccumulatedYieldTemplateFactory.sol:AccumulatedYieldTemplateFactory",
-    from: deployer,
-    args: [],
-    log: true,
-    waitConfirmations: 1,
-    skipIfAlreadyDeployed: false,
-  });
-  console.log(`✓ AccumulatedYieldTemplateFactory deployed to: ${accumulatedYieldFactory.address}\n`);
+  // console.log("Deploying AccumulatedYieldTemplateFactory...");
+  // const accumulatedYieldFactory = await deploy("AccumulatedYieldTemplateFactory", {
+  //   contract: "contracts/v2/factories/yield/AccumulatedYieldTemplateFactory.sol:AccumulatedYieldTemplateFactory",
+  //   from: deployer,
+  //   args: [],
+  //   log: true,
+  //   waitConfirmations: 1,
+  //   skipIfAlreadyDeployed: false,
+  // });
+  // console.log(`✓ AccumulatedYieldTemplateFactory deployed to: ${accumulatedYieldFactory.address}\n`);
 
-  console.log(`Waiting ${sleepTime/1000} seconds...`);
-  await sleep(sleepTime);
+  // console.log(`Waiting ${sleepTime/1000} seconds...`);
+  // await sleep(sleepTime);
 
 
   console.log("Deploying FundYieldTemplateFactory...");

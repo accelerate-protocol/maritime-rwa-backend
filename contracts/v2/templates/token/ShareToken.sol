@@ -142,10 +142,7 @@ contract ShareToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
         _unpause();
     }
     
-
-    
     // ============ Internal Functions ============
-
     /**
      * @dev Initialize token (for Clones pattern)
      * @param _vault Vault contract address
@@ -175,24 +172,6 @@ contract ShareToken is IToken,ERC20Upgradeable, PausableUpgradeable, OwnableUpgr
         initialized = true;
     }
     
-    /**
-     * @dev Pre-transfer checks
-     */
-    //use _update instead of _beforeTokenTransfer
-    // function _beforeTokenTransfer(
-    //     address from,
-    //     address to,
-    //     uint256 amount
-    // ) internal virtual override {
-    //     super._beforeTokenTransfer(from, to, amount);
-    //     // Call vault hook on token transfer
-    //     if (from != address(0) && to != address(0)) {
-    //         // Only call if vault is a valid contract
-    //         if (vault.code.length > 0) {
-    //             IVault(vault).onTokenTransfer(from, to, amount);
-    //         }
-    //     }
-    // }
 
     function _update(address from, address to, uint256 value) internal virtual override {   
         // Call vault hook on token transfer

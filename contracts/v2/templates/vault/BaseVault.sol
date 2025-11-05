@@ -14,8 +14,6 @@ import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "../../interfaces/templates/IVault.sol";
-import "../../interfaces/templates/ICrowdsale.sol";
-import "../../interfaces/templates/IAccumulatedYield.sol";
 import "../../interfaces/templates/IToken.sol";
 import "../../interfaces/core/IValidatorRegistry.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";

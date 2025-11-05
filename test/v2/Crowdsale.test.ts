@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers, network } from "hardhat";
 import { 
-  createVault, 
+  createFundVault, 
   createShareToken, 
   deployValidatorRegistry, 
   createCrowdsale, 
@@ -33,7 +33,7 @@ describe("Crowdsale", function () {
   
   // Contract instances
   let validatorRegistry: any;
-  let coreVault: any;
+  let fundVault: any;
   let shareToken: any;
   let crowdsale: any;
   let mockUSDT: any;
@@ -50,10 +50,10 @@ describe("Crowdsale", function () {
     validatorRegistry = await deployValidatorRegistry(validator, manager);
     
     // Deploy CoreVault, disable whitelist
-    const { coreVault: coreVaultInstance, proxyAdmin, vaultImpl, coreVaultTemplateFactory } = await createVault(manager, validatorRegistry, false, []);
-    coreVault = coreVaultInstance
+    const { fundVault: fundVaultInstance, proxyAdmin, vaultImpl, fundVaultTemplateFactory } = await createFundVault(manager, validatorRegistry, false, []);
+    fundVault = fundVaultInstance
     // Deploy ShareToken
-    const { shareToken:shareTokenInstance, shareTokenTemplateFactory } = await createShareToken(coreVault, manager);
+    const { shareToken:shareTokenInstance, shareTokenTemplateFactory } = await createShareToken(fundVault, manager);
     shareToken = shareTokenInstance
     // Deploy Crowdsale
     const crowdsaleInitData = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -63,10 +63,10 @@ describe("Crowdsale", function () {
     );
 
     // Deploy Crowdsale
-    const { crowdsale: crowdsaleInstance, crowdsaleTemplateFactory } = await createCrowdsale(coreVault, shareToken, manager, crowdsaleInitData);
+    const { crowdsale: crowdsaleInstance, crowdsaleTemplateFactory } = await createCrowdsale(fundVault, shareToken, manager, crowdsaleInitData);
     crowdsale = crowdsaleInstance
     // Configure modules
-    await coreVault.connect(manager).configureModules(
+    await fundVault.connect(manager).configureModules(
       await shareToken.getAddress(),
       await crowdsale.getAddress(),
       ethers.ZeroAddress
@@ -290,10 +290,10 @@ describe("Crowdsale", function () {
       validatorRegistry = await deployValidatorRegistry(validator, manager);
       
       // Deploy CoreVault, disable whitelist
-      const { coreVault, proxyAdmin, vaultImpl, coreVaultTemplateFactory } = await createVault(manager, validatorRegistry, false, []);
+      const { fundVault, proxyAdmin, vaultImpl, fundVaultTemplateFactory } = await createFundVault(manager, validatorRegistry, false, []);
       
       // Deploy ShareToken
-      const { shareToken:shareTokenInstance, shareTokenTemplateFactory } = await createShareToken(coreVault, manager);
+      const { shareToken:shareTokenInstance, shareTokenTemplateFactory } = await createShareToken(fundVault, manager);
       newShareToken = shareTokenInstance
       // Deploy Crowdsale
       const crowdsaleInitData = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -302,10 +302,10 @@ describe("Crowdsale", function () {
       );
 
       // Deploy Crowdsale
-      const { crowdsale: crowdsaleInstance, crowdsaleTemplateFactory } = await createCrowdsale(coreVault, shareToken, manager, crowdsaleInitData);
+      const { crowdsale: crowdsaleInstance, crowdsaleTemplateFactory } = await createCrowdsale(fundVault, shareToken, manager, crowdsaleInitData);
       newCrowdsale = crowdsaleInstance
       // Configure modules
-      await coreVault.connect(manager).configureModules(
+      await fundVault.connect(manager).configureModules(
         await newShareToken.getAddress(),
         await newCrowdsale.getAddress(),
         ethers.ZeroAddress
@@ -366,7 +366,7 @@ describe("Crowdsale", function () {
       redeemAmount = await shareToken.balanceOf(user1.address);
       
       // approve max value
-      await shareToken.connect(user1).approve(await coreVault.getAddress(), ethers.MaxUint256);
+      await shareToken.connect(user1).approve(await fundVault.getAddress(), ethers.MaxUint256);
     });
 
     it("Funding not ended, redeem not supported", async function () {
@@ -580,7 +580,7 @@ describe("Crowdsale", function () {
       // redeemAmount = balance/rounds
       redeemAmount = await shareToken.balanceOf(user2.address)/rounds;
       
-      await shareToken.connect(user2).approve(await coreVault.getAddress(), rounds*redeemAmount);
+      await shareToken.connect(user2).approve(await fundVault.getAddress(), rounds*redeemAmount);
 
       // Increase time beyond end time (24 hours + 1 second)
       await network.provider.send("evm_increaseTime", [86401]); 
@@ -791,7 +791,7 @@ describe("Crowdsale", function () {
       await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address, validSignature, TEST_PROOF_HASH);
       // Verify shareToken increased
       expect(await shareToken.balanceOf(user1.address)).to.equal(depositAmount);
-      await shareToken.connect(user1).approve(await coreVault.getAddress(), depositAmount);
+      await shareToken.connect(user1).approve(await fundVault.getAddress(), depositAmount);
 
       // Increase time beyond end time (24 hours + 1 second)
       await network.provider.send("evm_increaseTime", [86401]); 
@@ -997,7 +997,7 @@ describe("Crowdsale", function () {
 
       // Try to deploy Crowdsale, should fail
       await expect(
-        createCrowdsale(coreVault, shareToken, manager, invalidCrowdsaleInitData)
+        createCrowdsale(fundVault, shareToken, manager, invalidCrowdsaleInitData)
       ).to.be.revertedWith("Crowdsale: invalid time range");
     });
     
@@ -1012,7 +1012,7 @@ describe("Crowdsale", function () {
 
       // Try to deploy Crowdsale, should fail
       await expect(
-        createCrowdsale(coreVault, shareToken, manager, invalidCrowdsaleInitData)
+        createCrowdsale(fundVault, shareToken, manager, invalidCrowdsaleInitData)
       ).to.be.revertedWith("Crowdsale: end time in past");
     });
     
@@ -1025,7 +1025,7 @@ describe("Crowdsale", function () {
 
       // Try to deploy Crowdsale, should fail
       await expect(
-        createCrowdsale(coreVault, shareToken, manager, invalidCrowdsaleInitData)
+        createCrowdsale(fundVault, shareToken, manager, invalidCrowdsaleInitData)
       ).to.be.revertedWith("Crowdsale: invalid asset token");
     });
     
@@ -1038,7 +1038,7 @@ describe("Crowdsale", function () {
 
       // Try to deploy Crowdsale, should fail
       await expect(
-        createCrowdsale(coreVault, shareToken, manager, invalidCrowdsaleInitData)
+        createCrowdsale(fundVault, shareToken, manager, invalidCrowdsaleInitData)
       ).to.be.revertedWith("Crowdsale: invalid max supply");
     });
     
@@ -1052,7 +1052,7 @@ describe("Crowdsale", function () {
 
       // Try to deploy Crowdsale, should fail
       await expect(
-        createCrowdsale(coreVault, shareToken, manager, invalidCrowdsaleInitData)
+        createCrowdsale(fundVault, shareToken, manager, invalidCrowdsaleInitData)
       ).to.be.revertedWith("Crowdsale: invalid soft cap");
     });
     
@@ -1065,7 +1065,7 @@ describe("Crowdsale", function () {
 
       // Try to deploy Crowdsale, should fail
       await expect(
-        createCrowdsale(coreVault, shareToken, manager, invalidCrowdsaleInitData)
+        createCrowdsale(fundVault, shareToken, manager, invalidCrowdsaleInitData)
       ).to.be.revertedWith("Crowdsale: invalid share price");
     });
     
@@ -1078,7 +1078,7 @@ describe("Crowdsale", function () {
 
       // Try to deploy Crowdsale, should fail
       await expect(
-        createCrowdsale(coreVault, shareToken, manager, invalidCrowdsaleInitData)
+        createCrowdsale(fundVault, shareToken, manager, invalidCrowdsaleInitData)
       ).to.be.revertedWith("Crowdsale: invalid min deposit");
     });
     
@@ -1092,7 +1092,7 @@ describe("Crowdsale", function () {
 
       // Try to deploy Crowdsale, should fail
       await expect(
-        createCrowdsale(coreVault, shareToken, manager, invalidCrowdsaleInitData)
+        createCrowdsale(fundVault, shareToken, manager, invalidCrowdsaleInitData)
       ).to.be.revertedWith("Crowdsale: invalid manage fee");
     });
     
@@ -1105,7 +1105,7 @@ describe("Crowdsale", function () {
 
       // Try to deploy Crowdsale, should fail
       await expect(
-        createCrowdsale(coreVault, shareToken, manager, invalidCrowdsaleInitData)
+        createCrowdsale(fundVault, shareToken, manager, invalidCrowdsaleInitData)
       ).to.be.revertedWith("Crowdsale: invalid funding receiver");
     });
     
@@ -1118,7 +1118,7 @@ describe("Crowdsale", function () {
 
       // Try to deploy Crowdsale, should fail
       await expect(
-        createCrowdsale(coreVault, shareToken, manager, invalidCrowdsaleInitData)
+        createCrowdsale(fundVault, shareToken, manager, invalidCrowdsaleInitData)
       ).to.be.revertedWith("Crowdsale: invalid fee receiver");
     });
     
@@ -1131,7 +1131,7 @@ describe("Crowdsale", function () {
 
       // Try to deploy Crowdsale, should fail
       await expect(
-        createCrowdsale(coreVault, shareToken, manager, invalidCrowdsaleInitData)
+        createCrowdsale(fundVault, shareToken, manager, invalidCrowdsaleInitData)
       ).to.be.revertedWith("Crowdsale: invalid manager");
     });
   });
@@ -1239,7 +1239,7 @@ describe("Crowdsale", function () {
       await network.provider.send("evm_increaseTime", [86401]); 
       await network.provider.send("evm_mine");
       
-      await shareToken.connect(user1).approve(await coreVault.getAddress(), depositAmount);
+      await shareToken.connect(user1).approve(await fundVault.getAddress(), depositAmount);
       // offchainManager calls offChainRedeem
       await crowdsale.connect(offchainManager).offChainRedeem(user1.address);
       
@@ -1295,7 +1295,7 @@ describe("Crowdsale", function () {
       // Change offchainManager - grant role to user2
       await crowdsale.connect(manager).grantRole(OFFCHAIN_MANAGER_ROLE, user2.address);
 
-      await shareToken.connect(user2).approve(await coreVault.getAddress(), 2n * depositAmount);
+      await shareToken.connect(user2).approve(await fundVault.getAddress(), 2n * depositAmount);
       
       // New offchainManager should be able to handle
       await crowdsale.connect(user2).offChainRedeem(user2.address);

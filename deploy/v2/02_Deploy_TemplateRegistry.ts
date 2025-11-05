@@ -85,11 +85,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await sleep(sleepTime);
 
   // Get deployed template factories
-  const coreVaultFactory = await get("CoreVaultTemplateFactory");
+  //const coreVaultFactory = await get("CoreVaultTemplateFactory");
   const fundVaultFactory = await get("FundVaultTemplateFactory");
   const shareTokenFactory = await get("ShareTokenTemplateFactory");
   const crowdsaleFactory = await get("CrowdsaleTemplateFactory");
-  const accumulatedYieldFactory = await get("AccumulatedYieldTemplateFactory");
+  //const accumulatedYieldFactory = await get("AccumulatedYieldTemplateFactory");
   const fundYieldFactory = await get("FundYieldTemplateFactory");
 
   console.log("=== Adding Template Factories to Corresponding Template Registries ===\n");
@@ -98,11 +98,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // 5.1.1 Add CoreVaultTemplateFactory to VaultTemplateRegistry
   console.log("Adding CoreVaultTemplateFactory to VaultTemplateRegistry...");
   const vaultRegistryContract = await ethers.getContractAt("VaultTemplateRegistry", vaultRegistry.address);
-  await vaultRegistryContract.addTemplate(1,coreVaultFactory.address);
-  console.log(`✓ CoreVaultTemplateFactory added to VaultTemplateRegistry\n`);
+  // await vaultRegistryContract.addTemplate(1,coreVaultFactory.address);
+  //console.log(`✓ CoreVaultTemplateFactory added to VaultTemplateRegistry\n`);
   // Add delay to avoid nonce errors
-  console.log(`Waiting ${sleepTime/1000} seconds...`);
-  await sleep(sleepTime);
+  //console.log(`Waiting ${sleepTime/1000} seconds...`);
+  //await sleep(sleepTime);
 
   // 5.1.2 Add FundVaultTemplateFactory to VaultTemplateRegistry
   await vaultRegistryContract.addTemplate(2,fundVaultFactory.address);
@@ -133,11 +133,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // 5.4.1 Add AccumulatedYieldTemplateFactory to YieldTemplateRegistry
   console.log("Adding AccumulatedYieldTemplateFactory to YieldTemplateRegistry...");
   const yieldRegistryContract = await ethers.getContractAt("YieldTemplateRegistry", yieldRegistry.address);
-  await yieldRegistryContract.addTemplate(1, accumulatedYieldFactory.address);
-  console.log(`✓ AccumulatedYieldTemplateFactory added to YieldTemplateRegistry\n`);
+  //await yieldRegistryContract.addTemplate(1, accumulatedYieldFactory.address);
+  //console.log(`✓ AccumulatedYieldTemplateFactory added to YieldTemplateRegistry\n`);
   // Add delay to avoid nonce errors
-  console.log(`Waiting ${sleepTime/1000} seconds...`);
-  await sleep(sleepTime);
+  //console.log(`Waiting ${sleepTime/1000} seconds...`);
+  //await sleep(sleepTime);
 
 
   // 5.4.2 Add FundYieldTemplateFactory to YieldTemplateRegistry
