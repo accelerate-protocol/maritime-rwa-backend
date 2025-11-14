@@ -44,5 +44,6 @@ contract CoreVault is BaseVault {
         // Grant roles to funding modules
         _grantRole(MINT_ROLE, funding);
         _grantRole(BURN_ROLE, funding);
+        _grantRole(BURN_ROLE, yield);
     }
 }

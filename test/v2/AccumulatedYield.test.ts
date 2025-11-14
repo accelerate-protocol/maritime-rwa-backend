@@ -53,6 +53,24 @@ describe("AccumulatedYield", function () {
     
     return signature;
   }
+
+  async function generateSettleSignature(settleAmount: bigint) {
+    const nonce = await accumulatedYield.getDividendNonce();
+    
+    // Create signature data
+    const payload = ethers.solidityPacked(
+      ["address", "uint256"],
+      [await coreVault.getAddress(), settleAmount]
+    );
+    
+    // Calculate hash
+    const messageHash = ethers.keccak256(payload);
+    
+    // Sign
+    const signature = await validator.signMessage(ethers.getBytes(messageHash));
+    
+    return signature;
+  }
   
   // Reset network and deploy contracts before each test
   beforeEach(async function() {
@@ -232,6 +250,7 @@ describe("AccumulatedYield", function () {
       const nonce = await crowdsale.getOffchainNonce();
       const chainId = await ethers.provider.getNetwork().then(n => n.chainId);
       const sign = await generateOffChainDepositSignature(validator, ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS), manager.address, nonce, chainId, await crowdsale.getAddress(), TEST_PROOF_HASH);
+      
       await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS), manager.address, sign, TEST_PROOF_HASH);
       
       // Transfer some tokens to users
@@ -686,5 +705,179 @@ describe("AccumulatedYield", function () {
       await accumulatedYield.connect(user1).claimReward();
       
     });
+  });
+
+
+  describe("Settle Tests", function () { 
+
+    it("settle after multi dividend ", async function () { 
+      // Set up three users: Alice(user1), Bob(user2) and Carol(new user)
+      const alice = user1;
+      const bob = user2;
+      const carol = user3;
+      
+      // Initial state: Alice has 2000 tokens, Bob has 8000 tokens, Carol has no tokens
+      // Re-mint tokens to ensure correct initial state
+      await coreVault.connect(manager).grantRole(TOKEN_TRANSFER_ROLE, alice.address);
+      await coreVault.connect(manager).grantRole(TOKEN_TRANSFER_ROLE, bob.address);
+      await coreVault.connect(manager).grantRole(TOKEN_TRANSFER_ROLE, carol.address);
+      
+      // Clear existing tokens
+      const aliceBalance = await shareToken.balanceOf(alice.address);
+      const bobBalance = await shareToken.balanceOf(bob.address);
+      if (aliceBalance > 0) {
+        await shareToken.connect(alice).transfer(manager.address, aliceBalance);
+      }
+      if (bobBalance > 0) {
+        await shareToken.connect(bob).transfer(manager.address, bobBalance);
+      }
+
+      // step 1: Admin mints 10000 ShareTokens to the contract
+      const nonce = await crowdsale.getOffchainNonce();
+      const chainId = await ethers.provider.getNetwork().then(n => n.chainId);
+      const sign = await generateOffChainDepositSignature(validator, ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS), manager.address, nonce, chainId, await crowdsale.getAddress(), TEST_PROOF_HASH);
+      await crowdsale.connect(manager).offChainDeposit(ethers.parseUnits("10000", SHARE_TOKEN_DECIMALS), manager.address, sign, TEST_PROOF_HASH);
+      
+      // step 2: Admin allocates 2000 ShareTokens to Alice and 8000 ShareTokens to Bob
+      await shareToken.connect(manager).transfer(alice.address, ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+      await shareToken.connect(manager).transfer(bob.address, ethers.parseUnits("8000", SHARE_TOKEN_DECIMALS));
+      
+      // Verify initial state
+      expect(await shareToken.balanceOf(alice.address)).to.equal(ethers.parseUnits("2000", SHARE_TOKEN_DECIMALS));
+      expect(await shareToken.balanceOf(bob.address)).to.equal(ethers.parseUnits("8000", SHARE_TOKEN_DECIMALS));
+      expect(await shareToken.balanceOf(carol.address)).to.equal(0);
+      
+      // Step 3: Admin distributes first dividend of 1500 USDT
+      let dividendAmount = ethers.parseUnits("1500", 6);
+      let signature = await generateDividendSignature(dividendAmount);
+      await mockUSDT.connect(dividendTreasury).approve(
+        await accumulatedYield.getAddress(),
+        dividendAmount
+      );
+      await accumulatedYield.connect(dividendTreasury).distributeDividend(dividendAmount, signature);
+      expect(await mockUSDT.balanceOf(await accumulatedYield.getAddress())).to.equal(dividendAmount);
+      const globalPool = await accumulatedYield.globalPool();
+      expect(globalPool.totalDividend).to.equal(ethers.parseUnits("1500", 6));
+      // verify user pool
+      // First dividend: AliceReward = 1500 * 2000 / (2000 + 8000) = 300
+      // First dividend: BobReward = 1500 * 8000 / (2000 + 8000) = 1200
+      // First dividend: CarolReward = 0
+      let actralPendingAlice = await accumulatedYield.pendingReward(alice.address);
+      let actralPendingBob = await accumulatedYield.pendingReward(bob.address);
+      expect(ethers.parseUnits("300", SHARE_TOKEN_DECIMALS)).to.equal(actralPendingAlice);
+      expect(ethers.parseUnits("1200", SHARE_TOKEN_DECIMALS)).to.equal(actralPendingBob);
+
+      // Step 4: Alice transfers 500 ShareTokens to Carol
+      await shareToken.connect(alice).transfer(carol.address, ethers.parseUnits("500", SHARE_TOKEN_DECIMALS));
+      
+      // Verify balances after transfer
+      expect(await shareToken.balanceOf(alice.address)).to.equal(ethers.parseUnits("1500", SHARE_TOKEN_DECIMALS));
+      expect(await shareToken.balanceOf(carol.address)).to.equal(ethers.parseUnits("500", SHARE_TOKEN_DECIMALS));
+      
+      // Step 5: Admin distributes second dividend of 1000 USDT
+      const secondDividendAmount = ethers.parseUnits("1000", 6);
+      await mockUSDT.connect(dividendTreasury).approve(
+        await accumulatedYield.getAddress(),
+        secondDividendAmount
+      );
+      
+      const secondSignature = await generateDividendSignature(secondDividendAmount);
+      await accumulatedYield.connect(dividendTreasury).distributeDividend(secondDividendAmount, secondSignature);
+      
+      // Verify global pool status
+      const globalPoolAfterSecondDividend = await accumulatedYield.globalPool();
+      expect(globalPoolAfterSecondDividend.totalDividend).to.equal(dividendAmount + secondDividendAmount);
+      
+      // Step 6: Alice claims rewards
+      const aliceBalanceBefore = await mockUSDT.balanceOf(alice.address);
+      await accumulatedYield.connect(alice).claimReward();
+      const aliceBalanceAfter = await mockUSDT.balanceOf(alice.address);
+      const aliceReward = aliceBalanceAfter - aliceBalanceBefore;
+      
+      // Step 7: Bob claims rewards
+      const bobBalanceBefore = await mockUSDT.balanceOf(bob.address);
+      await accumulatedYield.connect(bob).claimReward();
+      const bobBalanceAfter = await mockUSDT.balanceOf(bob.address);
+      const bobReward = bobBalanceAfter - bobBalanceBefore;
+      
+      // Step 8: Carol claims rewards
+      const carolBalanceBefore = await mockUSDT.balanceOf(carol.address);
+      await accumulatedYield.connect(carol).claimReward();
+      const carolBalanceAfter = await mockUSDT.balanceOf(carol.address);
+      const carolReward = carolBalanceAfter - carolBalanceBefore;
+
+      // Verify total distributed rewards
+      const totalDistributed = dividendAmount + secondDividendAmount;
+      const totalClaimed = aliceReward + bobReward + carolReward;
+      
+      // Allow small errors (due to integer division rounding)
+      expect(totalClaimed).to.be.closeTo(totalDistributed, 10n);
+      
+      // Verify reward proportions
+      // Assuming first dividend of 1500, with Alice and Bob's ShareToken ratio at 2000:8000, their reward ratio is 1:4
+      // Second dividend: AliceReward = 1000 * 1500 / (1500 + 8000 + 500) = 150
+      // Second dividend: BobReward = 1000 * 8000 / (1500 + 8000 + 500) = 800
+      // Second dividend: CarolReward = 1000 * 500 / (1500 + 8000 + 500) = 50
+      // AliceTotalReward = 300 + 150 = 450
+      // BobTotalReward = 1200 + 800 = 2000
+      // CarolTotalReward = 0 + 50 = 50
+      expect(aliceReward).to.equal(ethers.parseUnits("450", 6));
+      expect(bobReward).to.equal(ethers.parseUnits("2000", 6));
+      expect(carolReward).to.equal(ethers.parseUnits("50", 6));
+
+
+
+      const totalSupply =await shareToken.totalSupply();
+      console.log("totalSupply",totalSupply);
+
+
+      
+      const settleAmount = ethers.parseUnits("10000", 6);
+      await mockUSDT.connect(dividendTreasury).mint(
+        dividendTreasury,
+        settleAmount
+      );
+      await mockUSDT.connect(dividendTreasury).approve(
+        await accumulatedYield.getAddress(),
+        settleAmount
+      );
+      console.log("settlementSign before settle",await accumulatedYield.settlementSign());
+      const settleSignature = await generateSettleSignature(settleAmount);
+      await accumulatedYield.connect(dividendTreasury).settle(settleAmount, settleSignature);
+      await expect(
+        accumulatedYield.connect(dividendTreasury).settle(settleAmount, settleSignature)
+      ).to.be.revertedWith("AccumulatedYield: already settled");
+      await expect(
+        accumulatedYield.connect(dividendTreasury).distributeDividend(secondDividendAmount, secondSignature)
+      ).to.be.revertedWith("AccumulatedYield: already settled");
+
+      const settlePrice=await accumulatedYield.settlePrice();
+      expect(settlePrice).to.equal(BigInt(settleAmount * BigInt(10 ** 8)) / BigInt(totalSupply));
+
+
+      const aliceShareBefore = await shareToken.balanceOf(alice.address);
+      const aliceBeforeUSDT = await mockUSDT.balanceOf(alice.address);
+      await shareToken.connect(alice).approve(
+        await coreVault.getAddress(),
+        aliceShareBefore
+      );
+      await accumulatedYield.connect(alice).withdraw(aliceShareBefore);
+      const aliceShareAfter = await shareToken.balanceOf(alice.address);
+      const aliceAfterUSDT = await mockUSDT.balanceOf(alice.address);
+      expect(aliceShareAfter).to.equal(0);
+      expect(totalSupply-await shareToken.totalSupply()).to.equal(aliceShareBefore);
+      expect(aliceAfterUSDT - aliceBeforeUSDT).to.be.equal(BigInt(aliceShareBefore * settlePrice) / BigInt(10 ** 8));
+
+
+
+
+
+      
+
+
+      
+    });
+
+
   });
 });

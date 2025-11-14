@@ -50,8 +50,15 @@ contract AccumulatedYield is
     
     // Initialization state
     bool private initialized;
-    
-    
+    bool public settlementSign;
+    uint256 public settlePrice;
+    uint8 public constant settleDecimal=8;
+
+    modifier onlyNotSettled() {
+        require(!settlementSign, "AccumulatedYield: already settled");
+        _;
+    }
+
     // ============ Modifiers ============
     modifier onlyDividendTreasury() {
         require(msg.sender == dividendTreasury, "AccumulatedYield: only dividend treasury");
@@ -120,7 +127,7 @@ contract AccumulatedYield is
     function distributeDividend(
         uint256 dividendAmount,
         bytes memory signature
-    ) external override onlyInitialized onlyDividendTreasury nonReentrant whenNotPaused {
+    ) external override onlyInitialized onlyDividendTreasury nonReentrant whenNotPaused onlyNotSettled {
         require(dividendAmount > 0, "AccumulatedYield: invalid dividend amount");
         
         // Verify signature
@@ -146,7 +153,41 @@ contract AccumulatedYield is
         
         emit DividendDistributed(dividendAmount, block.timestamp, validator, signature);
     }
-    
+
+    /**
+     * @dev Settle vault
+     * @param settleAmount Settle amount
+     * 
+     */
+    function settle(uint256 settleAmount,bytes memory signature) external onlyInitialized onlyDividendTreasury nonReentrant whenNotPaused onlyNotSettled {
+        require(settleAmount > 0, "AccumulatedYield: invalid settle amount");
+        _verifySettleSignature(settleAmount, signature);
+        
+        // Transfer settle amount from manager to this contract
+        IERC20(globalPool.rewardToken).safeTransferFrom(msg.sender, address(this), settleAmount);
+        uint256 totalSupply = IERC20(globalPool.shareToken).totalSupply();
+        settlementSign = true;
+        settlePrice = settleAmount * 10 ** settleDecimal / totalSupply;
+
+        emit Settled(settleAmount,settlePrice,block.timestamp);
+    }
+
+    /**
+     * @dev Withdraw vault
+     * @param shareAmount Withdraw amount
+     */
+    function withdraw(uint256 shareAmount) external onlyInitialized nonReentrant whenNotPaused  { 
+        require(settlementSign, "AccumulatedYield: not settled");
+        require(shareAmount > 0, "AccumulatedYield: invalid redeem amount");
+        require(shareAmount <= IERC20(globalPool.shareToken).balanceOf(msg.sender), "AccumulatedYield: insufficient balance");
+
+        IVault(vault).burnToken(msg.sender, shareAmount);
+
+        uint256 withdrawAmount = shareAmount * settlePrice / (10 ** settleDecimal);
+        IERC20(globalPool.rewardToken).safeTransfer(msg.sender, withdrawAmount);
+        emit Withdraw(msg.sender,shareAmount,withdrawAmount,block.timestamp);
+
+    }
 
     // ============ Token Transfer Related ============
     
@@ -373,5 +414,22 @@ contract AccumulatedYield is
         address signer = ECDSA.recover(ethSignedMessageHash, signature);
         require(signer == validator, "AccumulatedYield: invalid signature");
     }
+
+    function _verifySettleSignature(
+        uint256 assetAmount,
+        bytes memory signature
+    ) internal view {
+        address validator = IVault(vault).getValidator();
+        require(validator != address(0), "FundYield: validator not set");
+        bytes32 payload = keccak256(
+            abi.encodePacked(vault, assetAmount)
+        );
+        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(payload);
+        address signer = ECDSA.recover(ethSignedMessageHash, signature);
+        require(signer == validator, "FundYield: invalid signature");
+    }
+
+
+
 
 }

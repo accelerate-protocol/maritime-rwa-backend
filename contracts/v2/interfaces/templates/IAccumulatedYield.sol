@@ -37,7 +37,7 @@ interface IAccumulatedYield {
     }
     
 
-    
+
     // ============ Event Definitions ============
     
     /**
@@ -93,6 +93,25 @@ interface IAccumulatedYield {
     event ManagerChanged(
         address indexed oldManager,
         address indexed newManager
+    );
+
+    /**
+     * @dev Settlement event
+     */
+    event Settled(
+        uint256 settleAmount,
+        uint256 settlePrice,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Withdraw event
+     */
+    event Withdraw(
+        address user,
+        uint256 shareAmount,
+        uint256 withdrawAmount,
+        uint256 timestamp
     );
 
 
