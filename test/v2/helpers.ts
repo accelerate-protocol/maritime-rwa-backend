@@ -11,7 +11,11 @@ export const minDepositAmount = parseUSDT("10"); // 10 USDT
 export const expectedShareAmount = ethers.parseUnits("90", 6); // 90 shares
 
 export const currentTime = Math.floor(Date.now() / 1000);
-export const startTime = BigInt(currentTime);
+
+// Roll back currentTime because in cases where we are using a local node test
+// the latest block may be older than the current time
+
+export const startTime = BigInt(currentTime - 86400);
 export const endTime = BigInt(currentTime + 86400); // Ends after 24 hours
 export const maxFundingAmount = parseUSDT("10000"); // Maximum funding amount
 export const softCap = parseUSDT("9000"); // Soft cap

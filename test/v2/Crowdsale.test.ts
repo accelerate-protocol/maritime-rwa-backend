@@ -19,6 +19,14 @@ import {
 } from "./helpers";
 import { parseUSDT } from "../utils/usdt";
 
+// Increase the time so that it goes past the crowdfunding period
+const INCREASE_TIME = 172801;
+
+async function advance_time_past_crowdsale() {
+   await network.provider.send("evm_increaseTime", [INCREASE_TIME]);
+   await network.provider.send("evm_mine"); // Mine a new block to make time effective
+}
+
 describe("Crowdsale", function () {
   // Test accounts
   let manager: any;
@@ -386,9 +394,7 @@ describe("Crowdsale", function () {
     })
     
     it("Redeem without administrator signature should fail", async function () {
-      // Increase time beyond end time (24 hours + 1 second)
-      await network.provider.send("evm_increaseTime", [86401]); 
-      await network.provider.send("evm_mine"); // Mine a new block to make time effective
+      await advance_time_past_crowdsale();
       nonce = await crowdsale.getCallerNonce(user1.address);
       // Use incorrect signer
       const wrongSignature = await generateDepositSignature(
@@ -408,10 +414,7 @@ describe("Crowdsale", function () {
     });
     
     it("Redeem with correct signature should succeed", async function () {
-      // Increase time beyond end time (24 hours + 1 second)
-      await network.provider.send("evm_increaseTime", [86401]); 
-      await network.provider.send("evm_mine"); // Mine a new block to make time effective
-      
+      await advance_time_past_crowdsale();
       // Verify funding period has ended
       expect(await crowdsale.isFundingPeriodActive()).to.be.false;
       nonce = await crowdsale.getCallerNonce(user1.address);
@@ -443,10 +446,7 @@ describe("Crowdsale", function () {
     });
     
     it("Reusing redeem signature with the same nonce should fail", async function () {
-      // Increase time beyond end time (24 hours + 1 second)
-      await network.provider.send("evm_increaseTime", [86401]); 
-      await network.provider.send("evm_mine"); // Mine a new block to make time effective
-      
+      await advance_time_past_crowdsale();
       // Verify funding period has ended
       expect(await crowdsale.isFundingPeriodActive()).to.be.false;
       nonce = await crowdsale.getCallerNonce(user1.address);
@@ -472,10 +472,7 @@ describe("Crowdsale", function () {
     });
     
     it("Redeem should fail after contract is paused", async function () {
-      // Increase time beyond end time (24 hours + 1 second)
-      await network.provider.send("evm_increaseTime", [86401]); 
-      await network.provider.send("evm_mine"); // Mine a new block to make time effective
-      
+      await advance_time_past_crowdsale();
       // Verify funding period has ended
       expect(await crowdsale.isFundingPeriodActive()).to.be.false;
       // Pause contract
@@ -499,10 +496,7 @@ describe("Crowdsale", function () {
     });
 
     it("Multiple redemptions", async function () {
-      // Increase time beyond end time (24 hours + 1 second)
-      await network.provider.send("evm_increaseTime", [86401]); 
-      await network.provider.send("evm_mine"); // Mine a new block to make time effective
-      
+      await advance_time_past_crowdsale();
       // Verify funding period has ended
       expect(await crowdsale.isFundingPeriodActive()).to.be.false;
       // Get user's initial balance
@@ -581,9 +575,7 @@ describe("Crowdsale", function () {
       await shareToken.connect(user2).approve(await coreVault.getAddress(), rounds*redeemAmount);
 
       // Increase time beyond end time (24 hours + 1 second)
-      await network.provider.send("evm_increaseTime", [86401]); 
-      await network.provider.send("evm_mine"); // Mine a new block to make time effective
-      
+      await advance_time_past_crowdsale();
       // Verify funding period has ended
       expect(await crowdsale.isFundingPeriodActive()).to.be.false;
     });
@@ -689,9 +681,7 @@ describe("Crowdsale", function () {
       expect(await shareToken.balanceOf(user1.address)).to.equal(depositAmount);
       await shareToken.connect(user1).approve(await coreVault.getAddress(), depositAmount);
 
-      // Increase time beyond end time (24 hours + 1 second)
-      await network.provider.send("evm_increaseTime", [86401]); 
-      await network.provider.send("evm_mine"); // Mine a new block to make time effective
+      await advance_time_past_crowdsale();
       // Verify funding period has ended
       expect(await crowdsale.isFundingPeriodActive()).to.be.false;
     });
@@ -764,18 +754,14 @@ describe("Crowdsale", function () {
     });
     
     it("Only fundingReceiver or manager can withdraw raised funds", async function () {
-      // Increase time beyond end time (24 hours + 1 second) to end crowdsale
-      await network.provider.send("evm_increaseTime", [86401]); 
-      await network.provider.send("evm_mine"); // Mine a new block to make time effective
+      await advance_time_past_crowdsale();
       // Regular user tries to withdraw raised funds, should fail
       await expect(crowdsale.connect(user1).withdrawFundingAssets())
         .to.be.revertedWith("Crowdsale: unauthorized");
     });
     
     it("Cannot withdraw funds again after withdrawal", async function () {
-      // Increase time beyond end time (24 hours + 1 second) to end crowdsale
-      await network.provider.send("evm_increaseTime", [86401]); 
-      await network.provider.send("evm_mine"); // Mine a new block to make time effective
+      await advance_time_past_crowdsale();
       // First withdrawal of raised funds
       await crowdsale.connect(manager).withdrawFundingAssets();
       
@@ -821,19 +807,15 @@ describe("Crowdsale", function () {
         .to.be.revertedWith("Crowdsale: funding was not successful");
     })
 
-    it("Only manageFeeReceiver or manager can withdraw management fee", async function () {      
-      // Increase time beyond end time (24 hours + 1 second) to end crowdsale
-      await network.provider.send("evm_increaseTime", [86401]); 
-      await network.provider.send("evm_mine"); // Mine a new block to make time effective
+    it("Only manageFeeReceiver or manager can withdraw management fee", async function () {
+      await advance_time_past_crowdsale();
       // Regular user tries to withdraw management fee, should fail
       await expect(crowdsale.connect(user1).withdrawManageFee())
         .to.be.revertedWith("Crowdsale: unauthorized");
     });
     
     it("Cannot withdraw management fee again after withdrawal", async function () {
-      // Increase time beyond end time (24 hours + 1 second) to end crowdsale
-      await network.provider.send("evm_increaseTime", [86401]); 
-      await network.provider.send("evm_mine"); // Mine a new block to make time effective
+      await advance_time_past_crowdsale();
       // First withdrawal of management fee
       await crowdsale.connect(manager).withdrawManageFee();
       
@@ -1047,9 +1029,7 @@ describe("Crowdsale", function () {
     it("Non-offchainManager calling offChainRedeem should fail", async function () {
       // First ensure there is a deposit
       await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address)
-      // Increase time beyond end time to make crowdsale fail
-      await network.provider.send("evm_increaseTime", [86401]); 
-      await network.provider.send("evm_mine");
+      await advance_time_past_crowdsale();
       
       // Regular user tries to call offChainRedeem, should fail
       const OFFCHAIN_MANAGER_ROLE = await crowdsale.OFFCHAIN_MANAGER_ROLE();
@@ -1074,10 +1054,8 @@ describe("Crowdsale", function () {
     it("offchainManager should be able to successfully call offChainRedeem", async function () {
       // First make a deposit
       await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user1.address);
-      
-      // Increase time beyond end time to make crowdsale fail
-      await network.provider.send("evm_increaseTime", [86401]); 
-      await network.provider.send("evm_mine");
+
+      await advance_time_past_crowdsale();
       
       await shareToken.connect(user1).approve(await coreVault.getAddress(), depositAmount);
       // offchainManager calls offChainRedeem
@@ -1098,10 +1076,7 @@ describe("Crowdsale", function () {
       await crowdsale.connect(user1).offChainDeposit(depositAmount, user2.address);
       // Old offchainManager should also be able to handle (because role was not revoked)
       await crowdsale.connect(offchainManager).offChainDeposit(depositAmount, user2.address);
-      
-      // Increase time beyond end time to make crowdsale fail
-      await network.provider.send("evm_increaseTime", [86401]); 
-      await network.provider.send("evm_mine");
+      await advance_time_past_crowdsale();
       
       // Change offchainManager - grant role to user2
       await crowdsale.connect(manager).grantRole(OFFCHAIN_MANAGER_ROLE, user2.address);
