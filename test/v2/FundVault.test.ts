@@ -41,7 +41,6 @@ describe("FundVault", function () {
       params: [],
     });
 
-    console.log("createVaultEnvironment");
     // Initialize test environment
     const testEnv = await createFundVaultEnvironment(
       deployer,
@@ -75,7 +74,6 @@ describe("FundVault", function () {
     });
 
     it("Non-funding modules calling burnToken should fail", async function () {
-      console.log("burnToken");
       const BURN_ROLE = await fundVault.BURN_ROLE();
       await expect(
         fundVault
