@@ -83,3 +83,9 @@ npx hardhat node
 ```bash
 npx hardhat test --network localhost
 ```
+
+or
+
+```bash
+yarn test-report
+```

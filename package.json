@@ -6,6 +6,7 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
+    "test-report": "bash scripts/test-report.sh",
     "deploy:local": "hardhat deploy --tags v2-templates,v2-factories,v2-creation --reset",
     "deploy:v2-overview": "hardhat deploy --tags v2-overview",
     "deploy:v2-templates": "hardhat deploy --tags v2-templates",
